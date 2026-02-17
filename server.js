@@ -5,6 +5,10 @@ const io = require("socket.io")(http);
 
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+    res.redirect("/host");
+});
+
 let game = {
     code: Math.floor(100000 + Math.random() * 900000),
     players: []
@@ -54,4 +58,5 @@ app.get("/gamecode", (req, res) => {
 
 http.listen(3000, () => {
     console.log("Server running on port 3000");
+
 });
