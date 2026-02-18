@@ -59,6 +59,14 @@ app.get("/gamecode", (req, res) => {
 
 http.listen(3000, () => {
     console.log("Server running on port 3000");
+let currentGame = {
+    id: null,
+    players: []
+};
 
+app.post("/create-game", (req, res) => {
+    currentGame.id = uuidv4().slice(0,6).toUpperCase();
+    res.json({ gameId: currentGame.id });
 });
+
 
