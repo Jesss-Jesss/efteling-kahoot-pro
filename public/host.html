@@ -1,31 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Efteling Kahoot - Host</title>
+    <title>Host - Efteling Kahoot Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="overlay">
-    <h1>🏰 Schatbewaarder Dashboard</h1>
 
-    <div class="box">
-        <h2>Spelcode:</h2>
-        <h1 id="gameCode">Laden...</h1>
-        <p>Ga naar: <b>jouwlink/player</b></p>
-    </div>
+<h1>🎢 Efteling Kahoot Pro - Host</h1>
 
-    <div class="box">
-        <h2>QR Code</h2>
-        <img id="qrCode">
-    </div>
+<h2>Game Code: <span id="gameCode"></span></h2>
 
-    <div class="box">
-        <h2>Leaderboard (gejoinde spelers)</h2>
-        <ul id="playerList"></ul>
-    </div>
+<h3>Spelers:</h3>
+<ul id="playerList"></ul>
+
+<hr>
+
+<div id="errorPanel">
+    <h3>⚠ Foutmeldingen</h3>
+    <ul id="errorList"></ul>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
