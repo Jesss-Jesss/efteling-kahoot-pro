@@ -1,37 +1,43 @@
 body {
-    margin: 0;
-    font-family: 'Trebuchet MS', sans-serif;
-    background: url("https://upload.wikimedia.org/wikipedia/commons/7/73/Baron_1898_Efteling.jpg") no-repeat center center fixed;
-    background-size: cover;
-    color: gold;
+    font-family: Arial;
+    background: #121212;
+    color: white;
     text-align: center;
 }
 
-.overlay {
-    background: rgba(0,0,0,0.8);
-    min-height: 100vh;
-    padding: 30px;
-}
-
-h1 {
-    font-size: 40px;
-}
-
-.box {
-    background: rgba(20,20,20,0.9);
-    padding: 20px;
-    border-radius: 15px;
-    margin: 20px auto;
-    width: 80%;
-    max-width: 600px;
+input {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
 }
 
 button {
-    padding: 12px 25px;
-    font-size: 18px;
-    background: darkred;
-    color: gold;
+    padding: 10px 20px;
+    border-radius: 5px;
     border: none;
-    border-radius: 10px;
+    background: purple;
+    color: white;
     cursor: pointer;
+}
+
+button:hover {
+    background: darkviolet;
+}
+
+#errorPanel {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 300px;
+    background: #1f1f1f;
+    padding: 10px;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
 }
