@@ -1,77 +1,27 @@
 const express = require("express");
-const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const http = require("http");
+const { Server } = require("socket.io");
 const { v4: uuidv4 } = require("uuid");
 
-// ====== MIDDLEWARE ======
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+const PORT = process.env.PORT || 10000;
+
+// Static public folder
 app.use(express.static("public"));
-app.use(express.json());
 
-// ====== GAME DATA ======
-let game = {
-    code: Math.floor(100000 + Math.random() * 900000),
-    players: []
-};
+/* ======================
+   GAME DATA
+====================== */
 
-let errors = [];
+let gameCode = Math.floor(100000 + Math.random() * 900000).toString();
+let players = [];
 
-// ====== ERROR LOGGER ======
-function logError(type, details) {
-    errors.push({
-        id: uuidv4(),
-        type,
-        details,
-        time: new Date(),
-        handled: false
-    });
-}
-
-// ====== SOCKET.IO ======
-io.on("connection", (socket) => {
-
-    socket.on("joinGame", (data) => {
-
-        // Ongeldige code
-        if (parseInt(data.code) !== game.code) {
-            logError("Invalid Game Code", {
-                attemptedCode: data.code,
-                name: data.name
-            });
-
-            socket.emit("invalidCode");
-            return;
-        }
-
-        // Dubbele naam
-        if (game.players.find(p => p.name === data.name)) {
-            logError("Duplicate Name", {
-                name: data.name
-            });
-
-            socket.emit("nameTaken");
-            return;
-        }
-
-        const player = {
-            id: socket.id,
-            name: data.name
-        };
-
-        game.players.push(player);
-        socket.join("gameRoom");
-
-        io.to("gameRoom").emit("updatePlayers", game.players);
-    });
-
-    socket.on("disconnect", () => {
-        game.players = game.players.filter(p => p.id !== socket.id);
-        io.to("gameRoom").emit("updatePlayers", game.players);
-    });
-
-});
-
-// ====== ROUTES ======
+/* ======================
+   ROUTES
+====================== */
 
 app.get("/", (req, res) => {
     res.redirect("/host");
@@ -85,28 +35,56 @@ app.get("/player", (req, res) => {
     res.sendFile(__dirname + "/public/player.html");
 });
 
-// Game code ophalen
+app.get("/leaderboard", (req, res) => {
+    res.sendFile(__dirname + "/public/leaderboard.html");
+});
+
 app.get("/gamecode", (req, res) => {
-    res.json({ code: game.code });
+    res.json({ code: gameCode });
 });
 
-// Errors ophalen
-app.get("/errors", (req, res) => {
-    res.json(errors);
+/* ======================
+   SOCKET.IO
+====================== */
+
+io.on("connection", (socket) => {
+
+    socket.on("joinGame", ({ name, code }) => {
+
+        // verkeerde code
+        if (code !== gameCode) {
+            socket.emit("invalidCode");
+            return;
+        }
+
+        // naam al in gebruik
+        if (players.find(p => p.name === name)) {
+            socket.emit("nameTaken");
+            return;
+        }
+
+        const player = {
+            id: uuidv4(),
+            name: name,
+            score: 0
+        };
+
+        players.push(player);
+
+        io.emit("updatePlayers", players);
+    });
+
+    socket.on("disconnect", () => {
+        players = players.filter(p => p.id !== socket.id);
+        io.emit("updatePlayers", players);
+    });
+
 });
 
-// Nieuwe game starten
-app.post("/newgame", (req, res) => {
-    game.code = Math.floor(100000 + Math.random() * 900000);
-    game.players = [];
-    errors = [];
+/* ======================
+   START SERVER
+====================== */
 
-    res.json({ code: game.code });
-});
-
-// ====== SERVER START ======
-const PORT = process.env.PORT || 3000;
-
-http.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log("Server running on port " + PORT);
 });
