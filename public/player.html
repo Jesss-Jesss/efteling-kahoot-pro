@@ -1,24 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Efteling Kahoot - Join</title>
+    <title>Join Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="overlay">
-    <h1>🎢 Join de Efteling Quiz</h1>
 
-    <div class="box">
-        <input id="codeInput" placeholder="Spelcode">
-        <br><br>
-        <input id="nameInput" placeholder="Jouw naam">
-        <br><br>
-        <button onclick="joinGame()">Join</button>
-        <p id="status"></p>
-    </div>
-</div>
+<h1>🎢 Join Game</h1>
+
+<input type="text" id="name" placeholder="Naam">
+<input type="text" id="code" placeholder="Game Code">
+<button onclick="joinGame()">Join</button>
+
+<p id="message"></p>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>
+
 </body>
 </html>
