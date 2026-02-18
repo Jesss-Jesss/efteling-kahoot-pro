@@ -1,27 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-    <title>Dashboard - Efteling Kahoot Pro</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Efteling Kahoot Pro - Dashboard</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/socket.io/socket.io.js"></script>
+<script src="/client.js" defer></script>
+<style>
+    body {
+        font-family: 'Georgia', serif;
+        color: white;
+        margin: 0; padding: 0;
+        background: #063d25 url('https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+    #dashboard { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 15px; padding: 20px; }
+    .blok { background: rgba(0,0,0,0.75); border: 3px solid #b3905e; border-radius: 15px; padding: 15px; min-height: 150px; }
+    h2 { margin-top: 0; color: gold; }
+    #errors div.handled { text-decoration: line-through; opacity: 0.6; }
+    button { margin: 5px; padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+    #qr img { width: 150px; height: 150px; }
+</style>
 </head>
 <body>
+<h1 style="text-align:center; color:gold;">🎢 Efteling Kahoot Pro - Dashboard</h1>
 
-<h1>🎢 Efteling Kahoot Pro</h1>
+<div id="dashboard">
+    <div class="blok" id="gamecode-blok">
+        <h2>Game Code</h2>
+        <p id="gamecode">-</p>
+        <div id="qr"></div>
+    </div>
 
-<div class="card">
-    <h2>Game Code</h2>
-    <h1 id="gameCode">...</h1>
+    <div class="blok" id="players-blok">
+        <h2>Spelers</h2>
+        <ul id="players"></ul>
+    </div>
+
+    <div class="blok" id="errors-blok">
+        <h2>Foutmeldingen</h2>
+        <div id="errors"></div>
+    </div>
+
+    <div class="blok" id="control-blok">
+        <h2>Control</h2>
+        <button onclick="nextStep()">Volgende Stap</button>
+        <button onclick="prevStep()">Vorige Stap</button>
+        <button onclick="startQuestion()">Start Vraag</button>
+        <button onclick="stopQuestion()">Stop Vraag</button>
+    </div>
+
+    <div class="blok" id="answers-blok">
+        <h2>Antwoorden</h2>
+        <div id="answers"></div>
+    </div>
 </div>
 
-<div class="card">
-    <h2>Spelers</h2>
-    <ul id="playerList"></ul>
-</div>
+<script>
+const socket = io();
 
-<a class="buttonLink" href="/leaderboard">🏆 Open Leaderboard</a>
+// Game code
+fetch("/gamecode").then(r => r.json()).then(data => {
+    document.getElementById("gamecode").innerText = data.code;
+    // QR-code
+    document.getElementById("qr").innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://efteling-kahoot-pro.onrender.com/player?code=${data.code}">`;
+});
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="/host.js"></script>
+// Update spelers
+socket.on("updatePlayers", players => {
+    const list = document.getElementById("players");
+    list.innerHTML = "";
+    players.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.name + " ";
+        const kickBtn = document.createElement("button");
+        kickBtn.textContent = "Kick";
+        kickBtn.onclick = () => socket.emit("kickPlayer", p.id);
+        li.appendChild(kickBtn);
+        list.appendChild(li);
+    });
+});
 
+// Update foutmeldingen
+socket.on("updateErrors", errs => {
+    const container = document.getElementById("errors");
+    container.innerHTML = "";
+    errs.forEach(e => {
+        const div = document.createElement("div");
+        div.textContent = `[${e.type}] ${JSON.stringify(e.details)}`;
+        div.className = e.handled ? "handled" : "";
+        const btn = document.createElement("button");
+        btn.textContent = e.handled ? "Niet afgehandeld" : "Afgehandeld";
+        btn.onclick = () => socket.emit("markError", { id: e.id, handled: !e.handled });
+        div.appendChild(btn);
+        container.appendChild(div);
+    });
+});
+
+// Update antwoorden
+socket.on("updateAnswers", players => {
+    const container = document.getElementById("answers");
+    container.innerHTML = "";
+    players.forEach(p => {
+        if (p.answers && p.answers.length > 0) {
+            const lastAnswer = p.answers[p.answers.length - 1];
+            const div = document.createElement("div");
+            div.textContent = `${p.name}: ${lastAnswer}`;
+            container.appendChild(div);
+        }
+    });
+});
+
+// Control functies
+function nextStep() { alert("Volgende stap geactiveerd"); }
+function prevStep() { alert("Vorige stap geactiveerd"); }
+function startQuestion() { alert("Vraag gestart"); }
+function stopQuestion() { alert("Vraag gestopt"); }
+</script>
 </body>
 </html>
