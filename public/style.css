@@ -1,107 +1,61 @@
 body {
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #1a002b, #3b0066);
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #2a004f, #000000);
     color: white;
     text-align: center;
 }
 
-/* TITELS */
 h1 {
+    margin-top: 30px;
     font-size: 40px;
-    margin-top: 30px;
-    background: linear-gradient(90deg, gold, orange);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
-h2 {
-    margin: 10px 0;
-}
-
-h3 {
-    margin-top: 30px;
-}
-
-/* CARDS */
 .card {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.1);
     padding: 20px;
     margin: 20px auto;
     width: 90%;
-    max-width: 600px;
+    max-width: 500px;
     border-radius: 15px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
 }
 
-/* INPUTS */
 input {
-    padding: 12px;
-    margin: 8px;
-    width: 200px;
+    padding: 10px;
+    margin: 10px;
     border-radius: 8px;
     border: none;
-    outline: none;
-    font-size: 16px;
+    width: 200px;
 }
 
-/* BUTTONS */
 button {
-    padding: 12px 25px;
-    border-radius: 10px;
+    padding: 10px 20px;
+    border-radius: 8px;
     border: none;
-    background: linear-gradient(90deg, purple, hotpink);
+    background: purple;
     color: white;
-    font-size: 16px;
     cursor: pointer;
-    transition: 0.3s;
 }
 
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px purple;
+.buttonLink {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: gold;
+    color: black;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-/* PLAYER LIST */
 ul {
     list-style: none;
     padding: 0;
 }
 
 li {
-    background: rgba(255,255,255,0.1);
-    margin: 8px auto;
+    background: rgba(255,255,255,0.15);
+    margin: 8px;
     padding: 10px;
-    width: 80%;
-    border-radius: 10px;
-}
-
-/* ERROR PANEL */
-#errorPanel {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 300px;
-    background: rgba(0,0,0,0.7);
-    padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px red;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-#errorPanel h3 {
-    color: red;
-}
-
-/* MOBILE */
-@media (max-width: 600px) {
-    input {
-        width: 80%;
-    }
-
-    li {
-        width: 95%;
-    }
+    border-radius: 8px;
 }
