@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require("uuid");
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
@@ -59,14 +58,4 @@ app.get("/gamecode", (req, res) => {
 
 http.listen(3000, () => {
     console.log("Server running on port 3000");
-let currentGame = {
-    id: null,
-    players: []
-};
-
-app.post("/create-game", (req, res) => {
-    currentGame.id = uuidv4().slice(0,6).toUpperCase();
-    res.json({ gameId: currentGame.id });
 });
-
-
