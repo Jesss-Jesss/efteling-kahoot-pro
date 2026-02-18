@@ -1,4 +1,22 @@
 const express = require("express");
+const { v4: uuidv4 } = require("uuid");
+
+let currentGame = {
+    id: null,
+    players: []
+};
+
+let errors = [];
+
+function logError(type, details) {
+    errors.push({
+        id: uuidv4(),
+        type,
+        details,
+        time: new Date(),
+        handled: false
+    });
+}
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
@@ -59,3 +77,4 @@ app.get("/gamecode", (req, res) => {
 http.listen(3000, () => {
     console.log("Server running on port 3000");
 });
+
