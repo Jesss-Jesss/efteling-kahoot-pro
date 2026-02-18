@@ -1,23 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Efteling Kahoot Pro</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
 <body>
 
 <h1>🎢 Efteling Kahoot Pro</h1>
 
 <div class="card">
     <h2>Game Code</h2>
-    <h1 id="gameCode"></h1>
+    <h1 id="gameCode">...</h1>
 </div>
 
 <div class="card">
-    <h3>Spelers</h3>
+    <h2>Spelers</h2>
     <ul id="playerList"></ul>
 </div>
 
-<div id="errorPanel">
-    <h3>⚠ Errors</h3>
-    <ul id="errorList"></ul>
-</div>
+<a class="buttonLink" href="/leaderboard">🏆 Open Leaderboard</a>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="script.js"></script>
+<script src="/host.js"></script>
 
 </body>
+</html>
