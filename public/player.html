@@ -1,21 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Join Game</title>
-    <link rel="stylesheet" href="style.css">
-</head>
 <body>
 
-<h1>🎢 Join Game</h1>
+<h1>🎢 Join The Ride</h1>
 
-<input type="text" id="name" placeholder="Naam">
-<input type="text" id="code" placeholder="Game Code">
-<button onclick="joinGame()">Join</button>
-
-<p id="message"></p>
+<div class="card">
+    <input type="text" id="name" placeholder="Jouw naam">
+    <br>
+    <input type="text" id="code" placeholder="Game Code">
+    <br>
+    <button onclick="joinGame()">Instappen 🚀</button>
+    <p id="message"></p>
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>
 
 </body>
-</html>
