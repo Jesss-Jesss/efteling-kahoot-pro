@@ -1,30 +1,88 @@
 const express = require("express");
 const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-const DASHBOARD_PASSWORD = "1234";
-
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+const DASHBOARD_PASSWORD = "1234";
+
+// Game opslag
+let currentGame = null;
+
+/* ---------------- LOGIN ---------------- */
+
 app.get("/", (req, res) => {
-    res.redirect("/host-login.html");
+    res.redirect("/host-login");
+});
+
+app.get("/host-login", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "host-login.html"));
 });
 
 app.post("/host-login", (req, res) => {
     const password = (req.body.password || "").trim();
 
     if (password === DASHBOARD_PASSWORD) {
-        return res.redirect("/host.html");
+        return res.redirect("/host");
     }
 
-    res.send(`
-        <h2>❌ Ongeldig wachtwoord</h2>
-        <a href="/host-login.html">Terug</a>
-    `);
+    res.send("❌ Ongeldig wachtwoord");
 });
+
+/* ---------------- HOST ---------------- */
+
+app.get("/host", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "host.html"));
+});
+
+/* Start game */
+app.post("/start-game", (req, res) => {
+    currentGame = {
+        id: uuidv4().slice(0, 6),
+        players: [],
+        scores: {}
+    };
+
+    res.json({ gameId: currentGame.id });
+});
+
+/* ---------------- PLAYER ---------------- */
+
+app.get("/player", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "player.html"));
+});
+
+/* Join game */
+app.post("/join", (req, res) => {
+    const { name, gameId } = req.body;
+
+    if (!currentGame || gameId !== currentGame.id) {
+        return res.status(400).json({ error: "Game niet gevonden" });
+    }
+
+    currentGame.players.push(name);
+    currentGame.scores[name] = 0;
+
+    res.json({ success: true });
+});
+
+/* ---------------- LEADERBOARD ---------------- */
+
+app.get("/leaderboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
+});
+
+app.get("/scores", (req, res) => {
+    if (!currentGame) return res.json({});
+    res.json(currentGame.scores);
+});
+
+/* ---------------- START SERVER ---------------- */
 
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
