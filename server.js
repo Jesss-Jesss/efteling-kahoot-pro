@@ -24,7 +24,7 @@ app.use(session({
 }));
 
 // Wachtwoord voor dashboard
-const DASHBOARD_PASSWORD = "1234"; // pas dit aan
+const DASHBOARD_PASSWORD = "EftelJesss1234"; // pas dit aan
 
 // ---------------------
 // GAME DATA
@@ -214,3 +214,4 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
     console.log("Server draait 🚀 op port " + PORT);
 });
+
