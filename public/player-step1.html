@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Join</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="step1">
+        <h1>🎢 Vul de Game-ID in</h1>
+        <form id="gameIdForm">
+            <input type="text" id="gameId" placeholder="Bijv. EFTEL-1234" required>
+            <button type="submit">Volgende</button>
+        </form>
+        <p id="errorMsg"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById("gameIdForm");
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            const id = document.getElementById("gameId").value.trim();
+            if(id === "") {
+                document.getElementById("errorMsg").innerText = "Vul een geldige Game-ID in!";
+            } else {
+                localStorage.setItem("gameId", id);
+                window.location.href = "/player-step2.html";
+            }
+        });
+    </script>
+</body>
+</html>
