@@ -58,12 +58,15 @@ app.post("/start-game", (req, res) => {
     }
 
     currentGame = {
-        id: uuidv4().slice(0, 6),
+        id: uuidv4().slice(0, 6).toUpperCase(),
         players: [],
         scores: {}
     };
 
-    res.json({ gameId: currentGame.id });
+    res.json({
+        gameId: currentGame.id,
+        playerUrl: "/player?game=" + currentGame.id
+    });
 });
 
 /* -------- PLAYER -------- */
@@ -103,3 +106,4 @@ app.get("/scores", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
