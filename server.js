@@ -1,20 +1,26 @@
 const express = require("express");
 const path = require("path");
+const session = require("express-session");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+const DASHBOARD_PASSWORD = "1234";
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const DASHBOARD_PASSWORD = "1234";
+app.use(session({
+    secret: "supersecretkey",
+    resave: false,
+    saveUninitialized: true
+}));
 
-// Game opslag
 let currentGame = null;
 
-/* ---------------- LOGIN ---------------- */
+/* -------- LOGIN -------- */
 
 app.get("/", (req, res) => {
     res.redirect("/host-login");
@@ -28,20 +34,29 @@ app.post("/host-login", (req, res) => {
     const password = (req.body.password || "").trim();
 
     if (password === DASHBOARD_PASSWORD) {
+        req.session.loggedIn = true;
         return res.redirect("/host");
     }
 
     res.send("❌ Ongeldig wachtwoord");
 });
 
-/* ---------------- HOST ---------------- */
+/* -------- HOST (BEVEILIGD) -------- */
 
 app.get("/host", (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.redirect("/host-login");
+    }
     res.sendFile(path.join(__dirname, "public", "host.html"));
 });
 
-/* Start game */
+/* -------- START GAME -------- */
+
 app.post("/start-game", (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.status(403).send("Niet toegestaan");
+    }
+
     currentGame = {
         id: uuidv4().slice(0, 6),
         players: [],
@@ -51,13 +66,14 @@ app.post("/start-game", (req, res) => {
     res.json({ gameId: currentGame.id });
 });
 
-/* ---------------- PLAYER ---------------- */
+/* -------- PLAYER -------- */
 
 app.get("/player", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "player.html"));
 });
 
-/* Join game */
+/* -------- JOIN -------- */
+
 app.post("/join", (req, res) => {
     const { name, gameId } = req.body;
 
@@ -71,7 +87,7 @@ app.post("/join", (req, res) => {
     res.json({ success: true });
 });
 
-/* ---------------- LEADERBOARD ---------------- */
+/* -------- LEADERBOARD -------- */
 
 app.get("/leaderboard", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
@@ -82,7 +98,7 @@ app.get("/scores", (req, res) => {
     res.json(currentGame.scores);
 });
 
-/* ---------------- START SERVER ---------------- */
+/* -------- SERVER -------- */
 
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
