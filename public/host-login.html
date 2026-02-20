@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Host Login</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="hostLoginScreen">
+        <h1>🎢 Efteling Kahoot Host Login</h1>
+        <form id="loginForm">
+            <label for="password">Wachtwoord:</label>
+            <input type="password" id="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="loginError"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById("loginForm");
+        const error = document.getElementById("loginError");
+        const correctPassword = "jouwwachtwoord"; // verander dit naar jouw wachtwoord
+
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            const pass = document.getElementById("password").value;
+            if(pass === correctPassword){
+                window.location.href = "/host"; // door naar dashboard
+            } else {
+                error.innerText = "Ongeldig wachtwoord!";
+            }
+        });
+    </script>
+</body>
+</html>
