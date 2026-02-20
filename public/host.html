@@ -48,3 +48,21 @@
     </div>
 </body>
 </html>
+
+<h2 id="gameCode"></h2>
+<img id="qr">
+
+<script>
+fetch("/start-game", { method: "POST" })
+.then(res => res.json())
+.then(data => {
+
+    const fullUrl = window.location.origin + data.playerUrl;
+
+    document.getElementById("gameCode").innerText =
+        "Game ID: " + data.gameId;
+
+    document.getElementById("qr").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + fullUrl;
+});
+</script>
