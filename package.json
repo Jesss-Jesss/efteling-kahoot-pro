@@ -9,8 +9,9 @@
   "dependencies": {
     "express": "^4.22.1",
     "socket.io": "^4.8.3",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
     "express-session": "^1.17.3",
   }
 }
+
 
