@@ -4,28 +4,26 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Zorg dat form data gelezen kan worden
-app.use(express.urlencoded({ extended: true }));
+const DASHBOARD_PASSWORD = "1234";
 
-// 🔥 BELANGRIJK: public map als static instellen
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// Home → login pagina
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "host-login.html"));
+    res.redirect("/host-login.html");
 });
 
-// Login check
 app.post("/host-login", (req, res) => {
     const password = (req.body.password || "").trim();
 
-    console.log("Ontvangen:", password);
-
-    if (password === "1234") {
-        return res.send("✅ LOGIN GELUKT");
+    if (password === DASHBOARD_PASSWORD) {
+        return res.redirect("/host.html");
     }
 
-    res.send("❌ Ongeldig wachtwoord");
+    res.send(`
+        <h2>❌ Ongeldig wachtwoord</h2>
+        <a href="/host-login.html">Terug</a>
+    `);
 });
 
 app.listen(PORT, () => {
