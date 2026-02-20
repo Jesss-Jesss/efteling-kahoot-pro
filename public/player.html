@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
 <title>Player</title>
 <link rel="stylesheet" href="/style.css">
 <script src="/socket.io/socket.io.js"></script>
@@ -10,55 +9,56 @@
 
 <h1>🎢 Join</h1>
 
-<div class="card">
-    <input id="name" placeholder="Naam">
-    <input id="code" placeholder="Game code">
-    <button onclick="join()">Join</button>
+<div id="join">
+<input id="name" placeholder="Naam">
+<input id="code" placeholder="Code">
+<button onclick="join()">Join</button>
+<p id="msg"></p>
 </div>
 
-<div class="card" id="questionBox" style="display:none;">
-    <h2 id="questionText"></h2>
-    <p>Tijd: <span id="timer">30</span></p>
-    <input id="answerInput" placeholder="Typ je antwoord">
-    <button onclick="submitAnswer()">Verstuur</button>
-    <p id="result"></p>
+<div id="game" style="display:none;">
+<h2 id="question"></h2>
+<div id="timer"></div>
+<input id="answer" placeholder="Typ antwoord">
+<button onclick="send()">Verstuur</button>
+<p id="result"></p>
 </div>
 
 <script>
-const socket = io();
-let playerName = "";
+const socket=io();
+let playerName="";
 
-function join() {
-    playerName = document.getElementById("name").value;
-    const code = document.getElementById("code").value;
-    socket.emit("joinGame", { name: playerName, code });
+function join(){
+playerName=document.getElementById("name").value;
+const code=document.getElementById("code").value;
+socket.emit("joinGame",{name:playerName,code});
+document.getElementById("join").style.display="none";
+document.getElementById("game").style.display="block";
 }
 
-socket.on("newQuestion", question => {
-    document.getElementById("questionBox").style.display = "block";
-    document.getElementById("questionText").innerText = question;
+socket.on("invalidCode",()=>document.getElementById("msg").innerText="Foute code");
+socket.on("nameTaken",()=>document.getElementById("msg").innerText="Naam bestaat");
+
+socket.on("newQuestion",q=>{
+document.getElementById("question").innerText=q;
 });
 
-socket.on("questionStarted", seconds => {
-    let time = seconds;
-    const timerEl = document.getElementById("timer");
-    timerEl.innerText = time;
-
-    const interval = setInterval(() => {
-        time--;
-        timerEl.innerText = time;
-        if (time <= 0) clearInterval(interval);
-    }, 1000);
+socket.on("startTimer",sec=>{
+let t=sec;
+const el=document.getElementById("timer");
+el.innerText=t;
+const i=setInterval(()=>{
+t--;el.innerText=t;
+if(t<=0)clearInterval(i);
+},1000);
 });
 
-function submitAnswer() {
-    const answer = document.getElementById("answerInput").value;
-    socket.emit("submitAnswer", { name: playerName, answer });
+function send(){
+socket.emit("submitAnswer",{name:playerName,answer:document.getElementById("answer").value});
 }
 
-socket.on("answerResult", correct => {
-    document.getElementById("result").innerText =
-        correct ? "✅ Goed!" : "❌ Fout!";
+socket.on("answerResult",correct=>{
+document.getElementById("result").innerText=correct?"✅ Goed":"❌ Fout";
 });
 </script>
 
