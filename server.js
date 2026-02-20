@@ -4,27 +4,30 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// BELANGRIJK: body kunnen lezen
+// Zorg dat form data gelezen kan worden
 app.use(express.urlencoded({ extended: true }));
 
-// Test homepage
+// 🔥 BELANGRIJK: public map als static instellen
+app.use(express.static(path.join(__dirname, "public")));
+
+// Home → login pagina
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public/host-login.html"));
+    res.sendFile(path.join(__dirname, "public", "host-login.html"));
 });
 
-// Login POST
+// Login check
 app.post("/host-login", (req, res) => {
     const password = (req.body.password || "").trim();
 
-    console.log("Ontvangen wachtwoord:", JSON.stringify(password));
+    console.log("Ontvangen:", password);
 
     if (password === "1234") {
-        res.send("✅ LOGIN GELUKT");
-    } else {
-        res.send("❌ Ongeldig wachtwoord: " + password);
+        return res.send("✅ LOGIN GELUKT");
     }
+
+    res.send("❌ Ongeldig wachtwoord");
 });
 
 app.listen(PORT, () => {
-    console.log("Test server draait op poort " + PORT);
+    console.log("Server draait op poort " + PORT);
 });
