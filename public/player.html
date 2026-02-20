@@ -1,23 +1,66 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Join Game</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Player</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 
-<h1>🎢 Stap in de Quiz</h1>
+<h1>🎢 Join</h1>
 
 <div class="card">
-    <input type="text" id="name" placeholder="Jouw naam">
-    <input type="text" id="code" placeholder="Game Code">
-    <button onclick="joinGame()">Instappen 🚀</button>
-    <p id="message"></p>
+    <input id="name" placeholder="Naam">
+    <input id="code" placeholder="Game code">
+    <button onclick="join()">Join</button>
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="/player.js"></script>
+<div class="card" id="questionBox" style="display:none;">
+    <h2 id="questionText"></h2>
+    <p>Tijd: <span id="timer">30</span></p>
+    <input id="answerInput" placeholder="Typ je antwoord">
+    <button onclick="submitAnswer()">Verstuur</button>
+    <p id="result"></p>
+</div>
+
+<script>
+const socket = io();
+let playerName = "";
+
+function join() {
+    playerName = document.getElementById("name").value;
+    const code = document.getElementById("code").value;
+    socket.emit("joinGame", { name: playerName, code });
+}
+
+socket.on("newQuestion", question => {
+    document.getElementById("questionBox").style.display = "block";
+    document.getElementById("questionText").innerText = question;
+});
+
+socket.on("questionStarted", seconds => {
+    let time = seconds;
+    const timerEl = document.getElementById("timer");
+    timerEl.innerText = time;
+
+    const interval = setInterval(() => {
+        time--;
+        timerEl.innerText = time;
+        if (time <= 0) clearInterval(interval);
+    }, 1000);
+});
+
+function submitAnswer() {
+    const answer = document.getElementById("answerInput").value;
+    socket.emit("submitAnswer", { name: playerName, answer });
+}
+
+socket.on("answerResult", correct => {
+    document.getElementById("result").innerText =
+        correct ? "✅ Goed!" : "❌ Fout!";
+});
+</script>
 
 </body>
 </html>
-
