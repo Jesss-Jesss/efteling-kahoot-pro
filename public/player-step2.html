@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Naam invullen</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="step2">
+        <h1>🎢 Vul je naam in</h1>
+        <form id="nameForm">
+            <input type="text" id="playerName" placeholder="Naam" required>
+            <button type="submit">Volgende</button>
+        </form>
+        <p id="nameError"></p>
+    </div>
+
+    <script>
+        const allowedNames = ["Joris", "Emma", "Luca", "Sofie"]; // Alleen deze namen toegestaan
+        const form = document.getElementById("nameForm");
+
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            const name = document.getElementById("playerName").value.trim();
+            if(!allowedNames.includes(name)) {
+                document.getElementById("nameError").innerText = "Naam niet toegestaan!";
+            } else {
+                localStorage.setItem("playerName", name);
+                window.location.href = "/player-step3.html";
+            }
+        });
+    </script>
+</body>
+</html>
