@@ -78,13 +78,13 @@ app.get("/player", (req, res) => {
 /* -------- JOIN -------- */
 
 app.post("/join", (req, res) => {
-    const { name, gameId } = req.body;
+    const { name, gameId, character } = req.body;
 
     if (!currentGame || gameId !== currentGame.id) {
-        return res.status(400).json({ error: "Game niet gevonden" });
+        return res.status(400).json({ error: "Ongeldige Game ID" });
     }
 
-    currentGame.players.push(name);
+    currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
 
     res.json({ success: true });
@@ -106,4 +106,5 @@ app.get("/scores", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
