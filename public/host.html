@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
 <title>Dashboard</title>
 <link rel="stylesheet" href="/style.css">
 <script src="/socket.io/socket.io.js"></script>
@@ -10,83 +9,95 @@
 
 <h1>🎢 Dashboard</h1>
 
+<div class="container">
+
 <div class="card">
-    <h2>Game Code</h2>
-    <p id="gamecode"></p>
+<h2>Game Code</h2>
+<p id="code"></p>
 </div>
 
 <div class="card">
-    <h2>Vraag invoeren</h2>
-    <input id="questionInput" placeholder="Typ hier je vraag">
-    <br>
-    <input id="correctInput" placeholder="Juiste antwoorden (komma gescheiden)">
-    <br>
-    <button onclick="setQuestion()">Vraag instellen</button>
-    <button onclick="startQuestion()">Start (30 sec)</button>
-    <button onclick="stopQuestion()">Stop & Resultaten</button>
+<h2>Spelers</h2>
+<div id="players"></div>
 </div>
 
 <div class="card">
-    <h2>Antwoorden binnengekomen</h2>
-    <div id="liveAnswers"></div>
+<h2>Foutmeldingen</h2>
+<div id="errors"></div>
 </div>
 
 <div class="card">
-    <h2>Resultaten</h2>
-    <div id="results"></div>
+<h2>Control</h2>
+<button onclick="next()">Volgende</button>
+</div>
+
+<div class="card">
+<h2>Vraag instellen</h2>
+<input id="question" placeholder="Vraag">
+<input id="correct" placeholder="Juiste antwoorden (komma)">
+<button onclick="setQ()">Opslaan</button>
+</div>
+
+<div class="card">
+<h2>Antwoorden Overzicht</h2>
+<div id="results"></div>
+</div>
+
 </div>
 
 <script>
-const socket = io();
+const socket=io();
 
-fetch("/gamecode")
-.then(r => r.json())
-.then(data => {
-    document.getElementById("gamecode").innerText = data.code;
+fetch("/gamecode").then(r=>r.json()).then(d=>{
+document.getElementById("code").innerText=d.code;
 });
 
-function setQuestion() {
-    const q = document.getElementById("questionInput").value;
-    const correct = document.getElementById("correctInput").value.split(",");
-    socket.emit("setQuestion", { question: q, correct });
+function next(){socket.emit("nextPhase");}
+function setQ(){
+socket.emit("setQuestion",{
+question:document.getElementById("question").value,
+correct:document.getElementById("correct").value.split(",")
+});
 }
 
-function startQuestion() {
-    socket.emit("startQuestion");
+socket.on("updatePlayers",players=>{
+const div=document.getElementById("players");
+div.innerHTML="";
+players.forEach(p=>{
+div.innerHTML+=`${p.name} (${p.score}) <button onclick="kick('${p.id}')">Kick</button><br>`;
+});
+});
+
+function kick(id){socket.emit("kickPlayer",id);}
+
+socket.on("updateErrors",errors=>{
+const div=document.getElementById("errors");
+div.innerHTML="";
+errors.forEach(e=>{
+div.innerHTML+=`${e.type} <button onclick="mark('${e.id}')">${e.handled?"Niet afgehandeld":"Afgehandeld"}</button><br>`;
+});
+});
+
+function mark(id){socket.emit("markError",id);}
+
+socket.on("showResults",answers=>{
+const grouped={};
+answers.forEach(a=>{
+if(!grouped[a.normalized]){
+grouped[a.normalized]={text:a.original,count:0,correct:a.correct};
 }
+grouped[a.normalized].count++;
+});
 
-function stopQuestion() {
-    socket.emit("stopQuestion");
-}
+const div=document.getElementById("results");
+div.innerHTML="";
 
-socket.on("showResults", answers => {
-    const container = document.getElementById("results");
-    container.innerHTML = "";
-
-    const grouped = {};
-
-    answers.forEach(a => {
-        if (!grouped[a.normalized]) {
-            grouped[a.normalized] = {
-                text: a.original,
-                count: 0,
-                correct: a.correct
-            };
-        }
-        grouped[a.normalized].count++;
-    });
-
-    Object.values(grouped).forEach(ans => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-            ${ans.text} - ${ans.count} spelers 
-            ${ans.correct ? "✅" : "❌"}
-            <div style="background:gray;height:20px;width:100%;">
-                <div style="background:gold;height:20px;width:${ans.count * 40}px;"></div>
-            </div>
-        `;
-        container.appendChild(div);
-    });
+Object.values(grouped).forEach(a=>{
+div.innerHTML+=`
+${a.text} ${a.correct?"✅":"❌"} (${a.count})
+<div class="bar"><div class="fill" style="width:${a.count*20}px"></div></div>
+`;
+});
 });
 </script>
 
