@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kies je personage</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="step3">
+        <h1>🎢 Kies je Efteling personage</h1>
+        <div id="characters">
+            <div class="character" data-name="Baron1898">
+                <img src="https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9" />
+                <p>Joki</p>
+            </div>
+            <div class="character" data-name="Symbolica">
+                <img src="https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B" />
+                <p>Langnek</p>
+            </div>
+            <div class="character" data-name="VliegendeHollander">
+                <img src="https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC" />
+                <p>Klein duimpje</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chars = document.querySelectorAll(".character");
+        chars.forEach(c => {
+            c.addEventListener("click", () => {
+                const chosen = c.dataset.name;
+                localStorage.setItem("character", chosen);
+                window.location.href = "/player.html"; // Ga naar player scherm
+            });
+        });
+    </script>
+</body>
+</html>
