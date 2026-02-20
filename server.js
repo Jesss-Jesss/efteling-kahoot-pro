@@ -1,7 +1,6 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const server = http.createServer(app);
@@ -12,62 +11,76 @@ const PORT = process.env.PORT || 10000;
 app.use(express.static("public"));
 
 /* ======================
-   GAME DATA
+   GAME STATE
 ====================== */
 
 let game = {
     code: Math.floor(100000 + Math.random() * 900000).toString(),
     players: [],
+    errors: [],
+    phase: "lobby", // lobby → question → results
     currentQuestion: null,
     correctAnswers: [],
-    questionActive: false,
     answers: []
 };
+
+/* ======================
+   ERROR SYSTEM
+====================== */
+
+function addError(type, details) {
+    game.errors.push({
+        id: Date.now() + Math.random(),
+        type,
+        details,
+        handled: false,
+        time: new Date()
+    });
+
+    // Niet afgehandeld moet bovenaan
+    game.errors.sort((a, b) => a.handled - b.handled);
+}
 
 /* ======================
    ROUTES
 ====================== */
 
-app.get("/", (req, res) => res.redirect("/host"));
-
-app.get("/host", (req, res) =>
-    res.sendFile(__dirname + "/public/host.html")
-);
-
-app.get("/player", (req, res) =>
-    res.sendFile(__dirname + "/public/player.html")
-);
-
-app.get("/leaderboard", (req, res) =>
-    res.sendFile(__dirname + "/public/leaderboard.html")
-);
-
-app.get("/gamecode", (req, res) =>
-    res.json({ code: game.code })
-);
+app.get("/", (req, res) => res.redirect("/leaderboard"));
+app.get("/host", (req, res) => res.sendFile(__dirname + "/public/host.html"));
+app.get("/player", (req, res) => res.sendFile(__dirname + "/public/player.html"));
+app.get("/leaderboard", (req, res) => res.sendFile(__dirname + "/public/leaderboard.html"));
+app.get("/gamecode", (req, res) => res.json({ code: game.code }));
 
 /* ======================
-   SOCKET.IO
+   SOCKET
 ====================== */
 
 io.on("connection", (socket) => {
 
-    // JOIN
+    socket.emit("updatePlayers", game.players);
+    socket.emit("updateErrors", game.errors);
+    socket.emit("phaseUpdate", game.phase);
+
+    /* JOIN */
     socket.on("joinGame", ({ name, code }) => {
 
         if (code !== game.code) {
             socket.emit("invalidCode");
+            addError("Ongeldige code", { name, code });
+            io.emit("updateErrors", game.errors);
             return;
         }
 
         if (game.players.find(p => p.name === name)) {
             socket.emit("nameTaken");
+            addError("Dubbele naam", { name });
+            io.emit("updateErrors", game.errors);
             return;
         }
 
         const player = {
             id: socket.id,
-            name: name,
+            name,
             score: 0
         };
 
@@ -75,35 +88,56 @@ io.on("connection", (socket) => {
         io.emit("updatePlayers", game.players);
     });
 
-    // DISCONNECT
-    socket.on("disconnect", () => {
-        game.players = game.players.filter(p => p.id !== socket.id);
+    /* KICK */
+    socket.on("kickPlayer", (id) => {
+        game.players = game.players.filter(p => p.id !== id);
         io.emit("updatePlayers", game.players);
     });
 
-    // SET QUESTION
+    /* MARK ERROR */
+    socket.on("markError", (id) => {
+        const err = game.errors.find(e => e.id === id);
+        if (err) err.handled = !err.handled;
+        game.errors.sort((a, b) => a.handled - b.handled);
+        io.emit("updateErrors", game.errors);
+    });
+
+    /* SET QUESTION */
     socket.on("setQuestion", ({ question, correct }) => {
         game.currentQuestion = question;
         game.correctAnswers = correct.map(a => a.trim().toLowerCase());
         game.answers = [];
-        io.emit("newQuestion", question);
     });
 
-    // START QUESTION
-    socket.on("startQuestion", () => {
-        game.questionActive = true;
-        io.emit("questionStarted", 30);
+    /* NEXT PHASE */
+    socket.on("nextPhase", () => {
+        if (game.phase === "lobby") game.phase = "question";
+        else if (game.phase === "question") game.phase = "results";
+        else game.phase = "lobby";
+
+        io.emit("phaseUpdate", game.phase);
+
+        if (game.phase === "question") {
+            io.emit("newQuestion", game.currentQuestion);
+            io.emit("startTimer", 30);
+        }
+
+        if (game.phase === "results") {
+            io.emit("showResults", game.answers);
+        }
     });
 
-    // SUBMIT ANSWER
+    /* ANSWERS */
     socket.on("submitAnswer", ({ name, answer }) => {
-        if (!game.questionActive) return;
 
         const normalized = answer.trim().toLowerCase();
 
         const isCorrect = game.correctAnswers.some(correct =>
             normalized.includes(correct)
         );
+
+        const player = game.players.find(p => p.name === name);
+        if (player && isCorrect) player.score += 10;
 
         game.answers.push({
             name,
@@ -115,18 +149,8 @@ io.on("connection", (socket) => {
         socket.emit("answerResult", isCorrect);
     });
 
-    // STOP QUESTION
-    socket.on("stopQuestion", () => {
-        game.questionActive = false;
-        io.emit("showResults", game.answers);
-    });
-
 });
 
-/* ======================
-   START SERVER
-====================== */
-
 server.listen(PORT, () => {
-    console.log("Server running on port " + PORT);
+    console.log("Server running on " + PORT);
 });
