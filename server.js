@@ -123,11 +123,39 @@ app.get("/scores", (req, res) => {
     res.json(currentGame.scores);
 });
 
+/* -------- EXTRA TOEGEVOEGD -------- */
+
+// 🔥 Nieuwe uitgebreide scores route (voor leaderboard met gameId)
+app.get("/scores-full", (req, res) => {
+    if (!currentGame) return res.json({});
+
+    res.json({
+        gameId: currentGame.id,
+        scores: currentGame.scores
+    });
+});
+
+// 🔥 Player route fix (als je geen player.html hebt)
+app.get("/player-step1", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "player-step1.html"));
+});
+
+// 🔥 Game reset (alleen host)
+app.post("/reset-game", (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.status(403).send("Niet toegestaan");
+    }
+
+    currentGame = null;
+    res.json({ success: true });
+});
+
 /* -------- SERVER -------- */
 
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
