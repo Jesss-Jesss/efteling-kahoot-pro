@@ -29,6 +29,14 @@
                 window.location.href = "/player-step3.html";
             }
         });
+
+        /* 🔥 NIEUW TOEGEVOEGD */
+        const gameId = localStorage.getItem("gameId");
+
+        if (!gameId) {
+            // Geen game-id? Terug naar stap 1
+            window.location.href = "/player-step1.html";
+        }
     </script>
 </body>
 </html>
