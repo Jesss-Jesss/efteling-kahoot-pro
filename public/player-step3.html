@@ -1,87 +1,105 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Kies je personage</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Kies je personage</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-    <h2>✔ Gelukt! Je bent nu in de quiz</h2>
-
+<h2>✔ Gelukt! Je bent nu in de quiz</h2>
 <p>Zie je je naam op het leaderboard?</p>
+
+<!-- Gekozen Personage -->
+<div style="margin-bottom:20px;">
+    <div style="position:relative; display:inline-block;">
+        <img id="chosenImage" width="130">
+        <p id="chosenName" style="color:black; font-weight:bold;"></p>
+    </div>
+</div>
 
 <button onclick="openGallery()">Kies / wijzig je personage</button>
 
+<!-- GALERIJ -->
 <div class="gallery-overlay" id="gallery">
+    <div style="position:absolute; top:20px; right:30px; font-size:30px; cursor:pointer;" onclick="closeGallery()">✖</div>
     <div class="gallery-grid" id="galleryGrid"></div>
 </div>
 
-    <script>
-        const chars = document.querySelectorAll(".character");
-        chars.forEach(c => {
-            c.addEventListener("click", () => {
-                const chosen = c.dataset.name;
-                localStorage.setItem("character", chosen);
-                window.location.href = "/player.html"; // Ga naar player scherm
-
-                <script>
-/* 🔥 NIEUW TOEGEVOEGD */
-
-const params = new URLSearchParams(window.location.search);
-const gameId = localStorage.getItem("gameId"); // we gebruiken localStorage (veiliger)
-const name = localStorage.getItem("playerName");
-
-function choose(character) {
-
-    if (!gameId || !name) {
-        alert("Er ontbreekt informatie. Ga opnieuw naar stap 1.");
-        window.location.href = "/player-step1.html";
-        return;
-    }
-
-    fetch("/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            gameId: gameId,
-            name: name,
-            character: character
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            alert("Je zit in het spel!");
-        } else {
-            alert(data.error);
-        }
-    });
-}
-</script>
-            });
-        });
-    </script>
+<!-- ============================= -->
+<!-- SCRIPT -->
+<!-- ============================= -->
 
 <script>
 
-const gameId = localStorage.getItem("gameId");
-const name = localStorage.getItem("playerName");
+/* ===============================
+   HANDMATIGE GAME ID
+=================================*/
 
-if (!gameId || !name) {
+const MANUAL_GAME_ID = "EFTEL-123456"; // 👈 HIER JE GAME ID
+
+const storedGameId = localStorage.getItem("gameId");
+
+if (storedGameId !== MANUAL_GAME_ID) {
     window.location.href = "/player-step1.html";
 }
 
+const gameId = MANUAL_GAME_ID;
+const name = localStorage.getItem("playerName");
+
+if (!name) {
+    window.location.href = "/player-step2.html";
+}
+
+/* ===============================
+   PERSONAGES
+=================================*/
+
 const characters = [
-    { name: "Jokie", img: "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9" },
-    { name: "Jet", img: "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4" },
-    { name: "Assepoester", img: "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08" }
+    {
+        name: "Jokie",
+        img: "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png"
+    },
+    {
+        name: "Jet",
+        img: "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png"
+    },
+    {
+        name: "Assepoester",
+        img: "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png"
+    }
 ];
+
+/* ===============================
+   RANDOM PERSONAGE BIJ START
+=================================*/
+
+window.addEventListener("load", () => {
+
+    const random = characters[Math.floor(Math.random() * characters.length)];
+
+    document.getElementById("chosenImage").src = random.img;
+    document.getElementById("chosenName").innerText = random.name;
+
+    chooseCharacter(random);
+});
+
+/* ===============================
+   GALERIJ OPEN / SLUIT
+=================================*/
 
 function openGallery() {
     document.getElementById("gallery").style.display = "block";
     loadGallery();
 }
+
+function closeGallery() {
+    document.getElementById("gallery").style.display = "none";
+}
+
+/* ===============================
+   GALERIJ LADEN
+=================================*/
 
 function loadGallery() {
 
@@ -98,20 +116,24 @@ function loadGallery() {
 
             if (taken.includes(char.name)) return;
 
-            const div = document.createElement("div");
-            div.className = "character-card";
+            const card = document.createElement("div");
+            card.className = "character-card";
 
-            div.innerHTML = `
+            card.innerHTML = `
                 <img src="${char.img}">
                 <div class="character-name">${char.name}</div>
             `;
 
-            div.onclick = () => chooseCharacter(char);
+            card.onclick = () => chooseCharacter(char);
 
-            grid.appendChild(div);
+            grid.appendChild(card);
         });
     });
 }
+
+/* ===============================
+   PERSONAGE KIEZEN
+=================================*/
 
 function chooseCharacter(char) {
 
@@ -140,6 +162,6 @@ function chooseCharacter(char) {
 }
 
 </script>
-    
+
 </body>
 </html>
