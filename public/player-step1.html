@@ -15,30 +15,36 @@
         <p id="errorMsg"></p>
     </div>
 
-    <script>
-        const form = document.getElementById("gameIdForm");
-        form.addEventListener("submit", e => {
-            e.preventDefault();
-            const id = document.getElementById("gameId").value.trim();
-            if(id === "") {
-                document.getElementById("errorMsg").innerText = "Vul een geldige Game-ID in!";
-            } else {
-                localStorage.setItem("gameId", id);
-                window.location.href = "/player-step2.html";
-            }
-        });
-    <script>
-const params = new URLSearchParams(window.location.search);
-const gameFromQR = params.get("game");
+   <script>
+document.addEventListener("DOMContentLoaded", function () {
 
-if (gameFromQR) {
-    document.getElementById("gameId").value = gameFromQR;
-}
+    const form = document.getElementById("gameIdForm");
+    const input = document.getElementById("gameId");
+    const error = document.getElementById("errorMsg");
 
-function goToStep2() {
-    const gameId = document.getElementById("gameId").value;
-    window.location.href = "/player-step2.html?game=" + gameId;
-}
+    // 🔥 Game-id uit QR automatisch invullen
+    const params = new URLSearchParams(window.location.search);
+    const gameFromQR = params.get("game");
+
+    if (gameFromQR) {
+        input.value = gameFromQR;
+    }
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault(); // 🚀 voorkomt reload
+
+        const id = input.value.trim();
+
+        if (id === "") {
+            error.innerText = "Vul een geldige Game-ID in!";
+            return;
+        }
+
+        localStorage.setItem("gameId", id);
+
+        // 🔥 GA NAAR STAP 2
+        window.location.href = "/player-step2.html";
+    });
+
+});
 </script>
-</body>
-</html>
