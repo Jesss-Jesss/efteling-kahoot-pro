@@ -93,12 +93,25 @@ app.post("/join", (req, res) => {
         return res.status(400).json({ error: "Ongeldige Game ID" });
     }
 
+    // 🔥 Controle: naam toegestaan?
+    if (!allowedNames.includes(name)) {
+        return res.status(403).json({
+            error: "Deze naam is niet toegestaan!"
+        });
+    }
+
+    // 🔥 Controle: naam al gebruikt?
+    if (currentGame.scores[name]) {
+        return res.status(400).json({
+            error: "Deze naam zit al in het spel!"
+        });
+    }
+
     currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
 
     res.json({ success: true });
 });
-
 /* -------- LEADERBOARD -------- */
 
 app.get("/leaderboard", (req, res) => {
@@ -115,6 +128,7 @@ app.get("/scores", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
