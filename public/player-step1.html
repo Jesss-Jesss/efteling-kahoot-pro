@@ -27,6 +27,18 @@
                 window.location.href = "/player-step2.html";
             }
         });
-    </script>
+    <script>
+const params = new URLSearchParams(window.location.search);
+const gameFromQR = params.get("game");
+
+if (gameFromQR) {
+    document.getElementById("gameId").value = gameFromQR;
+}
+
+function goToStep2() {
+    const gameId = document.getElementById("gameId").value;
+    window.location.href = "/player-step2.html?game=" + gameId;
+}
+</script>
 </body>
 </html>
