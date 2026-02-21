@@ -80,8 +80,10 @@ app.post("/start-game", (req, res) => {
 
 /* -------- PLAYER -------- */
 
+/* 🔥 FIX: /player naar step1 sturen */
+
 app.get("/player", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "player.html"));
+    res.sendFile(path.join(__dirname, "public", "player-step1.html"));
 });
 
 /* -------- JOIN -------- */
@@ -155,6 +157,7 @@ app.post("/reset-game", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
