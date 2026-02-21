@@ -95,6 +95,12 @@ app.post("/join", (req, res) => {
         return res.status(400).json({ error: "Ongeldige Game ID" });
     }
 
+    if (!currentGame) {
+    return res.status(400).json({
+        error: "Er is geen actieve game!"
+    });
+}
+
     // 🔥 Controle: naam toegestaan?
     if (!allowedNames.includes(name)) {
         return res.status(403).json({
@@ -157,6 +163,7 @@ app.post("/reset-game", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
