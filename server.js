@@ -20,6 +20,15 @@ app.use(session({
 
 let currentGame = null;
 
+const allowedNames = [
+    "Jestin",
+    "Luca",
+    "Jules",
+    "Levi",
+    "Bink",
+    "Symen"
+];
+
 /* -------- LOGIN -------- */
 
 app.get("/", (req, res) => {
@@ -106,5 +115,6 @@ app.get("/scores", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
