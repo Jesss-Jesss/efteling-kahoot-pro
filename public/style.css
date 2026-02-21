@@ -61,28 +61,33 @@ background:gold;
 
 .gallery-overlay {
     position: fixed;
-    inset: 0;
-    background: rgba(255,255,255,0.9);
+    bottom: 0;
+    left: 7cm;
+    right: 7cm;
+    height: 50vh; /* 👈 HALVE SCHERM */
+    background: rgba(255,255,255,0.97);
     display: none;
-    padding: 40px;
     overflow-y: auto;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    padding: 30px;
     z-index: 999;
 }
 
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* max 4 naast elkaar */
     gap: 20px;
 }
 
 .character-card {
     background: white;
-    border-radius: 15px;
-    padding: 10px;
+    border-radius: 20px;
+    padding: 15px;
     text-align: center;
     cursor: pointer;
     transition: 0.2s;
-    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
 .character-card:hover {
@@ -98,15 +103,5 @@ background:gold;
 .character-name {
     margin-top: 8px;
     font-weight: bold;
-}
-
-.edit-icon {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: white;
-    border-radius: 50%;
-    padding: 5px;
-    font-size: 12px;
 }
 
