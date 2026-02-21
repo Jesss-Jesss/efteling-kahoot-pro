@@ -31,6 +31,41 @@
                 const chosen = c.dataset.name;
                 localStorage.setItem("character", chosen);
                 window.location.href = "/player.html"; // Ga naar player scherm
+
+                <script>
+/* 🔥 NIEUW TOEGEVOEGD */
+
+const params = new URLSearchParams(window.location.search);
+const gameId = localStorage.getItem("gameId"); // we gebruiken localStorage (veiliger)
+const name = localStorage.getItem("playerName");
+
+function choose(character) {
+
+    if (!gameId || !name) {
+        alert("Er ontbreekt informatie. Ga opnieuw naar stap 1.");
+        window.location.href = "/player-step1.html";
+        return;
+    }
+
+    fetch("/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            gameId: gameId,
+            name: name,
+            character: character
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Je zit in het spel!");
+        } else {
+            alert(data.error);
+        }
+    });
+}
+</script>
             });
         });
     </script>
