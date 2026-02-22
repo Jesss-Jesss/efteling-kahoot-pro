@@ -93,31 +93,42 @@ app.get("/player", (req, res) => {
 app.post("/join", (req, res) => {
     const { name, gameId, character } = req.body;
 
-    if (!currentGame || gameId !== currentGame.id) {
-        return res.status(400).json({ error: "Ongeldige Game ID" });
-    }
-
     if (!currentGame) {
-    return res.status(400).json({
-        error: "Er is geen actieve game!"
-    });
-}
-
-// Als speler al bestaat → update character
-const existingPlayer = currentGame.players.find(p => p.name === name);
-
-if (existingPlayer) {
-    existingPlayer.character = character;
-    return res.json({ success: true });
-}
-
-    // 🔥 Controle: naam al gebruikt?
-    if (currentGame.scores[name]) {
         return res.status(400).json({
-            error: "Deze naam zit al in het spel!"
+            error: "Er is geen actieve game!"
         });
     }
 
+    if (gameId !== currentGame.id) {
+        return res.status(400).json({
+            error: "Ongeldige Game ID"
+        });
+    }
+
+    if (!allowedNames.includes(name)) {
+        return res.status(403).json({
+            error: "Deze naam is niet toegestaan!"
+        });
+    }
+
+    // 🔥 Controle: character al bezet?
+    const characterTaken = currentGame.players.find(p => p.character === character);
+
+    if (characterTaken && characterTaken.name !== name) {
+        return res.status(400).json({
+            error: "Dit personage is al gekozen!"
+        });
+    }
+
+    // 🔥 Bestaat speler al → update character
+    const existingPlayer = currentGame.players.find(p => p.name === name);
+
+    if (existingPlayer) {
+        existingPlayer.character = character;
+        return res.json({ success: true });
+    }
+
+    // 🔥 Nieuwe speler
     currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
 
@@ -166,6 +177,7 @@ app.post("/reset-game", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
