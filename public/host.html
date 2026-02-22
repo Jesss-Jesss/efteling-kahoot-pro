@@ -4,65 +4,93 @@
     <meta charset="UTF-8">
     <title>Efteling Kahoot Pro - Dashboard</title>
     <link rel="stylesheet" href="/style.css">
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/script.js" defer></script>
 </head>
 <body>
-    <div id="background"></div>
 
-    <div id="dashboard">
-        <h1>🎢 Efteling Kahoot Pro</h1>
+<div id="dashboard">
 
-        <!-- Game code -->
-        <div class="block">
-            <h2>Game Code</h2>
-            <p id="gameCode">---</p>
-        </div>
+    <h1>🎢 Efteling Kahoot Pro</h1>
 
-        <!-- Spelers -->
-        <div class="block">
-            <h2>Spelers</h2>
-            <ul id="playersList"></ul>
-        </div>
-
-        <!-- Foutmeldingen -->
-        <div class="block">
-            <h2>Foutmeldingen</h2>
-            <ul id="errorsList"></ul>
-        </div>
-
-        <!-- Control -->
-        <div class="block">
-            <h2>Control</h2>
-            <button id="prevQuestion">Vorige</button>
-            <button id="nextQuestion">Volgende</button>
-            <button id="startQuestion">Start Vraag</button>
-            <button id="stopQuestion">Stop Vraag</button>
-        </div>
-
-        <!-- Antwoorden -->
-        <div class="block">
-            <h2>Antwoorden</h2>
-            <ul id="answersList"></ul>
-        </div>
+    <!-- GAME CODE -->
+    <div class="block">
+        <h2>Game Code</h2>
+        <p id="gameCode">EFTEL-123456</p>
+        <img id="qr" width="200">
     </div>
-</body>
-</html>
 
-<h2 id="gameCode"></h2>
-<img id="qr">
+    <!-- SPELERS -->
+    <div class="block">
+        <h2>Spelers</h2>
+        <ul id="playersList"></ul>
+    </div>
+
+    <!-- CONTROL -->
+    <div class="block">
+        <h2>Control</h2>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+
+</div>
 
 <script>
-fetch("/start-game", { method: "POST" })
-.then(res => res.json())
-.then(data => {
 
-    const fullUrl = window.location.origin + data.playerUrl;
+// 🔒 VASTE GAME ID (MOET GELIJK ZIJN AAN SERVER)
+const MANUAL_GAME_ID = "EFTEL-123456";
+
+// 📌 QR CODE MAKEN
+window.addEventListener("load", () => {
+
+    const fullUrl = window.location.origin + "/player";
 
     document.getElementById("gameCode").innerText =
-        "Game ID: " + data.gameId;
+        "Game ID: " + MANUAL_GAME_ID;
 
     document.getElementById("qr").src =
         "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + fullUrl;
+
+    loadPlayers();
+
+    // 🔄 elke 2 seconden spelers vernieuwen
+    setInterval(loadPlayers, 2000);
 });
+
+
+// 📌 SPELERS LADEN
+function loadPlayers() {
+
+    fetch("/scores-full")
+    .then(res => res.json())
+    .then(data => {
+
+        const list = document.getElementById("playersList");
+        list.innerHTML = "";
+
+        if (!data.players) return;
+
+        data.players.forEach(player => {
+
+            const li = document.createElement("li");
+            li.innerText = player.name + " (" + player.character + ")";
+            list.appendChild(li);
+
+        });
+
+    });
+}
+
+
+// 🔄 GAME RESETTEN
+function resetGame() {
+
+    fetch("/reset-game", { method: "POST" })
+    .then(() => {
+        alert("Game gereset!");
+        location.reload();
+    });
+
+}
+
 </script>
+
+</body>
+</html>
