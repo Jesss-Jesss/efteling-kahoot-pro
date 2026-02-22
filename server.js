@@ -103,12 +103,13 @@ app.post("/join", (req, res) => {
     });
 }
 
-    // 🔥 Controle: naam toegestaan?
-    if (!allowedNames.includes(name)) {
-        return res.status(403).json({
-            error: "Deze naam is niet toegestaan!"
-        });
-    }
+// Als speler al bestaat → update character
+const existingPlayer = currentGame.players.find(p => p.name === name);
+
+if (existingPlayer) {
+    existingPlayer.character = character;
+    return res.json({ success: true });
+}
 
     // 🔥 Controle: naam al gebruikt?
     if (currentGame.scores[name]) {
@@ -165,6 +166,7 @@ app.post("/reset-game", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
