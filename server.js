@@ -7,6 +7,9 @@ const PORT = process.env.PORT || 10000;
 
 const DASHBOARD_PASSWORD = "1234";
 
+// 🔒 VASTE GAME ID
+const MANUAL_GAME_ID = "EFTEL-123456";
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -17,7 +20,12 @@ app.use(session({
     saveUninitialized: true
 }));
 
-let currentGame = null;
+// ✅ FIX: game bestaat altijd
+let currentGame = {
+    id: MANUAL_GAME_ID,
+    players: [],
+    scores: {}
+};
 
 const allowedNames = [
     "Jestin",
@@ -49,7 +57,7 @@ app.post("/host-login", (req, res) => {
     res.send("❌ Ongeldig wachtwoord");
 });
 
-/* -------- HOST (BEVEILIGD) -------- */
+/* -------- HOST -------- */
 
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) {
@@ -60,19 +68,14 @@ app.get("/host", (req, res) => {
 
 /* -------- START GAME -------- */
 
-// 🔒 VASTE GAME ID
-const MANUAL_GAME_ID = "EFTEL-123456"; // <-- HIER JE ID
-
 app.post("/start-game", (req, res) => {
     if (!req.session.loggedIn) {
         return res.status(403).send("Niet toegestaan");
     }
 
-    currentGame = {
-        id: MANUAL_GAME_ID,
-        players: [],
-        scores: {}
-    };
+    // ✅ FIX: reset alleen inhoud, niet null maken
+    currentGame.players = [];
+    currentGame.scores = {};
 
     res.json({
         gameId: MANUAL_GAME_ID,
@@ -82,8 +85,6 @@ app.post("/start-game", (req, res) => {
 
 /* -------- PLAYER -------- */
 
-/* 🔥 FIX: /player naar step1 sturen */
-
 app.get("/player", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "player-step1.html"));
 });
@@ -92,12 +93,6 @@ app.get("/player", (req, res) => {
 
 app.post("/join", (req, res) => {
     const { name, gameId, character } = req.body;
-
-    if (!currentGame) {
-        return res.status(400).json({
-            error: "Er is geen actieve game!"
-        });
-    }
 
     if (gameId !== currentGame.id) {
         return res.status(400).json({
@@ -111,16 +106,16 @@ app.post("/join", (req, res) => {
         });
     }
 
-    // 🔥 Controle: character al bezet?
-    const characterTaken = currentGame.players.find(p => p.character === character);
+    const characterTaken = currentGame.players.find(
+        p => p.character === character && p.name !== name
+    );
 
-    if (characterTaken && characterTaken.name !== name) {
+    if (characterTaken) {
         return res.status(400).json({
             error: "Dit personage is al gekozen!"
         });
     }
 
-    // 🔥 Bestaat speler al → update character
     const existingPlayer = currentGame.players.find(p => p.name === name);
 
     if (existingPlayer) {
@@ -128,12 +123,12 @@ app.post("/join", (req, res) => {
         return res.json({ success: true });
     }
 
-    // 🔥 Nieuwe speler
     currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
 
     res.json({ success: true });
 });
+
 /* -------- LEADERBOARD -------- */
 
 app.get("/leaderboard", (req, res) => {
@@ -141,34 +136,30 @@ app.get("/leaderboard", (req, res) => {
 });
 
 app.get("/scores", (req, res) => {
-    if (!currentGame) return res.json({});
     res.json(currentGame.scores);
 });
 
-/* -------- EXTRA TOEGEVOEGD -------- */
+/* -------- SCORES FULL -------- */
 
-// 🔥 Nieuwe uitgebreide scores route (voor leaderboard met gameId)
 app.get("/scores-full", (req, res) => {
-    if (!currentGame) return res.json({});
-
     res.json({
         gameId: currentGame.id,
-        scores: currentGame.scores
+        scores: currentGame.scores,
+        players: currentGame.players
     });
 });
 
-// 🔥 Player route fix (als je geen player.html hebt)
-app.get("/player-step1", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "player-step1.html"));
-});
+/* -------- RESET GAME -------- */
 
-// 🔥 Game reset (alleen host)
 app.post("/reset-game", (req, res) => {
     if (!req.session.loggedIn) {
         return res.status(403).send("Niet toegestaan");
     }
 
-    currentGame = null;
+    // ✅ FIX: geen null meer
+    currentGame.players = [];
+    currentGame.scores = {};
+
     res.json({ success: true });
 });
 
@@ -177,13 +168,3 @@ app.post("/reset-game", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
-
-
-
-
-
-
-
-
-
-
