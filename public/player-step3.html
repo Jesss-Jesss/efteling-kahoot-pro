@@ -129,8 +129,7 @@ function loadGallery() {
                 <div class="character-name">${char.name}</div>
             `;
 
-            // 🔥 ALS BEZET → GRIJS
-            if (takenCharacters.includes(char.name)) {
+            if (takenCharacters.includes(char.name) && char.name !== document.getElementById("chosenName").innerText) {
                 card.classList.add("disabled");
             } else {
                 card.onclick = () => chooseCharacter(char);
@@ -140,6 +139,12 @@ function loadGallery() {
         });
     });
 }
+
+    setInterval(() => {
+    if (document.getElementById("gallery").style.display === "block") {
+        loadGallery();
+    }
+},1000);
 
 /* ===============================
    PERSONAGE KIEZEN
