@@ -1,7 +1,6 @@
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
-const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -61,20 +60,23 @@ app.get("/host", (req, res) => {
 
 /* -------- START GAME -------- */
 
+// 🔒 VASTE GAME ID
+const MANUAL_GAME_ID = "EFTEL-123456"; // <-- HIER JE ID
+
 app.post("/start-game", (req, res) => {
     if (!req.session.loggedIn) {
         return res.status(403).send("Niet toegestaan");
     }
 
     currentGame = {
-        id: uuidv4().slice(0, 6).toUpperCase(),
+        id: MANUAL_GAME_ID,
         players: [],
         scores: {}
     };
 
     res.json({
-        gameId: currentGame.id,
-        playerUrl: "/player?game=" + currentGame.id
+        gameId: MANUAL_GAME_ID,
+        playerUrl: "/player"
     });
 });
 
@@ -163,6 +165,7 @@ app.post("/reset-game", (req, res) => {
 app.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
