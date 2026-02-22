@@ -105,3 +105,21 @@ background:gold;
     font-weight: bold;
 }
 
+
+/* 🔥 Namen zwart */
+.character-name {
+    color: black !important;
+    font-weight: bold;
+}
+
+/* 🔥 Sluit kruis zwart */
+.gallery-overlay div[onclick="closeGallery()"] {
+    color: black;
+}
+
+/* 🔥 Disabled personage */
+.character-card.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    filter: grayscale(100%);
+}
