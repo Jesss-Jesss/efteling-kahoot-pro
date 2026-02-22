@@ -107,14 +107,12 @@ function loadGallery() {
     .then(res => res.json())
     .then(data => {
 
-        const taken = data.takenCharacters || [];
         const grid = document.getElementById("galleryGrid");
-
         grid.innerHTML = "";
 
-        characters.forEach(char => {
+        const takenCharacters = (data.players || []).map(p => p.character);
 
-            if (taken.includes(char.name)) return;
+        characters.forEach(char => {
 
             const card = document.createElement("div");
             card.className = "character-card";
@@ -124,7 +122,12 @@ function loadGallery() {
                 <div class="character-name">${char.name}</div>
             `;
 
-            card.onclick = () => chooseCharacter(char);
+            // 🔥 ALS BEZET → GRIJS
+            if (takenCharacters.includes(char.name)) {
+                card.classList.add("disabled");
+            } else {
+                card.onclick = () => chooseCharacter(char);
+            }
 
             grid.appendChild(card);
         });
@@ -137,7 +140,7 @@ function loadGallery() {
 
 function chooseCharacter(char) {
 
-    fetch("/choose-character", {
+    fetch("/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -157,7 +160,7 @@ function chooseCharacter(char) {
         document.getElementById("chosenImage").src = char.img;
         document.getElementById("chosenName").innerText = char.name;
 
-        document.getElementById("gallery").style.display = "none";
+        closeGallery();
     });
 }
 
