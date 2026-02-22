@@ -18,33 +18,29 @@
    <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // 🔒 VASTE GAME ID
+const MANUAL_GAME_ID = "EFTEL-123456"; // <-- HIER JOUW ID
+
     const form = document.getElementById("gameIdForm");
     const input = document.getElementById("gameId");
     const error = document.getElementById("errorMsg");
 
-    // 🔥 Game-id uit QR automatisch invullen
-    const params = new URLSearchParams(window.location.search);
-    const gameFromQR = params.get("game");
 
-    if (gameFromQR) {
-        input.value = gameFromQR;
+form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const id = input.value.trim();
+
+    if (id !== MANUAL_GAME_ID) {
+        error.innerText = "❌ Ongeldige Game-ID!";
+        return;
     }
 
-    form.addEventListener("submit", function (e) {
-        e.preventDefault(); // 🚀 voorkomt reload
+    // Alleen juiste ID wordt opgeslagen
+    localStorage.setItem("gameId", MANUAL_GAME_ID);
 
-        const id = input.value.trim();
-
-        if (id === "") {
-            error.innerText = "Vul een geldige Game-ID in!";
-            return;
-        }
-
-        localStorage.setItem("gameId", id);
-
-        // 🔥 GA NAAR STAP 2
-        window.location.href = "/player-step2.html";
-    });
+    window.location.href = "/player-step2.html";
+});
 
 });
 </script>
