@@ -3,62 +3,30 @@
 <head>
 <title>Leaderboard</title>
 <link rel="stylesheet" href="/style.css">
-<script src="/socket.io/socket.io.js"></script>
-</head>
-<body>
-
-<h1>🎢 Efteling Quiz</h1>
-<p>Ga naar: <b>/player</b> en voer de code in</p>
-<img id="qr">
-
-<div id="main"></div>
-
 <script>
-const socket=io();
 
-fetch("/gamecode").then(r=>r.json()).then(d=>{
-document.getElementById("qr").src=
-`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://efteling-kahoot-pro.onrender.com/player?code=${d.code}`;
-});
+function loadPlayers() {
+    fetch("/scores-full")
+    .then(res => res.json())
+    .then(data => {
 
-socket.on("phaseUpdate",phase=>{
-if(phase==="lobby"){
-document.getElementById("main").innerHTML="<h2>Wacht tot de quiz start...</h2>";
+        let html = "<h2>Spelers</h2>";
+
+        if (!data.players || data.players.length === 0) {
+            html += "<p>Wacht tot de quiz start...</p>";
+        } else {
+            data.players.forEach(p => {
+                html += `<div>${p.name} (${p.character})</div>`;
+            });
+        }
+
+        document.getElementById("main").innerHTML = html;
+    });
 }
-});
 
-socket.on("newQuestion",q=>{
-document.getElementById("main").innerHTML=`<h2>${q}</h2><div id="timer"></div>`;
-});
+setInterval(loadPlayers, 2000);
+loadPlayers();
 
-socket.on("startTimer",sec=>{
-let t=sec;
-const el=document.getElementById("timer");
-el.innerText=t;
-const i=setInterval(()=>{
-t--;el.innerText=t;
-if(t<=0)clearInterval(i);
-},1000);
-});
-
-socket.on("showResults",answers=>{
-const grouped={};
-answers.forEach(a=>{
-if(!grouped[a.normalized]){
-grouped[a.normalized]={text:a.original,count:0,correct:a.correct};
-}
-grouped[a.normalized].count++;
-});
-
-let html="<h2>Resultaten</h2>";
-Object.values(grouped).forEach(a=>{
-html+=`
-${a.text} ${a.correct?"✅":"❌"} (${a.count})
-<div class="bar"><div class="fill" style="width:${a.count*20}px"></div></div>
-`;
-});
-document.getElementById("main").innerHTML=html;
-});
 </script>
 
 </body>
