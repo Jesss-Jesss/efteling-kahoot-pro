@@ -135,39 +135,25 @@ app.post("/join", (req, res) => {
        ❌ DUBBELE NAAM BLOKKEREN
     ===============================*/
 
-    const existingPlayer = currentGame.players.find(
-        p => p.name.toLowerCase() === name.toLowerCase()
-    );
+const existingPlayer = currentGame.players.find(
+    p => p.name.toLowerCase() === name.toLowerCase()
+);
 
-    if (existingPlayer) {
+if (existingPlayer) {
 
-        // Als dezelfde speler terugkomt → update character
-        existingPlayer.character = character;
-        io.emit("gameUpdate", currentGame);
+    existingPlayer.character = character;
 
-        io.emit("phaseUpdate", "lobby");
-
-        return res.json({ success: true });
-    }
-
-    // Als iemand anders al die naam gebruikt (extra veilige check)
-    const nameUsed = currentGame.players.some(
-        p => p.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (nameUsed) {
-        return res.status(400).json({
-            error: "Deze naam is al in gebruik!"
-        });
-    }
+    io.emit("gameUpdate", currentGame);
+    return res.json({ success: true });
+}
 
     /* ===============================
        ❌ PERSONAGE CHECK
     ===============================*/
 
-    const characterTaken = currentGame.players.find(
-        p => p.character === character
-    );
+   const characterTaken = currentGame.players.find(
+    p => p.character === character && p.name !== name
+);
 
     if (characterTaken) {
         return res.status(400).json({
@@ -230,6 +216,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
