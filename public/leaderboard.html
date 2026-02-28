@@ -3,9 +3,46 @@
 <head>
 <title>Leaderboard</title>
 <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>🎢 Leaderboard</h1>
+
+<!-- ✅ SLIMME QR -->
+<img id="qr" width="250">
+
+<!-- ✅ MAIN CONTAINER -->
+<div id="main">
+<p>Wacht tot de quiz start...</p>
+</div>
+
 <script>
 
+const GAME_ID = "EFTEL-123456";
+
+/* ===============================
+   SLIMME QR
+=================================*/
+
+window.addEventListener("load", () => {
+
+    const fullUrl =
+        window.location.origin +
+        "/player-step2.html?gameId=" +
+        GAME_ID;
+
+    document.getElementById("qr").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+        encodeURIComponent(fullUrl);
+
+});
+
+/* ===============================
+   PLAYERS LADEN
+=================================*/
+
 function loadPlayers() {
+
     fetch("/scores-full")
     .then(res => res.json())
     .then(data => {
@@ -15,8 +52,15 @@ function loadPlayers() {
         if (!data.players || data.players.length === 0) {
             html += "<p>Wacht tot de quiz start...</p>";
         } else {
+
             data.players.forEach(p => {
-                html += `<div>${p.name} (${p.character})</div>`;
+                html += `
+                    <div class="playerCard">
+                        <strong>${p.name}</strong>
+                        <br>
+                        🎭 ${p.character}
+                    </div>
+                `;
             });
         }
 
