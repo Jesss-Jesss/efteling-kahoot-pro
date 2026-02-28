@@ -131,15 +131,15 @@ background:gold;
 ========================= */
 
 #galleryOverlay {
+    display: none;
     position: fixed;
     top: 0;
-    right: 0;
-    width: 50%;
+    left: 0;
+    width: 100%;
     height: 100%;
     background: white;
+    overflow-y: auto; /* ✅ BELANGRIJK */
     z-index: 9999;
-    display: none;
-    flex-direction: column;
 }
 
 /* Telefoon = fullscreen */
@@ -179,4 +179,11 @@ background:gold;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 15px;
+}
+
+#galleryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 20px;
 }
