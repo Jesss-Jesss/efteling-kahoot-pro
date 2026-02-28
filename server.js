@@ -102,10 +102,14 @@ app.get("/player", (req, res) => {
 /* -------- JOIN -------- */
 
 app.post("/join", (req, res) => {
+
     const { name, gameId, character } = req.body;
-    if (currentGame.players.some(p => p.name === name)) {
-    // Naam bestaat al → weigeren als iemand anders probeert dezelfde naam te gebruiken
-}
+
+    console.log("JOIN REQUEST:", req.body);
+
+    /* ===============================
+       GAME ID CHECK
+    ===============================*/
 
     if (gameId !== currentGame.id) {
         return res.status(400).json({
@@ -113,14 +117,51 @@ app.post("/join", (req, res) => {
         });
     }
 
+    /* ===============================
+       NAAM CHECK (WHITELIST)
+    ===============================*/
+
     if (!allowedNames.includes(name)) {
         return res.status(403).json({
             error: "Deze naam is niet toegestaan!"
         });
     }
 
+    /* ===============================
+       ❌ DUBBELE NAAM BLOKKEREN
+    ===============================*/
+
+    const existingPlayer = currentGame.players.find(
+        p => p.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (existingPlayer) {
+
+        // Als dezelfde speler terugkomt → update character
+        existingPlayer.character = character;
+
+        io.emit("phaseUpdate", "lobby");
+
+        return res.json({ success: true });
+    }
+
+    // Als iemand anders al die naam gebruikt (extra veilige check)
+    const nameUsed = currentGame.players.some(
+        p => p.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (nameUsed) {
+        return res.status(400).json({
+            error: "Deze naam is al in gebruik!"
+        });
+    }
+
+    /* ===============================
+       ❌ PERSONAGE CHECK
+    ===============================*/
+
     const characterTaken = currentGame.players.find(
-        p => p.character === character && p.name !== name
+        p => p.character === character
     );
 
     if (characterTaken) {
@@ -129,29 +170,21 @@ app.post("/join", (req, res) => {
         });
     }
 
-const nameTaken = currentGame.players.find(p => p.name === name);
+    /* ===============================
+       ✅ PLAYER TOEVOEGEN
+    ===============================*/
 
-if (nameTaken && nameTaken.name !== name) {
-    return res.status(400).json({
-        error: "Deze naam bestaat al!"
+    currentGame.players.push({
+        name,
+        character
     });
-}
 
-if (nameTaken) {
-
-    // Update character als dezelfde persoon terugkomt
-    nameTaken.character = character;
-
-    return res.json({ success: true });
-}
-
-    currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
+
     io.emit("phaseUpdate", "lobby");
 
     res.json({ success: true });
 });
-
 /* -------- LEADERBOARD -------- */
 
 app.get("/leaderboard", (req, res) => {
@@ -191,5 +224,6 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
