@@ -22,9 +22,17 @@
 <button onclick="openGallery()">Kies / wijzig je personage</button>
 
 <!-- GALERIJ -->
-<div class="gallery-overlay" id="gallery">
-    <div style="position:absolute; top:20px; right:30px; font-size:30px; cursor:pointer;" onclick="closeGallery()">✖</div>
-    <div class="gallery-grid" id="galleryGrid"></div>
+
+    <div id="galleryOverlay">
+
+    <div id="galleryHeader">
+        <button id="closeGallery">✖</button>
+    </div>
+
+    <div id="galleryContent">
+        <div id="galleryGrid"></div>
+    </div>
+
 </div>
 
 <!-- ============================= -->
