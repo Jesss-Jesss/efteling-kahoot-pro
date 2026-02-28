@@ -15,7 +15,6 @@
     <div class="block">
         <h2>Game Code</h2>
         <p id="gameCode">EFTEL-123456</p>
-        <img id="qr" width="200">
     </div>
 
     <!-- SPELERS -->
@@ -44,9 +43,6 @@ window.addEventListener("load", () => {
 
     document.getElementById("gameCode").innerText =
         "Game ID: " + MANUAL_GAME_ID;
-
-    document.getElementById("qr").src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + fullUrl;
 
     loadPlayers();
 
@@ -94,3 +90,4 @@ function resetGame() {
 
 </body>
 </html>
+
