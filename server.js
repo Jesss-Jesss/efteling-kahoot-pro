@@ -1,8 +1,12 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const path = require("path");
 const session = require("express-session");
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 const PORT = process.env.PORT || 10000;
 
 const DASHBOARD_PASSWORD = "1234";
@@ -26,6 +30,12 @@ let currentGame = {
     players: [],
     scores: {}
 };
+
+io.on("connection", (socket) => {
+    console.log("Nieuwe gebruiker verbonden");
+
+    socket.emit("phaseUpdate", "lobby");
+});
 
 const allowedNames = [
     "Jestin",
@@ -125,6 +135,7 @@ app.post("/join", (req, res) => {
 
     currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
+    io.emit("phaseUpdate", "lobby");
 
     res.json({ success: true });
 });
@@ -165,6 +176,7 @@ app.post("/reset-game", (req, res) => {
 
 /* -------- SERVER -------- */
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
