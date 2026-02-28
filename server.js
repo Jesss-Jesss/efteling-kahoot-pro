@@ -103,6 +103,9 @@ app.get("/player", (req, res) => {
 
 app.post("/join", (req, res) => {
     const { name, gameId, character } = req.body;
+    if (currentGame.players.some(p => p.name === name)) {
+    // Naam bestaat al → weigeren als iemand anders probeert dezelfde naam te gebruiken
+}
 
     if (gameId !== currentGame.id) {
         return res.status(400).json({
@@ -126,12 +129,21 @@ app.post("/join", (req, res) => {
         });
     }
 
-    const existingPlayer = currentGame.players.find(p => p.name === name);
+const nameTaken = currentGame.players.find(p => p.name === name);
 
-    if (existingPlayer) {
-        existingPlayer.character = character;
-        return res.json({ success: true });
-    }
+if (nameTaken && nameTaken.name !== name) {
+    return res.status(400).json({
+        error: "Deze naam bestaat al!"
+    });
+}
+
+if (nameTaken) {
+
+    // Update character als dezelfde persoon terugkomt
+    nameTaken.character = character;
+
+    return res.json({ success: true });
+}
 
     currentGame.players.push({ name, character });
     currentGame.scores[name] = 0;
@@ -179,4 +191,5 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
