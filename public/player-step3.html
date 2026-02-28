@@ -39,25 +39,33 @@
 <!-- SCRIPT -->
 <!-- ============================= -->
 
+
+
 <script>
 
-/* ===============================
-   HANDMATIGE GAME ID
-=================================*/
-
-const MANUAL_GAME_ID = "EFTEL-123456"; // 👈 HIER JE GAME ID
-
+const MANUAL_GAME_ID = "EFTEL-123456";
 const storedGameId = localStorage.getItem("gameId");
-
-if (storedGameId !== MANUAL_GAME_ID) {
-    window.location.href = "/player-step1.html";
-}
-
-const gameId = MANUAL_GAME_ID;
 const name = localStorage.getItem("playerName");
 
-if (!name) {
-    window.location.href = "/player-step2.html";
+/* ===============================
+   CHECK REFRESH / INVALID SESSION
+=================================*/
+
+if (!storedGameId || !name) {
+
+    document.body.innerHTML = `
+        <div style="text-align:center; margin-top:100px;">
+            <h2>❌ Sessie verlopen</h2>
+            <p>Ga terug naar de home pagina</p>
+            <button onclick="goHome()">➡ Ga naar Home</button>
+        </div>
+    `;
+
+}
+
+function goHome() {
+    localStorage.clear();
+    window.location.href = "/player-step1.html";
 }
 
 /* ===============================
