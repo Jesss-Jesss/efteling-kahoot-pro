@@ -16,6 +16,15 @@
     </div>
 
    <script>
+
+const params = new URLSearchParams(window.location.search);
+const autoGameId = params.get("gameId");
+
+if (autoGameId === "EFTEL-123456") {
+    localStorage.setItem("gameId", autoGameId);
+    window.location.href = "/player-step2.html";
+}
+       
 document.addEventListener("DOMContentLoaded", function () {
 
     // 🔒 VASTE GAME ID
