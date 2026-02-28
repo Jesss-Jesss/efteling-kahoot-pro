@@ -34,6 +34,9 @@ let currentGame = {
 io.on("connection", (socket) => {
     console.log("Nieuwe gebruiker verbonden");
 
+    // Stuur direct huidige game state
+    socket.emit("gameUpdate", currentGame);
+
     socket.emit("phaseUpdate", "lobby");
 });
 
@@ -106,6 +109,7 @@ app.post("/join", (req, res) => {
     const { name, gameId, character } = req.body;
 
     console.log("JOIN REQUEST:", req.body);
+    console.log("CURRENT PLAYERS:", currentGame.players);
 
     /* ===============================
        GAME ID CHECK
@@ -139,6 +143,7 @@ app.post("/join", (req, res) => {
 
         // Als dezelfde speler terugkomt → update character
         existingPlayer.character = character;
+        io.emit("gameUpdate", currentGame);
 
         io.emit("phaseUpdate", "lobby");
 
@@ -178,7 +183,7 @@ app.post("/join", (req, res) => {
         name,
         character
     });
-
+io.emit("gameUpdate", currentGame);
     currentGame.scores[name] = 0;
 
     io.emit("phaseUpdate", "lobby");
@@ -215,6 +220,7 @@ app.post("/reset-game", (req, res) => {
     // ✅ FIX: geen null meer
     currentGame.players = [];
     currentGame.scores = {};
+    io.emit("gameUpdate", currentGame);
 
     res.json({ success: true });
 });
@@ -224,6 +230,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
