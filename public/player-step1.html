@@ -1,55 +1,55 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Game Join</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Game Join</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div id="step1">
-        <h1>🎢 Vul de Game-ID in</h1>
-        <form id="gameIdForm">
-            <input type="text" id="gameId" placeholder="Bijv. EFTEL-1234" required>
-            <button type="submit">Volgende</button>
-        </form>
-        <p id="errorMsg"></p>
-    </div>
 
-   <script>
+<div id="step1">
+<h1>🎢 Vul de Game-ID in</h1>
 
-const params = new URLSearchParams(window.location.search);
-const autoGameId = params.get("gameId");
+<form id="gameIdForm">
+<input type="text" id="gameId" placeholder="EFTEL-123456" required>
+<button type="submit">Volgende</button>
+</form>
 
-if (autoGameId === "EFTEL-123456") {
-    localStorage.setItem("gameId", autoGameId);
-    window.location.href = "/player-step2.html";
+<p id="errorMsg"></p>
+</div>
+
+<script>
+
+/* ============================= */
+/* 🔐 UNIEKE PLAYER ID MAKEN */
+/* ============================= */
+
+if (!localStorage.getItem("playerId")) {
+    localStorage.setItem("playerId", crypto.randomUUID());
 }
-       
-document.addEventListener("DOMContentLoaded", function () {
 
-    // 🔒 VASTE GAME ID
-const MANUAL_GAME_ID = "EFTEL-123456"; // <-- HIER JOUW ID
+/* ============================= */
+/* GAME ID CHECK */
+/* ============================= */
 
-    const form = document.getElementById("gameIdForm");
-    const input = document.getElementById("gameId");
-    const error = document.getElementById("errorMsg");
+const MANUAL_GAME_ID = "EFTEL-123456";
 
-
-form.addEventListener("submit", function (e) {
+document.getElementById("gameIdForm").addEventListener("submit", function(e){
     e.preventDefault();
 
-    const id = input.value.trim();
+    const id = document.getElementById("gameId").value.trim();
 
     if (id !== MANUAL_GAME_ID) {
-        error.innerText = "❌ Ongeldige Game-ID!";
+        document.getElementById("errorMsg").innerText = "❌ Ongeldige Game-ID";
         return;
     }
 
-    // Alleen juiste ID wordt opgeslagen
     localStorage.setItem("gameId", MANUAL_GAME_ID);
 
     window.location.href = "/player-step2.html";
 });
 
-});
 </script>
+
+</body>
+</html>
