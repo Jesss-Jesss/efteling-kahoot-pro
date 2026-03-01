@@ -141,6 +141,14 @@ const existingPlayer = currentGame.players.find(
 
 if (existingPlayer) {
 
+    // ❌ Als naam al bestaat EN niet deze sessie → blokkeren
+    if (req.session.playerName !== name) {
+        return res.status(400).json({
+            error: "Deze naam is al in gebruik!"
+        });
+    }
+
+    // ✅ Zelfde speler refresht → karakter wijzigen mag
     existingPlayer.character = character;
 
     io.emit("gameUpdate", currentGame);
@@ -164,7 +172,7 @@ if (existingPlayer) {
     /* ===============================
        ✅ PLAYER TOEVOEGEN
     ===============================*/
-
+    req.session.playerName = name;
     currentGame.players.push({
         name,
         character
@@ -216,6 +224,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
