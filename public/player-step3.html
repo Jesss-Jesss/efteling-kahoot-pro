@@ -53,6 +53,17 @@ const name = localStorage.getItem("playerName");
 
 if (!storedGameId || !name) {
 
+    fetch("/scores-full")
+.then(res => res.json())
+.then(data => {
+
+    const exists = data.players.find(p => p.name === name);
+
+    if (!exists) {
+        goHome();
+    }
+});
+
     document.body.innerHTML = `
         <div style="text-align:center; margin-top:100px;">
             <h2>❌ Sessie verlopen</h2>
