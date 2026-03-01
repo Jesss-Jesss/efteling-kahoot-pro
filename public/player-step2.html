@@ -1,46 +1,85 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Naam invullen</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Naam invullen</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div id="step2">
-        <h1>🎢 Vul je naam in</h1>
-        <form id="nameForm">
-            <input type="text" id="playerName" placeholder="Naam" required>
-            <button type="submit">Volgende</button>
-        </form>
-        <p id="nameError"></p>
-    </div>
 
-    <script>
-        const allowedNames = ["Jestin", "Luca", "Jules", "Bink"]; // Alleen deze namen toegestaan
-        const form = document.getElementById("nameForm");
+<div id="step2">
+<h1>🎢 Vul je naam in</h1>
 
-        form.addEventListener("submit", e => {
-            e.preventDefault();
-            const name = document.getElementById("playerName").value.trim();
-            if(!allowedNames.includes(name)) {
-                document.getElementById("nameError").innerText = "Naam niet toegestaan!";
-            } else {
-                const playerId = crypto.randomUUID();
+<form id="nameForm">
+<input type="text" id="playerName" placeholder="Naam" required>
+<button type="submit">Volgende</button>
+</form>
 
-localStorage.setItem("playerName", name);
-localStorage.setItem("playerId", playerId);
+<p id="nameError"></p>
+</div>
 
-window.location.href = "/player-step3.html";
-            }
-        });
+<script>
 
-        /* 🔥 NIEUW TOEGEVOEGD */
-        const gameId = localStorage.getItem("gameId");
+const allowedNames = [
+"Jestin",
+"Luca",
+"Jules",
+"Levi",
+"Bink",
+"Symen"
+];
 
-        if (!gameId) {
-            // Geen game-id? Terug naar stap 1
-            window.location.href = "/player-step1.html";
+/* ============================= */
+/* CHECK OF GAME ID BESTAAT */
+/* ============================= */
+
+const gameId = localStorage.getItem("gameId");
+
+if (!gameId) {
+    window.location.href = "/player-step1.html";
+}
+
+/* ============================= */
+/* FORM SUBMIT */
+/* ============================= */
+
+document.getElementById("nameForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const name = document.getElementById("playerName").value.trim();
+    const playerId = localStorage.getItem("playerId");
+
+    if (!allowedNames.includes(name)) {
+        document.getElementById("nameError").innerText = "Naam niet toegestaan!";
+        return;
+    }
+
+    fetch("/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            gameId,
+            name,
+            character: null,
+            playerId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data.success) {
+            alert(data.error);
+            return;
         }
-    </script>
+
+        localStorage.setItem("playerName", name);
+
+        window.location.href = "/player-step3.html";
+    });
+
+});
+
+</script>
+
 </body>
 </html>
