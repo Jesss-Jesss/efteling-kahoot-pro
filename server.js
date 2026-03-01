@@ -106,7 +106,7 @@ app.get("/player", (req, res) => {
 
 app.post("/join", (req, res) => {
 
-    const { name, gameId, character } = req.body;
+    const { name, gameId, character, playerId } = req.body;
 
     console.log("JOIN REQUEST:", req.body);
     console.log("CURRENT PLAYERS:", currentGame.players);
@@ -141,20 +141,19 @@ const existingPlayer = currentGame.players.find(
 
 if (existingPlayer) {
 
-    // ❌ Als naam al bestaat EN niet deze sessie → blokkeren
-    if (req.session.playerName !== name) {
+    // ❌ Als naam bestaat maar andere playerId → blokkeren
+    if (existingPlayer.playerId !== playerId) {
         return res.status(400).json({
             error: "Deze naam is al in gebruik!"
         });
     }
 
-    // ✅ Zelfde speler refresht → karakter wijzigen mag
+    // ✅ Zelfde speler → karakter wijzigen
     existingPlayer.character = character;
 
     io.emit("gameUpdate", currentGame);
     return res.json({ success: true });
 }
-
     /* ===============================
        ❌ PERSONAGE CHECK
     ===============================*/
@@ -173,10 +172,11 @@ if (existingPlayer) {
        ✅ PLAYER TOEVOEGEN
     ===============================*/
     req.session.playerName = name;
-    currentGame.players.push({
-        name,
-        character
-    });
+  currentGame.players.push({
+    name,
+    character,
+    playerId
+});
 io.emit("gameUpdate", currentGame);
     currentGame.scores[name] = 0;
 
@@ -224,6 +224,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
 
 
