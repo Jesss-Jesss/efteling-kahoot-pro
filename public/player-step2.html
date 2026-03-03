@@ -1,55 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Naam</title>
+<title>Naam invullen</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<h1>Voer je naam in</h1>
+<div id="step2">
+<h1>🎢 Vul je naam in</h1>
 
-<input id="name">
-<button onclick="join()">Join</button>
+<form id="nameForm">
+<input type="text" id="playerName" placeholder="Naam" required>
+<button type="submit">Volgende</button>
+</form>
 
-<p id="error"></p>
+<p id="nameError"></p>
+</div>
 
 <script>
 
-const allowedNames = [
-"Jestin","Luca","Jules","Levi","Bink","Symen"
-];
+const allowedNames = ["Jestin","Luca","Jules","Bink"];
+const form = document.getElementById("nameForm");
 
-function join() {
+form.addEventListener("submit", e => {
 
-    const name = document.getElementById("name").value.trim();
-    const gameId = localStorage.getItem("gameId");
-    const playerId = localStorage.getItem("playerId");
+    e.preventDefault();
 
-    if (!allowedNames.includes(name)) {
-        document.getElementById("error").innerText = "Naam niet toegestaan";
-        return;
-    }
+    const name = document.getElementById("playerName").value.trim();
 
-    fetch("/join", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            name,
-            gameId,
-            character: null,
-            playerId
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) {
-            document.getElementById("error").innerText = data.error;
-            return;
-        }
+    if(!allowedNames.includes(name)) {
+        document.getElementById("nameError").innerText = "Naam niet toegestaan!";
+    } else {
 
         localStorage.setItem("playerName", name);
         window.location.href = "/player-step3.html";
-    });
+    }
+
+});
+
+const gameId = localStorage.getItem("gameId");
+
+if (!gameId) {
+    window.location.href = "/player-step1.html";
 }
 
 </script>
