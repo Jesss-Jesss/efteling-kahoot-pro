@@ -7,8 +7,8 @@ const session = require("express-session");
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 const PORT = process.env.PORT || 10000;
+
 const DASHBOARD_PASSWORD = "1234";
 const MANUAL_GAME_ID = "EFTEL-123456";
 
@@ -28,6 +28,12 @@ let currentGame = {
     scores: {}
 };
 
+io.on("connection", (socket) => {
+    console.log("Nieuwe gebruiker verbonden");
+    socket.emit("gameUpdate", currentGame);
+    socket.emit("phaseUpdate", "lobby");
+});
+
 const allowedNames = [
     "Jestin",
     "Luca",
@@ -37,76 +43,138 @@ const allowedNames = [
     "Symen"
 ];
 
-/* LOGIN */
+/* LOGIN + HOST */
 
 app.get("/", (req, res) => {
-    res.redirect("/host-login.html");
+    res.redirect("/host-login");
 });
 
-/* PLAYER ROUTES */
+app.get("/host-login", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "host-login.html"));
+});
+
+app.post("/host-login", (req, res) => {
+    const password = (req.body.password || "").trim();
+
+    if (password === DASHBOARD_PASSWORD) {
+        req.session.loggedIn = true;
+        return res.redirect("/host");
+    }
+
+    res.send("❌ Ongeldig wachtwoord");
+});
+
+app.get("/host", (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.redirect("/host-login");
+    }
+    res.sendFile(path.join(__dirname, "public", "host.html"));
+});
+
+app.post("/start-game", (req, res) => {
+    if (!req.session.loggedIn) {
+        return res.status(403).send("Niet toegestaan");
+    }
+
+    currentGame.players = [];
+    currentGame.scores = {};
+
+    res.json({
+        gameId: MANUAL_GAME_ID,
+        playerUrl: "/player"
+    });
+});
 
 app.get("/player", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "player-step1.html"));
 });
 
-/* JOIN */
+/* -------- JOIN -------- */
 
 app.post("/join", (req, res) => {
 
     const { name, gameId, character, playerId } = req.body;
 
-    if (gameId !== MANUAL_GAME_ID) {
-        return res.status(400).json({ error: "Ongeldige Game ID" });
+    console.log("JOIN REQUEST:", req.body);
+
+    if (gameId !== currentGame.id) {
+        return res.status(400).json({
+            error: "Ongeldige Game ID"
+        });
     }
 
     if (!allowedNames.includes(name)) {
-        return res.status(400).json({ error: "Naam niet toegestaan" });
+        return res.status(403).json({
+            error: "Deze naam is niet toegestaan!"
+        });
     }
 
-    const existing = currentGame.players.find(
+    const existingPlayer = currentGame.players.find(
         p => p.name.toLowerCase() === name.toLowerCase()
     );
 
-    if (existing) {
-        if (existing.playerId !== playerId) {
-            return res.status(400).json({ error: "Naam al in gebruik!" });
+    if (existingPlayer) {
+
+        if (existingPlayer.playerId !== playerId) {
+            return res.status(400).json({
+                error: "Deze naam is al in gebruik!"
+            });
         }
-        existing.character = character;
-    } else {
-        currentGame.players.push({
-            name,
-            character,
-            playerId
-        });
-        currentGame.scores[name] = 0;
+
+        existingPlayer.character = character;
+
+        io.emit("gameUpdate", currentGame);
+        return res.json({ success: true });
     }
 
+    const characterTaken = currentGame.players.find(
+        p => p.character === character && p.name !== name
+    );
+
+    if (characterTaken) {
+        return res.status(400).json({
+            error: "Dit personage is al gekozen!"
+        });
+    }
+
+    req.session.playerName = name;
+
+    currentGame.players.push({
+        name,
+        character,
+        playerId
+    });
+
+    currentGame.scores[name] = 0;
+
     io.emit("gameUpdate", currentGame);
+
     res.json({ success: true });
 });
 
 /* SCORES */
 
 app.get("/scores-full", (req, res) => {
-    res.json(currentGame);
+    res.json({
+        gameId: currentGame.id,
+        scores: currentGame.scores,
+        players: currentGame.players
+    });
 });
-
-/* RESET */
 
 app.post("/reset-game", (req, res) => {
+
+    if (!req.session.loggedIn) {
+        return res.status(403).send("Niet toegestaan");
+    }
+
     currentGame.players = [];
     currentGame.scores = {};
+
     io.emit("gameUpdate", currentGame);
+
     res.json({ success: true });
 });
-
-/* SOCKET */
-
-io.on("connection", (socket) => {
-    socket.emit("gameUpdate", currentGame);
-});
-
-/* START SERVER */
 
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
