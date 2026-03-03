@@ -1,35 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Game ID</title>
+<title>Game Join</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<h1>Voer Game ID in</h1>
-
-<input id="gameId" placeholder="EFTEL-123456">
-<button onclick="next()">Volgende</button>
-
-<p id="error"></p>
+<div id="step1">
+    <h1>🎢 Vul de Game-ID in</h1>
+    <form id="gameIdForm">
+        <input type="text" id="gameId" placeholder="Bijv. EFTEL-1234" required>
+        <button type="submit">Volgende</button>
+    </form>
+    <p id="errorMsg"></p>
+</div>
 
 <script>
 
-if (!localStorage.getItem("playerId")) {
-    localStorage.setItem("playerId", crypto.randomUUID());
-}
+const params = new URLSearchParams(window.location.search);
+const autoGameId = params.get("gameId");
 
-function next() {
-    const id = document.getElementById("gameId").value.trim();
-
-    if (id !== "EFTEL-123456") {
-        document.getElementById("error").innerText = "Ongeldige Game ID";
-        return;
-    }
-
-    localStorage.setItem("gameId", id);
+if (autoGameId === "EFTEL-123456") {
+    localStorage.setItem("gameId", autoGameId);
     window.location.href = "/player-step2.html";
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const MANUAL_GAME_ID = "EFTEL-123456";
+
+    const form = document.getElementById("gameIdForm");
+    const input = document.getElementById("gameId");
+    const error = document.getElementById("errorMsg");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const id = input.value.trim();
+
+        if (id !== MANUAL_GAME_ID) {
+            error.innerText = "❌ Ongeldige Game-ID!";
+            return;
+        }
+
+        localStorage.setItem("gameId", MANUAL_GAME_ID);
+        window.location.href = "/player-step2.html";
+    });
+
+});
 
 </script>
 
