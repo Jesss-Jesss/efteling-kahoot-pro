@@ -1,32 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Lobby</title>
-<script src="/socket.io/socket.io.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kies je personage</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<h1>Lobby</h1>
+<h2>✔ Gelukt! Je bent nu in de quiz</h2>
+<p>Zie je je naam op het leaderboard?</p>
 
-<ul id="players"></ul>
+<!-- Gekozen Personage -->
+<div style="margin-bottom:20px;">
+    <div style="position:relative; display:inline-block;">
+        <img id="chosenImage" width="130">
+        <p id="chosenName" style="color:black; font-weight:bold;"></p>
+    </div>
+</div>
+
+<button onclick="openGallery()">Kies / wijzig je personage</button>
+
+<!-- GALERIJ -->
+
+<div id="galleryOverlay">
+
+    <div id="galleryHeader">
+        <button id="closeGallery">✖</button>
+    </div>
+
+    <div id="galleryContent">
+        <div id="galleryGrid"></div>
+    </div>
+
+</div>
 
 <script>
 
-const socket = io();
+const MANUAL_GAME_ID = "EFTEL-123456";
+const storedGameId = localStorage.getItem("gameId");
+const name = localStorage.getItem("playerName");
 
-socket.on("gameUpdate", (game) => {
+/* ===============================
+   CHECK REFRESH
+=================================*/
 
-    const list = document.getElementById("players");
-    list.innerHTML = "";
+if (!storedGameId || !name) {
 
-    game.players.forEach(p => {
-        const li = document.createElement("li");
-        li.innerText = p.name;
-        list.appendChild(li);
-    });
+    document.body.innerHTML = `
+        <div style="text-align:center; margin-top:100px;">
+            <h2>❌ Sessie verlopen</h2>
+            <p>Ga terug naar de home pagina</p>
+            <button onclick="goHome()">➡ Ga naar Home</button>
+        </div>
+    `;
+}
 
+function goHome() {
+    localStorage.clear();
+    window.location.href = "/player-step1.html";
+}
+
+/* ===============================
+   PERSONAGES
+=================================*/
+
+const characters = [
+    { name: "Jokie", img: "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9" },
+    { name: "Jet", img: "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4" },
+];
+
+/* ===============================
+   RANDOM PERSONAGE BIJ START
+=================================*/
+
+window.addEventListener("load", () => {
+
+    const random = characters[Math.floor(Math.random() * characters.length)];
+
+    document.getElementById("chosenImage").src = random.img;
+    document.getElementById("chosenName").innerText = random.name;
+
+    chooseCharacter(random);
 });
+
+/* ===============================
+   GALERIJ OPEN / SLUIT
+=================================*/
+
+function openGallery() {
+    document.getElementById("galleryOverlay").style.display = "block";
+    loadGallery();
+}
+
+function closeGallery() {
+    document.getElementById("galleryOverlay").style.display = "none";
+}
+
+/* ===============================
+   GALERIJ LADEN
+=================================*/
+
+function loadGallery() {
+
+    fetch("/scores-full")
+    .then(res => res.json())
+    .then(data => {
+
+        const grid = document.getElementById("galleryGrid");
+        grid.innerHTML = "";
+
+        const takenCharacters = (data.players || []).map(p => p.character);
+
+        characters.forEach(char => {
+
+            const card = document.createElement("div");
+            card.className = "character-card";
+
+            card.innerHTML = `
+                <img src="${char.img}">
+                <div class="character-name">${char.name}</div>
+            `;
+
+            if (takenCharacters.includes(char.name) &&
+                char.name !== document.getElementById("chosenName").innerText) {
+
+                card.classList.add("disabled");
+
+            } else {
+
+                card.onclick = () => chooseCharacter(char);
+            }
+
+            grid.appendChild(card);
+        });
+    });
+}
+
+setInterval(() => {
+
+    if (document.getElementById("galleryOverlay").style.display === "block") {
+        loadGallery();
+    }
+
+}, 1000);
+
+/* ===============================
+   PERSONAGE KIEZEN
+=================================*/
+
+function chooseCharacter(char) {
+
+    fetch("/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            gameId: MANUAL_GAME_ID,
+            name: name,
+            character: char.name
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data.success) {
+            alert(data.error);
+            return;
+        }
+
+        document.getElementById("chosenImage").src = char.img;
+        document.getElementById("chosenName").innerText = char.name;
+
+        closeGallery();
+    });
+}
+
+document.getElementById("closeGallery")
+.addEventListener("click", closeGallery);
 
 </script>
 
