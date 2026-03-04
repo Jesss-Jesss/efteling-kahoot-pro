@@ -124,11 +124,6 @@ app.get("/leaderboard", (req, res) => {
 });
 
 /* -------- JOIN -------- */
-if (!quizStarted) {
-    return res.status(400).json({
-        error: "Quiz is nog niet gestart!"
-    });
-}
 
 
 app.post("/join", (req, res) => {
@@ -219,6 +214,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
     console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
+
 
 
 
