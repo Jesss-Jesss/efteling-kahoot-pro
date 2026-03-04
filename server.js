@@ -22,8 +22,9 @@ app.use(session({
     saveUninitialized: true
 }));
 
+
 let currentGame = {
-    id: MANUAL_GAME_ID,
+    id: null,
     players: [],
     scores: {}
 };
@@ -44,6 +45,29 @@ const allowedNames = [
 ];
 
 /* LOGIN + HOST */
+
+app.post("/api/start-quiz", (req, res) => {
+
+    if (!req.session.loggedIn) {
+        return res.status(403).json({ error: "Niet toegestaan" });
+    }
+
+    const { gameId } = req.body;
+
+    if (!gameId) {
+        return res.json({ error: "Game ID verplicht" });
+    }
+
+    quizStarted = true;
+
+    currentGame.id = gameId;
+    currentGame.players = [];
+    currentGame.scores = {};
+
+    io.emit("gameUpdate", currentGame);
+
+    res.json({ success: true });
+});
 
 app.get("/", (req, res) => {
     res.redirect("/host-login");
@@ -68,7 +92,7 @@ app.get("/host", (req, res) => {
     if (!req.session.loggedIn) {
         return res.redirect("/host-login");
     }
-    res.sendFile(path.join(__dirname, "public", "host.html"));
+    res.redirect("/start-quiz.html");
 });
 
 app.post("/start-game", (req, res) => {
@@ -90,10 +114,21 @@ app.get("/player", (req, res) => {
 });
 
 app.get("/leaderboard", (req, res) => {
-    res.sendFile(__dirname + "/public/leaderboard.html");
+
+    if (!quizStarted) {
+        return res.send("<h1>Quiz nog niet gestart</h1>");
+    }
+
+    res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
 });
 
 /* -------- JOIN -------- */
+if (!quizStarted) {
+    return res.status(400).json({
+        error: "Quiz is nog niet gestart!"
+    });
+}
+
 
 app.post("/join", (req, res) => {
 
@@ -101,7 +136,7 @@ app.post("/join", (req, res) => {
 
     console.log("JOIN REQUEST:", req.body);
 
-    if (gameId !== currentGame.id) {
+  if (!quizStarted || gameId !== currentGame.id) {
         return res.status(400).json({
             error: "Ongeldige Game ID"
         });
@@ -183,5 +218,6 @@ app.post("/reset-game", (req, res) => {
 server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
     console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
+
 
 
