@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 10000;
 const DASHBOARD_PASSWORD = "1234";
 const MANUAL_GAME_ID = "EFTEL-123456";
 
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -87,6 +88,10 @@ app.post("/start-game", (req, res) => {
 
 app.get("/player", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "player-step1.html"));
+});
+
+app.get("/leaderboard", (req, res) => {
+    res.sendFile(__dirname + "/public/leaderboard.html");
 });
 
 /* -------- JOIN -------- */
@@ -179,3 +184,4 @@ app.post("/reset-game", (req, res) => {
 server.listen(PORT, () => {
     console.log("Server draait op poort " + PORT);
 });
+
