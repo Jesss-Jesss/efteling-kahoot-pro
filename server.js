@@ -10,7 +10,6 @@ const io = new Server(server);
 const PORT = process.env.PORT || 10000;
 
 const DASHBOARD_PASSWORD = "1234";
-const MANUAL_GAME_ID = "EFTEL-123456";
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
@@ -184,4 +183,5 @@ app.post("/reset-game", (req, res) => {
 server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
     console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
+
 
