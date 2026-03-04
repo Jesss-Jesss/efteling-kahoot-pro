@@ -181,7 +181,7 @@ app.post("/reset-game", (req, res) => {
     res.json({ success: true });
 });
 
-server.listen(PORT, () => {
-    console.log("Server draait op poort " + PORT);
+server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
+    console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
 
