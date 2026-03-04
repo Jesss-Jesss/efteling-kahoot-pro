@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Start Quiz</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>🎮 Quiz Starten</h1>
+
+<p>Kies een Game ID:</p>
+
+<input type="text" id="gameIdInput" placeholder="Bijv: EFTEL-123">
+
+<br><br>
+
+<button onclick="startQuiz()">🚀 Quiz Starten</button>
+
+<script>
+
+function startQuiz() {
+
+    const gameId = document.getElementById("gameIdInput").value.trim();
+
+    if (!gameId) {
+        alert("Vul een Game ID in!");
+        return;
+    }
+
+    fetch("/api/start-quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.success) {
+            alert("Quiz gestart!");
+            window.location.href = "/host";
+        } else {
+            alert(data.error);
+        }
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
