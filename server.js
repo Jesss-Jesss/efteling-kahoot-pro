@@ -8,6 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const PORT = process.env.PORT || 10000;
+let quizStarted = false;
 
 const DASHBOARD_PASSWORD = "1234";
 
@@ -218,6 +219,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
     console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
+
 
 
 
