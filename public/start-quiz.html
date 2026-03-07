@@ -2,46 +2,39 @@
 <html>
 <head>
 <title>Start Quiz</title>
-<link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <h1>🎮 Quiz Starten</h1>
 
-<p>Kies een Game ID:</p>
-
-<input type="text" id="gameIdInput" placeholder="Bijv: EFTEL-123">
-
+<input type="text" id="gameId" placeholder="Voer Game ID in">
 <br><br>
 
-<button onclick="startQuiz()">🚀 Quiz Starten</button>
+<button onclick="startQuiz()">Quiz Starten</button>
 
 <script>
 
 function startQuiz() {
 
-    const gameId = document.getElementById("gameIdInput").value.trim();
-
-    if (!gameId) {
-        alert("Vul een Game ID in!");
-        return;
-    }
+    const gameId = document.getElementById("gameId").value;
 
     fetch("/api/start-quiz", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({ gameId })
     })
     .then(res => res.json())
     .then(data => {
 
-        if (data.success) {
-            alert("Quiz gestart!");
-            window.location.href = "/host";
-        } else {
+        if (data.error) {
             alert(data.error);
+            return;
         }
 
+        // ✅ Ga automatisch naar dashboard
+        window.location.href = "/host";
     });
 
 }
