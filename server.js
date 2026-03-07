@@ -80,6 +80,7 @@ app.get("/leaderboard", (req, res) => {
 });
 
 /* ---------------- JOIN ---------------- */
+currentGame.players = currentGame.players.filter(p => p.name !== name);
 app.post("/join", (req, res) => {
     const { name, gameId, character, playerId } = req.body;
 
@@ -143,3 +144,4 @@ io.on("connection", (socket) => {
 server.listen(PORT, "0.0.0.0", () => {
     console.log("Server draait op poort " + PORT);
 });
+
