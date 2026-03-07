@@ -20,7 +20,7 @@
 </div>
 
 <button onclick="openGallery()">Kies / wijzig je personage</button>
-
+<script src="/socket.io/socket.io.js"></script>
 <!-- GALERIJ -->
 
 <div id="galleryOverlay">
@@ -37,6 +37,7 @@
 
 <script>
 
+const socket = io();
 const storedGameId = localStorage.getItem("gameId"); 
 const name = localStorage.getItem("playerName");
 const playerId = localStorage.getItem("playerId");
@@ -173,13 +174,7 @@ function loadGallery() {
     });
 }
 
-setInterval(() => {
 
-    if (document.getElementById("galleryOverlay").style.display === "block") {
-        loadGallery();
-    }
-
-}, 1000);
 
 /* ===============================
    PERSONAGE KIEZEN
@@ -213,6 +208,10 @@ function chooseCharacter(char) {
 
 document.getElementById("closeGallery")
 .addEventListener("click", closeGallery);
+socket.on("gameUpdate", () => {
+    console.log("Update ontvangen");
+    loadGallery();
+});
 
 </script>
 
