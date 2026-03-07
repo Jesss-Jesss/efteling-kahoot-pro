@@ -90,10 +90,12 @@ app.post("/host-login", (req, res) => {
 });
 
 app.get("/host", (req, res) => {
+
     if (!req.session.loggedIn) {
         return res.redirect("/host-login");
     }
-    res.redirect("/start-quiz.html");
+
+    res.sendFile(path.join(__dirname, "public", "host.html"));
 });
 
 app.post("/start-game", (req, res) => {
@@ -117,7 +119,7 @@ app.get("/player", (req, res) => {
 app.get("/leaderboard", (req, res) => {
 
     if (!quizStarted) {
-        return res.send("<h1>Quiz nog niet gestart</h1>");
+        return res.sendFile(path.join(__dirname, "public", "quiz-not-started.html"));
     }
 
     res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
@@ -214,6 +216,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
     console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
+
 
 
 
