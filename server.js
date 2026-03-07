@@ -64,7 +64,10 @@ app.post("/api/start-quiz", (req, res) => {
     currentGame.players = [];
     currentGame.scores = {};
 
-    io.emit("gameUpdate", currentGame);
+    io.emit("gameUpdate", {
+    type: "playersUpdate",
+    data: currentGame
+});
     return res.json({ success: true });
 });
 
@@ -144,4 +147,5 @@ io.on("connection", (socket) => {
 server.listen(PORT, "0.0.0.0", () => {
     console.log("Server draait op poort " + PORT);
 });
+
 
