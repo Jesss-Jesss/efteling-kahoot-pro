@@ -37,6 +37,7 @@
 
 <script>
 
+const storedGameId = localStorage.getItem("gameId"); 
 const name = localStorage.getItem("playerName");
 const playerId = localStorage.getItem("playerId");
 
@@ -189,11 +190,11 @@ function chooseCharacter(char) {
     fetch("/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            gameId: MANUAL_GAME_ID,
-            name: name,
-            character: char.name
-        })
+    body: JSON.stringify({
+    gameId: localStorage.getItem("gameId"),
+    name: name,
+    character: char.name
+})
     })
     .then(res => res.json())
     .then(data => {
