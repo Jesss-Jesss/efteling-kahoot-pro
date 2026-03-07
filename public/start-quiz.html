@@ -2,15 +2,65 @@
 <html>
 <head>
 <title>Start Quiz</title>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.box {
+    background: #1e293b;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    width: 350px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2563eb;
+}
+
+</style>
+
 </head>
 <body>
 
-<h1>🎮 Quiz Starten</h1>
+<div class="box">
+
+<h2>🎮 Quiz Starten</h2>
 
 <input type="text" id="gameId" placeholder="Voer Game ID in">
-<br><br>
+<button onclick="startQuiz()">Start Quiz</button>
 
-<button onclick="startQuiz()">Quiz Starten</button>
+</div>
 
 <script>
 
@@ -33,10 +83,8 @@ function startQuiz() {
             return;
         }
 
-        // ✅ Ga automatisch naar dashboard
         window.location.href = "/host";
     });
-
 }
 
 </script>
