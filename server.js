@@ -100,7 +100,7 @@ app.get("/host", (req, res) => {
 
 app.post("/start-game", (req, res) => {
     if (!req.session.loggedIn) {
-        return res.status(403).send("Niet toegestaan");
+        return res.redirect("/host-login");
     }
 
     currentGame.players = [];
@@ -202,7 +202,7 @@ app.get("/scores-full", (req, res) => {
 app.post("/reset-game", (req, res) => {
 
     if (!req.session.loggedIn) {
-        return res.status(403).send("Niet toegestaan");
+        return res.redirect("/host-login");
     }
 
     currentGame.players = [];
@@ -216,6 +216,7 @@ app.post("/reset-game", (req, res) => {
 server.listen(process.env.PORT || 10000, "0.0.0.0", () => {
     console.log("Server draait op poort " + (process.env.PORT || 10000));
 });
+
 
 
 
