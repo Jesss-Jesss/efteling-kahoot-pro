@@ -208,10 +208,33 @@ function chooseCharacter(char) {
 
 document.getElementById("closeGallery")
 .addEventListener("click", closeGallery);
-socket.on("gameUpdate", () => {
-    console.log("Update ontvangen");
-    loadGallery();
+socket.on("gameUpdate", (payload) => {
+
+    console.log("Realtime update:", payload);
+
+    // Als iemand spelers update → reload gallery
+    if (payload.type === "playersUpdate") {
+        loadGallery();
+        updateMyCharacter(payload.data);
+    }
+
 });
+
+function updateMyCharacter(gameData) {
+
+    const myPlayer = gameData.players.find(p => p.name === name);
+
+    if (!myPlayer) return;
+
+    const selectedChar = characters.find(c => c.name === myPlayer.character);
+
+    if (!selectedChar) return;
+
+    document.getElementById("chosenImage").src = selectedChar.img;
+    document.getElementById("chosenName").innerText = selectedChar.name;
+
+    console.log("Mijn personage is live geüpdatet!");
+}
 
 </script>
 
