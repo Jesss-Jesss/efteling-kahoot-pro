@@ -101,7 +101,10 @@ app.post("/join", (req, res) => {
             return res.status(400).json({ error: "Naam al in gebruik!" });
 
         existingPlayer.character = character;
-        io.emit("gameUpdate", currentGame);
+        io.emit("gameUpdate", {
+    type: "playersUpdate",
+    data: currentGame
+});
         return res.json({ success: true });
     }
 
@@ -115,7 +118,10 @@ app.post("/join", (req, res) => {
     playerId,
     joinId: nextJoinId++
 });
-    currentGame.scores[name] = 0;
+    io.emit("gameUpdate", {
+    type: "playersUpdate",
+    data: currentGame
+});
     io.emit("gameUpdate", currentGame);
 
     return res.json({ success: true });
@@ -139,7 +145,10 @@ app.post("/reset-game", (req, res) => {
     currentGame.id = null;
     nextJoinId = 1001;
 
-    io.emit("gameUpdate", currentGame);
+    io.emit("gameUpdate", {
+    type: "playersUpdate",
+    data: currentGame
+});
     return res.json({ success: true });
 });
 
