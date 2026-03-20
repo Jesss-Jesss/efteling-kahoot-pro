@@ -51,7 +51,7 @@ app.post("/host-login", (req, res) => {
 /* ---------------- HOST ---------------- */
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "public", "start-quiz.html")); // nieuwe start pagina
+    res.sendFile(path.join(__dirname, "public", "start-quiz.html"));
 });
 
 /* ---------------- START QUIZ ---------------- */
@@ -67,35 +67,19 @@ app.post("/api/start-quiz", (req, res) => {
     currentGame.scores = {};
     nextJoinId = 1001;
 
-    pendingPlayers = [
-    { name: "Jestin", joinId: 1001 },
-    { name: "Luca", joinId: 1002 },
-    { name: "Jules", joinId: 1003 }
-];
+    // Pending spelers automatisch vullen
+    pendingPlayers = allowedNames.map(name => ({ name, joinId: nextJoinId++ }));
 
-    console.log("Pending players gevuld:", pendingPlayers);
-    
-    io.emit("gameUpdate", {
-    type: "playersUpdate",
-    data: currentGame
-});
+    io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     return res.json({ success: true });
 });
 
 /* ---------------- PLAYER ---------------- */
-app.get("/player", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "player-step1.html"));
-});
-
 app.get("/player/:joinId", (req, res) => {
-
     const joinId = Number(req.params.joinId);
-
     const player = pendingPlayers.find(p => p.joinId === joinId);
 
-    if (!player) {
-        return res.send("Ongeldige spelercode");
-    }
+    if (!player) return res.send("Ongeldige spelercode");
 
     res.sendFile(path.join(__dirname, "public", "player-step3.html"));
 });
@@ -123,10 +107,7 @@ app.post("/join", (req, res) => {
             return res.status(400).json({ error: "Naam al in gebruik!" });
 
         existingPlayer.character = character;
-        io.emit("gameUpdate", {
-    type: "playersUpdate",
-    data: currentGame
-});
+        io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
         return res.json({ success: true });
     }
 
@@ -134,29 +115,16 @@ app.post("/join", (req, res) => {
     if (characterTaken) return res.status(400).json({ error: "Dit personage is al gekozen!" });
 
     req.session.playerName = name;
-    currentGame.players.push({
-    name,
-    character,
-    playerId,
-    joinId: nextJoinId++
-});
+    currentGame.players.push({ name, character, playerId, joinId: nextJoinId++ });
     currentGame.scores[name] = 0;
-    io.emit("gameUpdate", {
-    type: "playersUpdate",
-    data: currentGame
-});
-    
 
+    io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     return res.json({ success: true });
 });
 
 /* ---------------- SCORES ---------------- */
 app.get("/scores-full", (req, res) => {
-    res.json({
-        gameId: currentGame.id,
-        scores: currentGame.scores,
-        players: currentGame.players
-    });
+    res.json({ gameId: currentGame.id, scores: currentGame.scores, players: currentGame.players });
 });
 
 app.post("/reset-game", (req, res) => {
@@ -169,10 +137,7 @@ app.post("/reset-game", (req, res) => {
     nextJoinId = 1001;
     pendingPlayers = [];
 
-    io.emit("gameUpdate", {
-    type: "playersUpdate",
-    data: currentGame
-});
+    io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     return res.json({ success: true });
 });
 
@@ -187,5 +152,3 @@ io.on("connection", (socket) => {
 server.listen(PORT, "0.0.0.0", () => {
     console.log("Server draait op poort " + PORT);
 });
-
-
