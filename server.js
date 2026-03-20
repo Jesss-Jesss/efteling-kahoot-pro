@@ -73,6 +73,8 @@ app.post("/api/start-quiz", (req, res) => {
     { name: "Jules", joinId: 1003 }
 ];
 
+    console.log("Pending players gevuld:", pendingPlayers);
+    
     io.emit("gameUpdate", {
     type: "playersUpdate",
     data: currentGame
@@ -138,11 +140,12 @@ app.post("/join", (req, res) => {
     playerId,
     joinId: nextJoinId++
 });
+    currentGame.scores[name] = 0;
     io.emit("gameUpdate", {
     type: "playersUpdate",
     data: currentGame
 });
-    io.emit("gameUpdate", currentGame);
+    
 
     return res.json({ success: true });
 });
@@ -164,6 +167,7 @@ app.post("/reset-game", (req, res) => {
     currentGame.scores = {};
     currentGame.id = null;
     nextJoinId = 1001;
+    pendingPlayers = [];
 
     io.emit("gameUpdate", {
     type: "playersUpdate",
