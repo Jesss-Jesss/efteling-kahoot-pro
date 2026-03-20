@@ -29,6 +29,7 @@ let currentGame = {
 };
 
 const allowedNames = ["Jestin","Luca","Jules","Levi","Bink","Symen"];
+let nextJoinId = 1001;
 
 /* ---------------- LOGIN ---------------- */
 app.get("/", (req, res) => res.redirect("/host-login"));
@@ -63,6 +64,7 @@ app.post("/api/start-quiz", (req, res) => {
     currentGame.id = gameId;
     currentGame.players = [];
     currentGame.scores = {};
+    nextJoinId = 1001;
 
     io.emit("gameUpdate", {
     type: "playersUpdate",
@@ -83,7 +85,6 @@ app.get("/leaderboard", (req, res) => {
 });
 
 /* ---------------- JOIN ---------------- */
-currentGame.players = currentGame.players.filter(p => p.name !== name);
 app.post("/join", (req, res) => {
     const { name, gameId, character, playerId } = req.body;
 
@@ -108,7 +109,12 @@ app.post("/join", (req, res) => {
     if (characterTaken) return res.status(400).json({ error: "Dit personage is al gekozen!" });
 
     req.session.playerName = name;
-    currentGame.players.push({ name, character, playerId });
+    currentGame.players.push({
+    name,
+    character,
+    playerId,
+    joinId: nextJoinId++
+});
     currentGame.scores[name] = 0;
     io.emit("gameUpdate", currentGame);
 
@@ -131,6 +137,7 @@ app.post("/reset-game", (req, res) => {
     currentGame.players = [];
     currentGame.scores = {};
     currentGame.id = null;
+    nextJoinId = 1001;
 
     io.emit("gameUpdate", currentGame);
     return res.json({ success: true });
