@@ -78,6 +78,19 @@ app.get("/player", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "player-step1.html"));
 });
 
+app.get("/player/:joinId", (req, res) => {
+
+    const joinId = Number(req.params.joinId);
+
+    const player = currentGame.players.find(p => p.joinId === joinId);
+
+    if (!player) {
+        return res.send("Ongeldige spelercode");
+    }
+
+    res.sendFile(path.join(__dirname, "public", "player-step3.html"));
+});
+
 /* ---------------- LEADERBOARD ---------------- */
 app.get("/leaderboard", (req, res) => {
     if (!quizStarted) return res.sendFile(path.join(__dirname, "public", "quiz-not-started.html"));
