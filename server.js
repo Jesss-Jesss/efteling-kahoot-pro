@@ -30,6 +30,7 @@ let currentGame = {
 
 const allowedNames = ["Jestin","Luca","Jules","Levi","Bink","Symen"];
 let nextJoinId = 1001;
+let pendingPlayers = [];
 
 /* ---------------- LOGIN ---------------- */
 app.get("/", (req, res) => res.redirect("/host-login"));
@@ -66,6 +67,12 @@ app.post("/api/start-quiz", (req, res) => {
     currentGame.scores = {};
     nextJoinId = 1001;
 
+    pendingPlayers = [
+    { name: "Jestin", joinId: 1001 },
+    { name: "Luca", joinId: 1002 },
+    { name: "Jules", joinId: 1003 }
+];
+
     io.emit("gameUpdate", {
     type: "playersUpdate",
     data: currentGame
@@ -82,7 +89,7 @@ app.get("/player/:joinId", (req, res) => {
 
     const joinId = Number(req.params.joinId);
 
-    const player = currentGame.players.find(p => p.joinId === joinId);
+    const player = pendingPlayers.find(p => p.joinId === joinId);
 
     if (!player) {
         return res.send("Ongeldige spelercode");
