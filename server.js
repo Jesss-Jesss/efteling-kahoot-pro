@@ -9,18 +9,12 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = process.env.PORT || 10000;
 
+// ---------------- VARIABLES ----------------
 let quizStarted = false;
 const DASHBOARD_PASSWORD = "1234";
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use(session({
-    secret: "supersecretkey",
-    resave: false,
-    saveUninitialized: true
-}));
+const allowedNames = ["Jestin","Luca","Jules","Levi","Bink","Symen"];
+let nextJoinId = 1001;
+let pendingPlayers = [];
 
 let currentGame = {
     id: null,
@@ -28,11 +22,17 @@ let currentGame = {
     scores: {}
 };
 
-const allowedNames = ["Jestin","Luca","Jules","Levi","Bink","Symen"];
-let nextJoinId = 1001;
-let pendingPlayers = [];
+// ---------------- MIDDLEWARE ----------------
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+app.use(session({
+    secret: "supersecretkey",
+    resave: false,
+    saveUninitialized: true
+}));
 
-/* ---------------- LOGIN ---------------- */
+// ---------------- LOGIN ----------------
 app.get("/", (req, res) => res.redirect("/host-login"));
 
 app.get("/host-login", (req, res) => {
@@ -48,13 +48,13 @@ app.post("/host-login", (req, res) => {
     return res.redirect("/host-login");
 });
 
-/* ---------------- HOST ---------------- */
+// ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
     res.sendFile(path.join(__dirname, "public", "start-quiz.html"));
 });
 
-/* ---------------- START QUIZ ---------------- */
+// ---------------- START QUIZ ----------------
 app.post("/api/start-quiz", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
 
@@ -67,30 +67,32 @@ app.post("/api/start-quiz", (req, res) => {
     currentGame.scores = {};
     nextJoinId = 1001;
 
-    // Pending spelers automatisch vullen
+    // vul pendingPlayers automatisch
     pendingPlayers = allowedNames.map(name => ({ name, joinId: nextJoinId++ }));
+
+    console.log("Quiz gestart, pendingPlayers:", pendingPlayers);
 
     io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     return res.json({ success: true });
 });
 
-/* ---------------- PLAYER ---------------- */
+// ---------------- PLAYER ----------------
 app.get("/player/:joinId", (req, res) => {
+    if (!quizStarted) return res.send("Quiz nog niet gestart");
+
     const joinId = Number(req.params.joinId);
     const player = pendingPlayers.find(p => p.joinId === joinId);
 
-    if (!player) return res.send("Ongeldige spelercode");
+    if (!player) {
+        console.log("Ongeldige joinId:", joinId, "PendingPlayers:", pendingPlayers);
+        return res.send("Ongeldige spelercode");
+    }
 
+    // speler kan nu joinen
     res.sendFile(path.join(__dirname, "public", "player-step3.html"));
 });
 
-/* ---------------- LEADERBOARD ---------------- */
-app.get("/leaderboard", (req, res) => {
-    if (!quizStarted) return res.sendFile(path.join(__dirname, "public", "quiz-not-started.html"));
-    return res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
-});
-
-/* ---------------- JOIN ---------------- */
+// ---------------- JOIN ----------------
 app.post("/join", (req, res) => {
     const { name, gameId, character, playerId } = req.body;
 
@@ -114,19 +116,36 @@ app.post("/join", (req, res) => {
     const characterTaken = currentGame.players.find(p => p.character === character);
     if (characterTaken) return res.status(400).json({ error: "Dit personage is al gekozen!" });
 
+    // voeg speler toe
     req.session.playerName = name;
-    currentGame.players.push({ name, character, playerId, joinId: nextJoinId++ });
+    currentGame.players.push({
+        name,
+        character,
+        playerId,
+        joinId: pendingPlayers.find(p => p.name === name)?.joinId || nextJoinId++
+    });
     currentGame.scores[name] = 0;
 
     io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     return res.json({ success: true });
 });
 
-/* ---------------- SCORES ---------------- */
-app.get("/scores-full", (req, res) => {
-    res.json({ gameId: currentGame.id, scores: currentGame.scores, players: currentGame.players });
+// ---------------- LEADERBOARD ----------------
+app.get("/leaderboard", (req, res) => {
+    if (!quizStarted) return res.sendFile(path.join(__dirname, "public", "quiz-not-started.html"));
+    return res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
 });
 
+// ---------------- SCORES ----------------
+app.get("/scores-full", (req, res) => {
+    res.json({
+        gameId: currentGame.id,
+        scores: currentGame.scores,
+        players: currentGame.players
+    });
+});
+
+// ---------------- RESET GAME ----------------
 app.post("/reset-game", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
 
@@ -141,14 +160,14 @@ app.post("/reset-game", (req, res) => {
     return res.json({ success: true });
 });
 
-/* ---------------- SOCKET.IO ---------------- */
+// ---------------- SOCKET.IO ----------------
 io.on("connection", (socket) => {
     console.log("Nieuwe gebruiker verbonden");
-    socket.emit("gameUpdate", currentGame);
+    socket.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     socket.emit("phaseUpdate", "lobby");
 });
 
-/* ---------------- SERVER ---------------- */
+// ---------------- SERVER ----------------
 server.listen(PORT, "0.0.0.0", () => {
     console.log("Server draait op poort " + PORT);
 });
