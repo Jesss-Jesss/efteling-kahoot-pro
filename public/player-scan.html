@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Scanner</title>
+<style>
+body {
+    background:black;
+    color:white;
+    text-align:center;
+    font-family:Arial;
+    margin:0;
+    padding:20px;
+}
+
+video {
+    width:300px;
+    border:2px solid white;
+    margin-top:20px;
+}
+
+#helpBtn {
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    z-index:9999;
+    padding:12px 20px;
+    font-size:1em;
+    border:none;
+    border-radius:8px;
+    background:#f59e0b;
+    color:black;
+}
+</style>
+</head>
+<body>
+
+<h2>Scan je QR-code</h2>
+
+<video id="qrVideo" autoplay playsinline></video>
+
+<button id="helpBtn">Vraag om hulp</button>
+
+<script>
+const video = document.getElementById("qrVideo");
+
+navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+})
+.then(stream => {
+    video.srcObject = stream;
+})
+.catch(err => {
+    alert("Camera werkt niet: " + err);
+});
+
+document.getElementById("helpBtn").onclick = () => {
+    alert("Hulp is onderweg...");
+};
+</script>
+
+</body>
+</html>
