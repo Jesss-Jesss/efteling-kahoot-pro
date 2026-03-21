@@ -113,8 +113,13 @@ app.post("/join", (req, res) => {
         return res.json({ success: true });
     }
 
-    const characterTaken = currentGame.players.find(p => p.character === character);
-    if (characterTaken) return res.status(400).json({ error: "Dit personage is al gekozen!" });
+    const characterTaken = currentGame.players.find(
+    p => p.character === character && p.name !== name
+);
+
+if (characterTaken) {
+    return res.status(400).json({ error: "Dit personage is al gekozen!" });
+}
 
     // voeg speler toe
     req.session.playerName = name;
