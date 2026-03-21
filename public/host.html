@@ -1,93 +1,110 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Efteling Kahoot Pro - Dashboard</title>
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+body { font-family: Arial; background:#0f172a; color:white; padding:20px; }
+h1 { text-align:center; }
+.section { margin-bottom:30px; }
+.qr-grid { display:flex; flex-wrap:wrap; gap:20px; }
+.qr-card { text-align:center; background:#1e293b; padding:10px; border-radius:12px; width:150px; }
+.qr-card img { width:120px; height:120px; }
+#helpOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); color:white; text-align:center; padding-top:20%; font-size:2em; z-index:1000; }
+#helpOverlay button { margin-top:20px; font-size:0.5em; padding:10px 20px; }
+#refreshBtn, #helpBtn { padding:10px 20px; font-size:1em; margin:5px; border:none; border-radius:8px; cursor:pointer; }
+#refreshBtn { background:#3b82f6; color:white; }
+#helpBtn { background:#f59e0b; color:black; }
+</style>
 </head>
 <body>
 
-<div id="dashboard">
+<h1>🎮 Dashboard</h1>
 
-    <h1>🎢 Efteling Kahoot Pro</h1>
-
-    <!-- GAME CODE -->
-    <div class="block">
-        <h2>Game Code</h2>
-        <p id="gameCode">EFTEL-123456</p>
-    </div>
-
-    <!-- SPELERS -->
-    <div class="block">
-        <h2>Spelers</h2>
-        <ul id="playersList"></ul>
-    </div>
-
-    <!-- CONTROL -->
-    <div class="block">
-        <h2>Control</h2>
-        <button onclick="resetGame()">Reset Game</button>
-    </div>
-
+<div class="section">
+    <button id="refreshBtn">🔄 Refresh</button>
+    <button id="helpBtn">❓ Vraag om hulp</button>
 </div>
 
+<div class="section" id="instructions">
+    <h2>Deel 1/6: Hoe joinen</h2>
+    <p>Ga naar: <a href="https://tinyurl.com/EftelingQuiz" target="_blank">tinyurl.com/EftelingQuiz</a> en scan je QR-code.</p>
+</div>
+
+<div class="section" id="qrSection">
+    <h2>Deel 2-4/6: QR Codes</h2>
+    <div id="qrGrid" class="qr-grid"></div>
+</div>
+
+<div class="section" id="joinedNames">
+    <h2>Deel 5-6: Spelers die gejoint zijn</h2>
+    <ul id="joinedList"></ul>
+</div>
+
+<div id="helpOverlay">
+    <p>Hulp is onderweg...</p>
+    <button onclick="closeHelp()">Annuleer</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
 <script>
+const socket = io();
+let currentGame = { players: [], scores: [] };
 
-// 🔒 VASTE GAME ID (MOET GELIJK ZIJN AAN SERVER)
-const MANUAL_GAME_ID = "EFTEL-123456";
+// --- Help overlay ---
+document.getElementById("helpBtn").onclick = ()=> {
+    document.getElementById("helpOverlay").style.display="block";
+};
+function closeHelp() { document.getElementById("helpOverlay").style.display="none"; }
 
-// 📌 QR CODE MAKEN
-window.addEventListener("load", () => {
+// --- Refresh button ---
+document.getElementById("refreshBtn").onclick = ()=> { renderDashboard(); };
 
-    const fullUrl = window.location.origin + "/player";
-
-    document.getElementById("gameCode").innerText =
-        "Game ID: " + MANUAL_GAME_ID;
-
-    loadPlayers();
-
-    // 🔄 elke 2 seconden spelers vernieuwen
-    setInterval(loadPlayers, 2000);
-});
-
-
-// 📌 SPELERS LADEN
-function loadPlayers() {
-
+// --- Render QR codes & joined names ---
+function renderDashboard(){
     fetch("/scores-full")
-    .then(res => res.json())
-    .then(data => {
+    .then(res=>res.json())
+    .then(data=>{
+        currentGame = data;
 
-        const list = document.getElementById("playersList");
-        list.innerHTML = "";
+        const qrGrid = document.getElementById("qrGrid");
+        const joinedList = document.getElementById("joinedList");
+        qrGrid.innerHTML = "";
+        joinedList.innerHTML = "";
 
-        if (!data.players) return;
-
-        data.players.forEach(player => {
-
-            const li = document.createElement("li");
-            li.innerText = player.name + " (" + player.character + ")";
-            list.appendChild(li);
-
+        // QR-codes
+        (data.players||[]).forEach(p=>{
+            if(!p.character){ // Alleen niet-gekozen spelers tonen
+                const card = document.createElement("div");
+                card.className="qr-card";
+                card.innerHTML = `
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://efteling-kahoot-pro.onrender.com/player/${p.joinId}">
+                    <p>${p.name}</p>
+                `;
+                qrGrid.appendChild(card);
+            }
         });
 
+        // Gejoined
+        (data.players||[]).filter(p=>p.character).forEach(p=>{
+            const li = document.createElement("li");
+            li.textContent = `${p.name} (${p.character})`;
+            joinedList.appendChild(li);
+        });
     });
 }
 
+// --- Socket realtime ---
+socket.on("gameUpdate", payload=>{
+    if(payload.type==="playersUpdate") renderDashboard();
+});
 
-// 🔄 GAME RESETTEN
-function resetGame() {
-
-    fetch("/reset-game", { method: "POST" })
-    .then(() => {
-        alert("Game gereset!");
-        location.reload();
-    });
-
-}
+// --- Init ---
+window.addEventListener("load", ()=>{ renderDashboard(); });
 
 </script>
 
 </body>
 </html>
-
