@@ -48,6 +48,11 @@ app.post("/host-login", (req, res) => {
     return res.redirect("/host-login");
 });
 
+app.get("/start-quiz", (req, res) => {
+    if (!req.session.loggedIn) return res.redirect("/host-login");
+    res.sendFile(path.join(__dirname, "public", "start-quiz.html"));
+});
+
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
