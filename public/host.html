@@ -43,6 +43,11 @@ h1 { text-align:center; }
     <ul id="joinedList"></ul>
 </div>
 
+    <div class="section" id="helpRequests">
+    <h2>Hulp</h2>
+    <ul id="helpList"></ul>
+</div>
+
 <div id="helpOverlay">
     <p>Hulp is onderweg...</p>
     <button onclick="closeHelp()">Annuleer</button>
@@ -52,6 +57,7 @@ h1 { text-align:center; }
 <script>
 const socket = io();
 let currentGame = { players: [], scores: [] };
+let helpRequests = [];
 
 // --- Help overlay ---
 document.getElementById("helpBtn").onclick = ()=> {
@@ -70,9 +76,12 @@ function renderDashboard(){
         currentGame = data;
 
         const qrGrid = document.getElementById("qrGrid");
-        const joinedList = document.getElementById("joinedList");
-        qrGrid.innerHTML = "";
-        joinedList.innerHTML = "";
+const joinedList = document.getElementById("joinedList");
+const helpList = document.getElementById("helpList");
+
+qrGrid.innerHTML = "";
+joinedList.innerHTML = "";
+helpList.innerHTML = "";
 
         // QR-codes
         (data.players||[]).forEach(p=>{
@@ -88,17 +97,22 @@ function renderDashboard(){
         });
 
         // Gejoined
-        (data.players||[]).filter(p=>p.character).forEach(p=>{
-            const li = document.createElement("li");
-            li.textContent = `${p.name} (${p.character})`;
-            joinedList.appendChild(li);
-        });
+        helpRequests.forEach(name => {
+    const li = document.createElement("li");
+    li.textContent = name || "Niet bekend";
+    helpList.appendChild(li);
+});
     });
 }
 
 // --- Socket realtime ---
 socket.on("gameUpdate", payload=>{
     if(payload.type==="playersUpdate") renderDashboard();
+
+    if(payload.type==="helpRequest"){
+        helpRequests.push(payload.name || "Niet bekend");
+        renderDashboard();
+    }
 });
 
 // --- Init ---
