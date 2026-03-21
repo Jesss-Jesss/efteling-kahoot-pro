@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(session({
     secret: "supersecretkey",
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false
 }));
 
 // ---------------- LOGIN ----------------
@@ -51,9 +51,11 @@ app.post("/host-login", (req, res) => {
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "public", "start-quiz.html"));
-});
 
+    req.session.destroy(() => {
+        res.sendFile(path.join(__dirname, "public", "host.html"));
+    });
+});
 // ---------------- START QUIZ ----------------
 
 app.get("/player", (req, res) => {
