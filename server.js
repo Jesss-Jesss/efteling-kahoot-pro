@@ -25,12 +25,18 @@ let currentGame = {
 // ---------------- MIDDLEWARE ----------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), {
+    index: false
+}));
 app.use(session({
     secret: "supersecretkey",
     resave: false,
     saveUninitialized: false
 }));
+
+app.get("/host.html", (req, res) => {
+    return res.redirect("/host-login");
+});
 
 // ---------------- LOGIN ----------------
 app.get("/", (req, res) => res.redirect("/host-login"));
@@ -56,17 +62,9 @@ app.get("/start-quiz", (req, res) => {
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-
-    req.session.destroy(() => {
-        res.sendFile(path.join(__dirname, "public", "host.html"));
-    });
+    res.sendFile(path.join(__dirname, "public", "host.html"));
 });
 // ---------------- START QUIZ ----------------
-
-app.get("/player", (req, res) => {
-    if (!quizStarted) return res.send("Quiz nog niet gestart");
-    res.sendFile(path.join(__dirname, "public", "player.html"));
-});
 
 app.post("/api/start-quiz", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
