@@ -68,7 +68,14 @@ app.post("/api/start-quiz", (req, res) => {
     nextJoinId = 1001;
 
     // vul pendingPlayers automatisch
-    pendingPlayers = allowedNames.map(name => ({ name, joinId: nextJoinId++ }));
+    pendingPlayers = [
+    { name: "Jestin", joinId: 1001 },
+    { name: "Luca", joinId: 1002 },
+    { name: "Jules", joinId: 1003 },
+    { name: "Levi", joinId: 1004 },
+    { name: "Bink", joinId: 1005 },
+    { name: "Symen", joinId: 1006 }
+];
 
     console.log("Quiz gestart, pendingPlayers:", pendingPlayers);
 
@@ -89,7 +96,13 @@ app.get("/player/:joinId", (req, res) => {
     }
 
     // speler kan nu joinen
-    res.sendFile(path.join(__dirname, "public", "player-step3.html"));
+    res.send(`
+<script>
+localStorage.setItem("playerName", "${player.name}");
+localStorage.setItem("gameId", "${currentGame.id}");
+window.location.href="/player-step3.html";
+</script>
+`);
 });
 
 // ---------------- JOIN ----------------
