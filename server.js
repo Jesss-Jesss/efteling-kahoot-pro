@@ -96,6 +96,10 @@ app.post("/api/start-quiz", (req, res) => {
     return res.json({ success: true });
 });
 
+app.get("/player", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "player-scan.html"));
+});
+
 // ---------------- PLAYER ----------------
 app.get("/player/:joinId", (req, res) => {
     if (!quizStarted) return res.send("Quiz nog niet gestart");
