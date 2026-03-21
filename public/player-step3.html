@@ -188,7 +188,8 @@ function chooseCharacter(char) {
     body: JSON.stringify({
     gameId: localStorage.getItem("gameId"),
     name: name,
-    character: char.name
+    character: char.name,
+    playerId: playerId
 })
     })
     .then(res => res.json())
