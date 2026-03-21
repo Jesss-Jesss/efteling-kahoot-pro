@@ -43,7 +43,7 @@ app.post("/host-login", (req, res) => {
     const password = (req.body.password || "").trim();
     if (password === DASHBOARD_PASSWORD) {
         req.session.loggedIn = true;
-        return res.redirect("/host");
+        return res.redirect("/start-quiz");
     }
     return res.redirect("/host-login");
 });
