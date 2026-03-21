@@ -55,6 +55,12 @@ app.get("/host", (req, res) => {
 });
 
 // ---------------- START QUIZ ----------------
+
+app.get("/player", (req, res) => {
+    if (!quizStarted) return res.send("Quiz nog niet gestart");
+    res.sendFile(path.join(__dirname, "public", "player.html"));
+});
+
 app.post("/api/start-quiz", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
 
