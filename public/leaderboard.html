@@ -61,6 +61,11 @@ border-radius:10px;
 justify-content:center;
 }
 
+.playerRow img{
+border-radius:8px;
+object-fit:contain;
+}
+
 .playerName{
 font-size:18px;
 font-weight:bold;
@@ -130,6 +135,12 @@ qrContainer.appendChild(card);
 
 }
 
+const characterMap = {
+"Roodkapje":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png",
+"Jokie":"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png",
+"Pardoes":"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png"
+};
+  
 function renderPlayers(players){
 
 const list = document.getElementById("playersList");
@@ -141,6 +152,7 @@ const row = document.createElement("div");
 row.className = "playerRow";
 
 row.innerHTML = `
+<img src="${characterMap[p.character] || ''}" style="width:50px;height:50px;">
 <div class="playerName">${p.name}</div>
 `;
 
@@ -167,11 +179,18 @@ updateEverything(payload.data.players);
 
 });
 
+function loadLeaderboard(){
+
 fetch("/scores-full")
 .then(res=>res.json())
 .then(data=>{
 updateEverything(data.players);
 });
+
+}
+
+loadLeaderboard();
+setInterval(loadLeaderboard,1000);
 
 </script>
 
