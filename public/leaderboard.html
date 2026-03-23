@@ -3,73 +3,115 @@
 <head>
 <title>Leaderboard</title>
 <link rel="stylesheet" href="/style.css">
+
+<style>
+#playersList{
+display:flex;
+flex-direction:column;
+gap:10px;
+margin-top:20px;
+}
+
+.playerRow{
+display:flex;
+align-items:center;
+gap:12px;
+background:rgba(255,255,255,0.15);
+padding:10px;
+border-radius:10px;
+}
+
+.playerRow img{
+width:40px;
+height:40px;
+object-fit:contain;
+}
+
+.playerName{
+font-size:18px;
+font-weight:bold;
+}
+</style>
+
 </head>
+
 <body>
 
-<h1>🎢 Leaderboard</h1>
+<div id="joinInfo">
 
-<!-- ✅ SLIMME QR -->
-<img id="qr" width="250">
+<h2>Hoe joinen?</h2>
+<p>
+Ga naar:<br>
+<b>tinyurl.com/EftelingQuiz</b><br>
+en scan je QR-code
+</p>
 
-<!-- ✅ MAIN CONTAINER -->
-<div id="main">
-<p>Wacht tot de quiz start...</p>
+<h2>Jouw QR-code</h2>
+<div id="myQR"></div>
+
+<h2>Spelers</h2>
+<div id="playersList"></div>
+
 </div>
+
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
 
-const GAME_ID = "EFTEL-123456";
+const socket = io();
 
-/* ===============================
-   SLIMME QR
-=================================*/
+function renderQR(joinId){
 
-window.addEventListener("load", () => {
+const qrDiv = document.getElementById("myQR");
 
-    const fullUrl =
-        window.location.origin +
-        "/player-step2.html?gameId=" +
-        GAME_ID;
+qrDiv.innerHTML = `
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://efteling-kahoot-pro.onrender.com/player/${joinId}">
+`;
 
-    document.getElementById("qr").src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
-        encodeURIComponent(fullUrl);
+}
+
+function renderPlayers(players){
+
+const list = document.getElementById("playersList");
+list.innerHTML="";
+
+players.forEach(p=>{
+
+const row=document.createElement("div");
+row.className="playerRow";
+
+row.innerHTML=`
+<img src="${p.characterImg || ''}">
+<div class="playerName">${p.name}</div>
+`;
+
+list.appendChild(row);
 
 });
 
-/* ===============================
-   PLAYERS LADEN
-=================================*/
-
-function loadPlayers() {
-
-    fetch("/scores-full")
-    .then(res => res.json())
-    .then(data => {
-
-        let html = "<h2>Spelers</h2>";
-
-        if (!data.players || data.players.length === 0) {
-            html += "<p>Wacht tot de quiz start...</p>";
-        } else {
-
-            data.players.forEach(p => {
-                html += `
-                    <div class="playerCard">
-                        <strong>${p.name}</strong>
-                        <br>
-                        🎭 ${p.character}
-                    </div>
-                `;
-            });
-        }
-
-        document.getElementById("main").innerHTML = html;
-    });
 }
 
-setInterval(loadPlayers, 2000);
-loadPlayers();
+socket.on("gameUpdate",(payload)=>{
+
+if(payload.type==="playersUpdate"){
+
+renderPlayers(payload.data.players);
+
+}
+
+});
+
+fetch("/scores-full")
+.then(res=>res.json())
+.then(data=>{
+
+renderPlayers(data.players);
+
+if(data.players.length>0){
+renderQR(data.players[0].joinId);
+}
+
+});
 
 </script>
 
