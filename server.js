@@ -62,6 +62,9 @@ app.get("/start-quiz", (req, res) => {
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
+
+    req.session.loggedIn = false;
+
     res.sendFile(path.join(__dirname, "public", "host.html"));
 });
 // ---------------- START QUIZ ----------------
@@ -196,8 +199,16 @@ app.post("/reset-game", (req, res) => {
 // ---------------- SOCKET.IO ----------------
 io.on("connection", (socket) => {
     console.log("Nieuwe gebruiker verbonden");
+
     socket.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     socket.emit("phaseUpdate", "lobby");
+
+    socket.on("helpRequest", data => {
+        io.emit("gameUpdate", {
+            type: "helpRequest",
+            name: data.name || "Niet bekend"
+        });
+    });
 });
 
 // ---------------- SERVER ----------------
