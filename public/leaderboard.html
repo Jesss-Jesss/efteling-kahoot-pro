@@ -98,42 +98,16 @@ of scan jouw QR-code
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
-
 const socket = io();
 
 const allPlayers = [
-{ name:"Jestin", joinId:1001 },
-{ name:"Luca", joinId:1002 },
-{ name:"Jules", joinId:1003 },
-{ name:"Levi", joinId:1004 },
-{ name:"Bink", joinId:1005 },
-{ name:"Symen", joinId:1006 }
+  { name:"Jestin", joinId:1001 },
+  { name:"Luca", joinId:1002 },
+  { name:"Jules", joinId:1003 },
+  { name:"Levi", joinId:1004 },
+  { name:"Bink", joinId:1005 },
+  { name:"Symen", joinId:1006 }
 ];
-
-function renderQR(joinedPlayers){
-
-const qrContainer = document.getElementById("qrContainer");
-qrContainer.innerHTML = "";
-
-allPlayers.forEach(player=>{
-
-const alreadyJoined = joinedPlayers.find(p=>p.name===player.name);
-
-if(alreadyJoined) return;
-
-const card = document.createElement("div");
-card.className = "qrCard";
-
-card.innerHTML = `
-<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://efteling-kahoot-pro.onrender.com/player/${player.joinId}">
-<div class="qrName">${player.name}</div>
-`;
-
-qrContainer.appendChild(card);
-
-});
-
-}
 
 const characterMap = const characterMap = {
   "Jokie":"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
@@ -180,56 +154,65 @@ const characterMap = const characterMap = {
 
   "Pardoes":"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9"
 };
-  
-const list = document.getElementById("playersList");
-list.innerHTML = "";
 
-players.forEach(p=>{
+function renderQR(joinedPlayers){
+  const qrContainer = document.getElementById("qrContainer");
+  qrContainer.innerHTML = "";
 
-const row = document.createElement("div");
-row.className = "playerRow";
+  allPlayers.forEach(player => {
+    const alreadyJoined = joinedPlayers.find(p => p.name === player.name);
+    if(alreadyJoined) return;
 
-row.innerHTML = `
-<img src="${characterMap[p.character] || ''}" style="width:50px;height:50px;">
-<div class="playerName">${p.name}</div>
-`;
+    const card = document.createElement("div");
+    card.className = "qrCard";
 
-list.appendChild(row);
+    card.innerHTML = `
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://efteling-kahoot-pro.onrender.com/player/${player.joinId}">
+      <div class="qrName">${player.name}</div>
+    `;
 
-});
+    qrContainer.appendChild(card);
+  });
+}
 
+function renderPlayers(players){
+  const list = document.getElementById("playersList");
+  list.innerHTML = "";
+
+  players.forEach(p => {
+    const row = document.createElement("div");
+    row.className = "playerRow";
+
+    row.innerHTML = `
+      <img src="${characterMap[p.character] || ''}" style="width:50px;height:50px;">
+      <div class="playerName">${p.name}</div>
+    `;
+
+    list.appendChild(row);
+  });
 }
 
 function updateEverything(players){
-
-renderPlayers(players);
-renderQR(players);
-
+  renderPlayers(players);
+  renderQR(players);
 }
-
-socket.on("gameUpdate",(payload)=>{
-
-if(payload.type==="playersUpdate"){
-
-updateEverything(payload.data.players);
-
-}
-
-});
 
 function loadLeaderboard(){
-
-fetch("/scores-full")
-.then(res=>res.json())
-.then(data=>{
-updateEverything(data.players);
-});
-
+  fetch("/scores-full")
+    .then(res => res.json())
+    .then(data => {
+      updateEverything(data.players || []);
+    });
 }
 
-loadLeaderboard();
-setInterval(loadLeaderboard,1000);
+socket.on("gameUpdate", payload => {
+  if(payload.type === "playersUpdate"){
+    updateEverything(payload.data.players || []);
+  }
+});
 
+loadLeaderboard();
+setInterval(loadLeaderboard, 1000);
 </script>
 
 </body>
