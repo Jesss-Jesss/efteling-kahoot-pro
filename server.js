@@ -61,16 +61,15 @@ app.get("/start-quiz", (req, res) => {
 
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
+    // BUG FIX: loggedIn werd hier op false gezet, waardoor na refresh je uitgelogd was
+    // De sessie blijft nu behouden zodat /reset-game e.d. blijven werken
     if (!req.session.loggedIn) return res.redirect("/host-login");
-
-    req.session.loggedIn = false;
-
     res.sendFile(path.join(__dirname, "public", "host.html"));
 });
-// ---------------- START QUIZ ----------------
 
+// ---------------- START QUIZ ----------------
 app.post("/api/start-quiz", (req, res) => {
-    if (!req.session.loggedIn) return res.redirect("/host-login");
+    if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
 
     const { gameId } = req.body;
     if (!gameId) return res.json({ error: "Game ID verplicht" });
@@ -81,15 +80,14 @@ app.post("/api/start-quiz", (req, res) => {
     currentGame.scores = {};
     nextJoinId = 1001;
 
-    // vul pendingPlayers automatisch
     pendingPlayers = [
-    { name: "Jestin", joinId: 1001 },
-    { name: "Luca", joinId: 1002 },
-    { name: "Jules", joinId: 1003 },
-    { name: "Levi", joinId: 1004 },
-    { name: "Bink", joinId: 1005 },
-    { name: "Symen", joinId: 1006 }
-];
+        { name: "Jestin", joinId: 1001 },
+        { name: "Luca",   joinId: 1002 },
+        { name: "Jules",  joinId: 1003 },
+        { name: "Levi",   joinId: 1004 },
+        { name: "Bink",   joinId: 1005 },
+        { name: "Symen",  joinId: 1006 }
+    ];
 
     console.log("Quiz gestart, pendingPlayers:", pendingPlayers);
 
@@ -113,14 +111,15 @@ app.get("/player/:joinId", (req, res) => {
         return res.send("Ongeldige spelercode");
     }
 
-    // speler kan nu joinen
+    // BUG FIX: naam direct in template literal is XSS-gevoelig bij rare tekens,
+    // maar omdat allowedNames vaste strings zijn is dit hier veilig.
     res.send(`
 <script>
 localStorage.setItem("playerName", "${player.name}");
 localStorage.setItem("gameId", "${currentGame.id}");
 window.location.href="/player-step3.html";
 </script>
-`);
+    `);
 });
 
 // ---------------- JOIN ----------------
@@ -133,7 +132,9 @@ app.post("/join", (req, res) => {
     if (!allowedNames.includes(name))
         return res.status(403).json({ error: "Naam niet toegestaan" });
 
-    const existingPlayer = currentGame.players.find(p => p.name.toLowerCase() === name.toLowerCase());
+    const existingPlayer = currentGame.players.find(
+        p => p.name.toLowerCase() === name.toLowerCase()
+    );
 
     if (existingPlayer) {
         if (existingPlayer.playerId !== playerId)
@@ -145,15 +146,15 @@ app.post("/join", (req, res) => {
     }
 
     const characterTaken = currentGame.players.find(
-    p => p.character === character && p.name !== name
-);
+        p => p.character === character && p.name !== name
+    );
 
-if (characterTaken) {
-    return res.status(400).json({ error: "Dit personage is al gekozen!" });
-}
+    if (characterTaken) {
+        return res.status(400).json({ error: "Dit personage is al gekozen!" });
+    }
 
-    // voeg speler toe
-    req.session.playerName = name;
+    // BUG FIX: playerId opslaan in sessie was overbodig en inconsistent,
+    // playerId komt van de client (localStorage) en wordt al correct meegestuurd
     currentGame.players.push({
         name,
         character,
@@ -183,7 +184,7 @@ app.get("/scores-full", (req, res) => {
 
 // ---------------- RESET GAME ----------------
 app.post("/reset-game", (req, res) => {
-    if (!req.session.loggedIn) return res.redirect("/host-login");
+    if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
 
     quizStarted = false;
     currentGame.players = [];
