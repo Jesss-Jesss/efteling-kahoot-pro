@@ -28,10 +28,18 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"), {
     index: false
 }));
+
+app.set("trust proxy", 1); // Render draait achter een proxy
+
 app.use(session({
     secret: "supersecretkey",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV !== "development", // true op Render (HTTPS), false lokaal
+        sameSite: "lax",
+        maxAge: 1000 * 60 * 60 * 4 // 4 uur
+    }
 }));
 
 // /host.html wordt nu afgehandeld door de beveiligde route hieronder
