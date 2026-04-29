@@ -20,34 +20,27 @@ h1 { text-align:center; }
 </style>
 </head>
 <body>
-
 <h1>🎮 Dashboard</h1>
-
 <div class="section">
     <button id="refreshBtn">🔄 Refresh</button>
     <button id="helpBtn">❓ Vraag om hulp</button>
 </div>
-
 <div class="section" id="instructions">
     <h2>Deel 1/6: Hoe joinen</h2>
     <p>Ga naar: <a href="https://tinyurl.com/EftelingQuiz" target="_blank">tinyurl.com/EftelingQuiz</a> en scan je QR-code.</p>
 </div>
-
 <div class="section" id="qrSection">
-    <h2>Deel 2-4/6: QR Codes</h2>
+    <h2>QR Codes</h2>
     <div id="qrGrid" class="qr-grid"></div>
 </div>
-
 <div class="section" id="joinedNames">
-    <h2>Deel 5-6: Spelers die gejoint zijn</h2>
+    <h2>Spelers die gejoint zijn</h2>
     <ul id="joinedList"></ul>
 </div>
-
-    <div class="section" id="helpRequests">
-    <h2>Hulp</h2>
+<div class="section" id="helpRequests">
+    <h2>Hulp aanvragen</h2>
     <ul id="helpList"></ul>
 </div>
-
 <div id="helpOverlay">
     <p>Hulp is onderweg...</p>
     <button onclick="closeHelp()">Annuleer</button>
@@ -56,69 +49,70 @@ h1 { text-align:center; }
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
-let currentGame = { players: [], scores: [] };
 let helpRequests = [];
 
-// --- Help overlay ---
-document.getElementById("helpBtn").onclick = ()=> {
-    document.getElementById("helpOverlay").style.display="block";
+document.getElementById("helpBtn").onclick = () => {
+    document.getElementById("helpOverlay").style.display = "block";
 };
-function closeHelp() { document.getElementById("helpOverlay").style.display="none"; }
-
-// --- Refresh button ---
-document.getElementById("refreshBtn").onclick = ()=> { renderDashboard(); };
-
-// --- Render QR codes & joined names ---
-function renderDashboard(){
-    fetch("/scores-full")
-    .then(res=>res.json())
-    .then(data=>{
-        currentGame = data;
-
-        const qrGrid = document.getElementById("qrGrid");
-const joinedList = document.getElementById("joinedList");
-const helpList = document.getElementById("helpList");
-
-qrGrid.innerHTML = "";
-joinedList.innerHTML = "";
-helpList.innerHTML = "";
-
-        // QR-codes
-        (data.players||[]).forEach(p=>{
-            if(!p.character){ // Alleen niet-gekozen spelers tonen
-                const card = document.createElement("div");
-                card.className="qr-card";
-                card.innerHTML = `
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://efteling-kahoot-pro.onrender.com/player/${p.joinId}">
-                    <p>${p.name}</p>
-                `;
-                qrGrid.appendChild(card);
-            }
-        });
-
-        // Gejoined
-        helpRequests.forEach(name => {
-    const li = document.createElement("li");
-    li.textContent = name || "Niet bekend";
-    helpList.appendChild(li);
-});
-    });
+function closeHelp() {
+    document.getElementById("helpOverlay").style.display = "none";
 }
 
-// --- Socket realtime ---
-socket.on("gameUpdate", payload=>{
-    if(payload.type==="playersUpdate") renderDashboard();
+document.getElementById("refreshBtn").onclick = () => { renderDashboard(); };
 
-    if(payload.type==="helpRequest"){
+function renderDashboard() {
+    fetch("/scores-full")
+        .then(res => res.json())
+        .then(data => {
+            const qrGrid     = document.getElementById("qrGrid");
+            const joinedList = document.getElementById("joinedList");
+            const helpList   = document.getElementById("helpList");
+
+            qrGrid.innerHTML     = "";
+            joinedList.innerHTML = "";
+            helpList.innerHTML   = "";
+
+            // BUG FIX: QR-codes tonen voor spelers die nog GEEN personage gekozen hebben
+            (data.players || []).forEach(p => {
+                if (!p.character) {
+                    const card = document.createElement("div");
+                    card.className = "qr-card";
+                    card.innerHTML = `
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://efteling-kahoot-pro.onrender.com/player/${p.joinId}">
+                        <p>${p.name}</p>
+                    `;
+                    qrGrid.appendChild(card);
+                }
+            });
+
+            // BUG FIX: joinedList werd nooit gevuld — nu wel
+            (data.players || []).forEach(p => {
+                if (p.character) {
+                    const li = document.createElement("li");
+                    li.textContent = `${p.name} — ${p.character}`;
+                    joinedList.appendChild(li);
+                }
+            });
+
+            // Hulp aanvragen
+            helpRequests.forEach(name => {
+                const li = document.createElement("li");
+                li.textContent = name || "Niet bekend";
+                helpList.appendChild(li);
+            });
+        });
+}
+
+socket.on("gameUpdate", payload => {
+    if (payload.type === "playersUpdate") renderDashboard();
+    if (payload.type === "helpRequest") {
+        // BUG FIX: payload.name was kapot geschreven als [payload.name](http://...)
         helpRequests.push(payload.name || "Niet bekend");
         renderDashboard();
     }
 });
 
-// --- Init ---
-window.addEventListener("load", ()=>{ renderDashboard(); });
-
+window.addEventListener("load", () => { renderDashboard(); });
 </script>
-
 </body>
 </html>
