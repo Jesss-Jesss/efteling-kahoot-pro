@@ -151,24 +151,33 @@ app.post("/join", (req, res) => {
         if (existingPlayer.playerId !== playerId)
             return res.status(400).json({ error: "Naam al in gebruik!" });
 
-        existingPlayer.character = character;
+        // Alleen personage updaten als er een meegegeven is
+        if (character) {
+            const characterTaken = currentGame.players.find(
+                p => p.character === character && p.name !== name
+            );
+            if (characterTaken)
+                return res.status(400).json({ error: "Dit personage is al gekozen!" });
+
+            existingPlayer.character = character;
+        }
+
         io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
         return res.json({ success: true });
     }
 
-    const characterTaken = currentGame.players.find(
-        p => p.character === character && p.name !== name
-    );
-
-    if (characterTaken) {
-        return res.status(400).json({ error: "Dit personage is al gekozen!" });
+    // Nieuwe speler — personage hoeft nog niet gekozen te zijn
+    if (character) {
+        const characterTaken = currentGame.players.find(
+            p => p.character === character && p.name !== name
+        );
+        if (characterTaken)
+            return res.status(400).json({ error: "Dit personage is al gekozen!" });
     }
 
-    // BUG FIX: playerId opslaan in sessie was overbodig en inconsistent,
-    // playerId komt van de client (localStorage) en wordt al correct meegestuurd
     currentGame.players.push({
         name,
-        character,
+        character: character || null,
         playerId,
         joinId: pendingPlayers.find(p => p.name === name)?.joinId || nextJoinId++
     });
