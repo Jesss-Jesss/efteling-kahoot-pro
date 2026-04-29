@@ -1,93 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-<title>Start Quiz</title>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efteling Quiz — Starten</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
+:root {
+    --gold: #f0c040;
+    --dark: #0a0d14;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(255,255,255,0.1);
+    --green: #4caf82;
+    --red: #e05555;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0f172a;
+    font-family: 'Lato', sans-serif;
+    background: var(--dark);
     color: white;
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.box {
-    background: #1e293b;
-    padding: 40px;
-    border-radius: 15px;
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.05) 0%, transparent 60%),
+        url("https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg") center/cover no-repeat;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10,13,20,0.6) 0%, rgba(10,13,20,0.97) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.card {
+    position: relative;
+    z-index: 10;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 48px 44px 44px;
+    width: 400px;
     text-align: center;
-    width: 350px;
+    animation: fadeUp 0.5s ease both;
 }
 
-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    margin-bottom: 15px;
-    font-size: 16px;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-button {
-    padding: 12px;
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.logo span { color: white; font-weight: 700; }
+
+.subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+}
+
+.label {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+}
+
+.input-wrap {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-wrap input {
     width: 100%;
-    border: none;
-    border-radius: 8px;
-    background: #3b82f6;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
     color: white;
-    font-size: 16px;
+    font-family: 'Lato', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+.input-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+.input-wrap input:focus {
+    border-color: rgba(240,192,64,0.5);
+    background: rgba(255,255,255,0.09);
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--gold);
+    color: #0a0d14;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
     cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
+.btn:hover  { opacity: 0.88; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-button:hover {
-    background: #2563eb;
+/* Spinner */
+.spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(10,13,20,0.3);
+    border-top-color: #0a0d14;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
+.feedback {
+    margin-top: 16px;
+    font-size: 13px;
+    min-height: 18px;
+    border-radius: 8px;
+    padding: 0;
+    transition: all 0.2s;
+}
+.feedback.error   { color: var(--red); }
+.feedback.success { color: var(--green); }
 </style>
-
 </head>
 <body>
+<div class="card">
+    <div class="logo">Efteling <span>Quiz</span></div>
+    <div class="subtitle">Nieuwe sessie starten</div>
 
-<div class="box">
+    <div class="label">Game ID</div>
+    <div class="input-wrap">
+        <input type="text" id="gameId" placeholder="bijv. efteling-2025" autofocus>
+    </div>
 
-<h2>🎮 Quiz Starten</h2>
+    <button class="btn" id="startBtn" onclick="startQuiz()">
+        <span id="btnText">START QUIZ</span>
+        <div class="spinner" id="spinner"></div>
+    </button>
 
-<input type="text" id="gameId" placeholder="Voer Game ID in">
-<button onclick="startQuiz()">Start Quiz</button>
-
+    <div class="feedback" id="feedback"></div>
 </div>
 
 <script>
-
 function startQuiz() {
+    const gameId   = document.getElementById("gameId").value.trim();
+    const btn      = document.getElementById("startBtn");
+    const spinner  = document.getElementById("spinner");
+    const btnText  = document.getElementById("btnText");
+    const feedback = document.getElementById("feedback");
 
-    const gameId = document.getElementById("gameId").value;
+    if (!gameId) {
+        feedback.className = "feedback error";
+        feedback.textContent = "Voer een Game ID in.";
+        return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    spinner.style.display = "block";
+    btnText.textContent = "BEZIG...";
+    feedback.textContent = "";
+    feedback.className = "feedback";
 
     fetch("/api/start-quiz", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ gameId })
     })
     .then(res => res.json())
     .then(data => {
-
         if (data.error) {
-            alert(data.error);
+            feedback.className = "feedback error";
+            feedback.textContent = data.error;
+            btn.disabled = false;
+            spinner.style.display = "none";
+            btnText.textContent = "START QUIZ";
             return;
         }
-
-        window.location.href = "/host.html";
+        feedback.className = "feedback success";
+        feedback.textContent = "✔ Quiz gestart! Doorsturen...";
+        setTimeout(() => { window.location.href = "/host"; }, 800);
+    })
+    .catch(() => {
+        feedback.className = "feedback error";
+        feedback.textContent = "Kon de server niet bereiken.";
+        btn.disabled = false;
+        spinner.style.display = "none";
+        btnText.textContent = "START QUIZ";
     });
 }
 
+// Enter-toets support
+document.getElementById("gameId").addEventListener("keydown", e => {
+    if (e.key === "Enter") startQuiz();
+});
 </script>
-
 </body>
 </html>
