@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wachten op goedkeuring</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --gold: #f0c040;
+    --dark: #0a0d14;
+    --green: #4caf82;
+    --red: #e05555;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Lato', sans-serif;
+    background: var(--dark);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.04) 0%, transparent 60%),
+        url("https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg") center/cover no-repeat;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10,13,20,0.6) 0%, rgba(10,13,20,0.97) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.main-card {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 20px;
+    max-width: 340px;
+    width: 100%;
+    animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 44px;
+}
+.logo span { color: white; font-weight: 700; }
+
+.spinner-ring {
+    width: 68px;
+    height: 68px;
+    border: 3px solid rgba(255,255,255,0.07);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1.1s linear infinite;
+    margin: 0 auto 28px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status-title {
+    font-family: 'Cinzel', serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.status-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.7;
+    max-width: 260px;
+    margin: 0 auto;
+}
+
+.name-badge {
+    display: inline-block;
+    margin-top: 22px;
+    background: rgba(240,192,64,0.1);
+    border: 1px solid rgba(240,192,64,0.3);
+    border-radius: 50px;
+    padding: 6px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 1px;
+}
+
+/* Spelleider knop rechtsonder */
+#spelleiderBtn {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 50px;
+    padding: 10px 18px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+}
+#spelleiderBtn:hover {
+    background: rgba(255,255,255,0.11);
+    color: white;
+    border-color: rgba(255,255,255,0.28);
+}
+
+/* QR Overlay */
+#qrOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(10,13,20,0.92);
+    backdrop-filter: blur(8px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#qrOverlay.active { display: flex; }
+
+.qr-box {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 28px 20px;
+    text-align: center;
+    animation: popIn 0.22s ease both;
+}
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.qr-box img {
+    display: block;
+    width: 210px;
+    height: 210px;
+}
+.qr-name {
+    margin-top: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+}
+.qr-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.qr-close-btn {
+    margin-top: 20px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 50px;
+    color: rgba(255,255,255,0.45);
+    padding: 9px 26px;
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+.qr-close-btn:hover { color: white; border-color: rgba(255,255,255,0.45); }
+
+/* Resultaat scherm */
+#statusCard {
+    display: none;
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 20px;
+    max-width: 320px;
+    width: 100%;
+    animation: fadeUp 0.4s ease both;
+}
+.result-icon  { font-size: 60px; margin-bottom: 22px; }
+.result-title {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.result-title.ok  { color: var(--green); }
+.result-title.nok { color: var(--red); }
+.result-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<!-- Wachtscherm -->
+<div class="main-card" id="waitCard">
+    <div class="logo">Efteling <span>Quiz</span></div>
+    <div class="spinner-ring"></div>
+    <div class="status-title">Wachten op controle</div>
+    <div class="status-sub">De spelleider komt naar je toe om je in te schrijven. Blijf even wachten!</div>
+    <div class="name-badge" id="playerNameBadge">...</div>
+</div>
+
+<!-- Resultaatscherm -->
+<div id="statusCard">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-sub"  id="resultSub"></div>
+</div>
+
+<!-- Spelleider knop rechtsonder -->
+<button id="spelleiderBtn">🎮 SPEL LEIDER</button>
+
+<!-- QR Overlay -->
+<div id="qrOverlay">
+    <div class="qr-box">
+        <img id="qrImg" src="" alt="QR code">
+        <div class="qr-name" id="qrName"></div>
+        <div class="qr-hint">Laat de spelleider scannen</div>
+    </div>
+    <button class="qr-close-btn" onclick="toggleQr()">✕ &nbsp;Sluiten</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+const name     = localStorage.getItem("playerName");
+const gameId   = localStorage.getItem("gameId");
+let   playerId = localStorage.getItem("playerId");
+if (!playerId) {
+    playerId = "pid_" + Math.random().toString(36).slice(2);
+    localStorage.setItem("playerId", playerId);
+}
+
+let myToken  = null;
+let qrShown  = false;
+
+// Naam badge
+if (name) {
+    document.getElementById("playerNameBadge").textContent = name;
+    document.getElementById("qrName").textContent = name;
+}
+
+// Sessiecheck
+if (!name || !gameId) {
+    document.body.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;font-family:sans-serif;">
+            <div style="font-size:48px;margin-bottom:16px;">❌</div>
+            <h2>Sessie verlopen</h2>
+            <p style="margin-top:8px;opacity:.4;font-size:14px;">Scan je QR-code opnieuw.</p>
+        </div>`;
+}
+
+// Token aanvragen bij server
+function vraagToken() {
+    fetch("/api/join-aanvragen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, playerId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.token) {
+            myToken = data.token;
+            maakQR(myToken);
+        }
+    })
+    .catch(() => setTimeout(vraagToken, 3000));
+}
+
+// QR genereren met token als inhoud (geen externe URL — alleen het token zelf)
+function maakQR(token) {
+    document.getElementById("qrImg").src =
+        `https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(token)}&bgcolor=ffffff&color=000000&margin=2`;
+}
+
+// QR overlay aan/uitzetten
+function toggleQr() {
+    qrShown = !qrShown;
+    document.getElementById("qrOverlay").classList.toggle("active", qrShown);
+}
+
+document.getElementById("spelleiderBtn").addEventListener("click", toggleQr);
+
+// Beslissing van spelleider ontvangen via socket
+socket.on("joinBeslissing", (data) => {
+    if (data.token !== myToken) return;
+
+    // Verberg QR en wachtscherm
+    document.getElementById("qrOverlay").classList.remove("active");
+    document.getElementById("waitCard").style.display   = "none";
+    document.getElementById("spelleiderBtn").style.display = "none";
+    document.getElementById("statusCard").style.display = "block";
+
+    if (data.beslissing === "geaccepteerd") {
+        document.getElementById("resultIcon").textContent  = "✅";
+        document.getElementById("resultTitle").textContent = "Je bent geaccepteerd!";
+        document.getElementById("resultTitle").className   = "result-title ok";
+        document.getElementById("resultSub").textContent   = "Je wordt zo doorgestuurd naar de quiz...";
+        setTimeout(() => { window.location.href = "/player-step3.html"; }, 1800);
+    } else {
+        document.getElementById("resultIcon").textContent  = "❌";
+        document.getElementById("resultTitle").textContent = "Aanvraag afgewezen";
+        document.getElementById("resultTitle").className   = "result-title nok";
+        document.getElementById("resultSub").textContent   = "Scan je QR-code opnieuw om het nog een keer te proberen.";
+        setTimeout(() => { window.location.href = "/player"; }, 2800);
+    }
+});
+
+window.addEventListener("load", vraagToken);
+</script>
+</body>
+</html>
