@@ -34,9 +34,7 @@ app.use(session({
     saveUninitialized: false
 }));
 
-app.get("/host.html", (req, res) => {
-    return res.redirect("/host-login");
-});
+// /host.html wordt nu afgehandeld door de beveiligde route hieronder
 
 // ---------------- LOGIN ----------------
 app.get("/", (req, res) => res.redirect("/host-login"));
@@ -51,7 +49,8 @@ app.post("/host-login", (req, res) => {
         req.session.loggedIn = true;
         return res.redirect("/start-quiz");
     }
-    return res.redirect("/host-login");
+    // BUG FIX: stuur ?error=1 mee zodat de loginpagina een foutmelding kan tonen
+    return res.redirect("/host-login?error=1");
 });
 
 app.get("/start-quiz", (req, res) => {
@@ -60,9 +59,13 @@ app.get("/start-quiz", (req, res) => {
 });
 
 // ---------------- HOST DASHBOARD ----------------
+// /host en /host.html beiden beveiligd — redirect naar login als niet ingelogd
 app.get("/host", (req, res) => {
-    // BUG FIX: loggedIn werd hier op false gezet, waardoor na refresh je uitgelogd was
-    // De sessie blijft nu behouden zodat /reset-game e.d. blijven werken
+    if (!req.session.loggedIn) return res.redirect("/host-login");
+    res.sendFile(path.join(__dirname, "public", "host.html"));
+});
+
+app.get("/host.html", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
     res.sendFile(path.join(__dirname, "public", "host.html"));
 });
