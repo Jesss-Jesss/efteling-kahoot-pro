@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spelleider — Aanvragen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode"></script>
+<style>
+:root {
+    --gold: #f0c040;
+    --dark: #0a0d14;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(255,255,255,0.1);
+    --green: #4caf82;
+    --red: #e05555;
+    --blue: #5b9cf6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Lato', sans-serif;
+    background: var(--dark);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.04) 0%, transparent 60%),
+        url("https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg") center/cover no-repeat;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10,13,20,0.6) 0%, rgba(10,13,20,0.97) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* LOGIN */
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.login-card {
+    position: relative;
+    z-index: 10;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 44px 40px 40px;
+    width: 340px;
+    text-align: center;
+    animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.logo span { color: white; font-weight: 700; }
+.login-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+}
+.login-card input {
+    width: 100%;
+    padding: 13px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 14px;
+}
+.login-card input::placeholder { color: rgba(255,255,255,0.28); }
+.login-card input:focus { border-color: rgba(240,192,64,0.45); }
+.btn-gold {
+    width: 100%;
+    padding: 13px;
+    background: var(--gold);
+    color: #0a0d14;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+.btn-gold:hover  { opacity: 0.87; }
+.btn-gold:active { transform: scale(0.98); }
+.login-error {
+    margin-top: 13px;
+    font-size: 13px;
+    color: var(--red);
+    min-height: 18px;
+}
+
+/* APP */
+#appScreen { display: none; }
+
+header {
+    position: relative;
+    z-index: 10;
+    padding: 22px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--card-border);
+}
+.header-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+.header-logo span { color: white; font-weight: 700; }
+.players-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(240,192,64,0.1);
+    border: 1px solid rgba(240,192,64,0.25);
+    border-radius: 50px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+}
+.players-dot {
+    width: 7px; height: 7px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(0.8); }
+}
+
+main {
+    position: relative;
+    z-index: 10;
+    padding: 20px 18px 100px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Scan knop */
+.scan-btn {
+    width: 100%;
+    padding: 16px;
+    background: rgba(91,156,246,0.1);
+    border: 1px solid rgba(91,156,246,0.3);
+    border-radius: 14px;
+    color: var(--blue);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.2s;
+    margin-bottom: 20px;
+}
+.scan-btn:hover { background: rgba(91,156,246,0.17); }
+.scan-btn.active {
+    background: rgba(224,85,85,0.1);
+    border-color: rgba(224,85,85,0.3);
+    color: var(--red);
+}
+
+#scannerWrap {
+    display: none;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid var(--card-border);
+}
+#scannerWrap.active { display: block; }
+#qrReader { width: 100%; }
+
+.section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 12px;
+}
+
+#aanvraagList { display: flex; flex-direction: column; gap: 12px; }
+
+.aanvraag-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    animation: slideIn 0.3s ease both;
+}
+@keyframes slideIn {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.aanvraag-name {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+.aanvraag-time {
+    font-size: 11px;
+    color: rgba(255,255,255,0.28);
+    margin-bottom: 15px;
+}
+.aanvraag-btns { display: flex; gap: 10px; }
+.btn-accept {
+    flex: 1;
+    padding: 11px;
+    background: rgba(76,175,130,0.12);
+    border: 1px solid rgba(76,175,130,0.3);
+    border-radius: 10px;
+    color: var(--green);
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-accept:hover { background: rgba(76,175,130,0.22); }
+.btn-reject {
+    flex: 1;
+    padding: 11px;
+    background: rgba(224,85,85,0.1);
+    border: 1px solid rgba(224,85,85,0.25);
+    border-radius: 10px;
+    color: var(--red);
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-reject:hover { background: rgba(224,85,85,0.2); }
+
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+    opacity: 0.28;
+    font-size: 13px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+/* Toast */
+#toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(14px);
+    background: rgba(22,28,44,0.97);
+    border: 1px solid var(--card-border);
+    border-radius: 50px;
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.22s, transform 0.22s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+#toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="logo">Efteling <span>Quiz</span></div>
+        <div class="login-sub">Spelleider toegang</div>
+        <input type="password" id="loginInput" placeholder="Wachtwoord" autofocus>
+        <button class="btn-gold" onclick="doLogin()">INLOGGEN</button>
+        <div class="login-error" id="loginError"></div>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+    <header>
+        <div class="header-logo">Efteling <span>Quiz</span></div>
+        <div class="players-pill">
+            <div class="players-dot"></div>
+            <span id="playerCountLabel">0/6</span>
+        </div>
+    </header>
+
+    <main>
+        <button class="scan-btn" id="scanBtn" onclick="toggleScanner()">
+            <span id="scanBtnIcon">📷</span>
+            <span id="scanBtnText">QR CODE SCANNEN</span>
+        </button>
+
+        <div id="scannerWrap">
+            <div id="qrReader"></div>
+        </div>
+
+        <div class="section-label">Openstaande aanvragen</div>
+        <div id="aanvraagList">
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <div>Geen aanvragen</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let isLoggedIn    = false;
+let scannerActief = false;
+let html5QrCode   = null;
+let aanvragen     = {};
+
+// ---- Login ----
+function doLogin() {
+    const pw = document.getElementById("loginInput").value.trim();
+    fetch("/spelleider-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            isLoggedIn = true;
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("appScreen").style.display   = "block";
+            laadAanvragen();
+            laadSpelers();
+        } else {
+            document.getElementById("loginError").textContent = "Ongeldig wachtwoord.";
+        }
+    })
+    .catch(() => {
+        document.getElementById("loginError").textContent = "Server niet bereikbaar.";
+    });
+}
+document.getElementById("loginInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") doLogin();
+});
+
+// ---- Scanner ----
+function toggleScanner() {
+    scannerActief ? stopScanner() : startScanner();
+}
+
+function startScanner() {
+    document.getElementById("scannerWrap").classList.add("active");
+    document.getElementById("scanBtn").classList.add("active");
+    document.getElementById("scanBtnIcon").textContent = "⏹";
+    document.getElementById("scanBtnText").textContent = "STOPPEN";
+    scannerActief = true;
+
+    html5QrCode = new Html5Qrcode("qrReader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 12, qrbox: 220 },
+        (decoded) => {
+            verwerkToken(decoded.trim());
+            stopScanner();
+        }
+    ).catch(() => {
+        showToast("⚠️ Camera niet beschikbaar");
+        stopScanner();
+    });
+}
+
+function stopScanner() {
+    if (html5QrCode) { html5QrCode.stop().catch(() => {}); html5QrCode = null; }
+    document.getElementById("scannerWrap").classList.remove("active");
+    document.getElementById("scanBtn").classList.remove("active");
+    document.getElementById("scanBtnIcon").textContent = "📷";
+    document.getElementById("scanBtnText").textContent = "QR CODE SCANNEN";
+    scannerActief = false;
+}
+
+// ---- Token verwerken na scan ----
+function verwerkToken(token) {
+    if (!token.startsWith("tok_")) {
+        showToast("⚠️ Ongeldige QR code");
+        return;
+    }
+    // Haal naam op van server en toon kaart
+    fetch("/api/join-aanvragen")
+        .then(r => r.json())
+        .then(data => {
+            const aanvraag = data.aanvragen.find(a => a.token === token);
+            if (!aanvraag) {
+                showToast("⚠️ Aanvraag niet gevonden");
+                return;
+            }
+            if (!aanvragen[token]) {
+                aanvragen[token] = { name: aanvraag.name, time: nu() };
+                renderAanvragen();
+                showToast("🔍 Gevonden: " + aanvraag.name);
+            }
+        });
+}
+
+// ---- Aanvragen laden & renderen ----
+function laadAanvragen() {
+    fetch("/api/join-aanvragen")
+        .then(r => r.json())
+        .then(data => {
+            aanvragen = {};
+            data.aanvragen.forEach(a => {
+                aanvragen[a.token] = { name: a.name, time: nu() };
+            });
+            renderAanvragen();
+        });
+}
+
+function renderAanvragen() {
+    const list = document.getElementById("aanvraagList");
+    const keys = Object.keys(aanvragen);
+
+    if (keys.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div>Geen aanvragen</div></div>`;
+        return;
+    }
+
+    list.innerHTML = "";
+    keys.forEach(token => {
+        const a = aanvragen[token];
+        const card = document.createElement("div");
+        card.className = "aanvraag-card";
+        card.innerHTML = `
+            <div class="aanvraag-name">${a.name}</div>
+            <div class="aanvraag-time">Aangevraagd om ${a.time}</div>
+            <div class="aanvraag-btns">
+                <button class="btn-accept" onclick="accepteer('${token}')">✅ Accepteren</button>
+                <button class="btn-reject" onclick="wijs_af('${token}')">❌ Afwijzen</button>
+            </div>`;
+        list.appendChild(card);
+    });
+}
+
+function accepteer(token) {
+    fetch("/api/join-accepteren", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const naam = aanvragen[token]?.name || "Speler";
+            delete aanvragen[token];
+            renderAanvragen();
+            showToast("✅ " + naam + " geaccepteerd!");
+        }
+    });
+}
+
+function wijs_af(token) {
+    fetch("/api/join-afwijzen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const naam = aanvragen[token]?.name || "Speler";
+            delete aanvragen[token];
+            renderAanvragen();
+            showToast("❌ " + naam + " afgewezen");
+        }
+    });
+}
+
+// ---- Spelers teller ----
+function laadSpelers() {
+    fetch("/scores-full")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("playerCountLabel").textContent =
+                (data.players || []).length + "/6";
+        });
+}
+
+// ---- Socket ----
+socket.on("gameUpdate", payload => {
+    if (payload.type === "playersUpdate") laadSpelers();
+    if (payload.type === "joinAanvraag" && isLoggedIn) {
+        if (!aanvragen[payload.token]) {
+            aanvragen[payload.token] = { name: payload.name, time: nu() };
+            renderAanvragen();
+            showToast("🔔 Nieuwe aanvraag: " + payload.name);
+        }
+    }
+});
+
+// ---- Helpers ----
+function nu() {
+    return new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+let toastTimer = null;
+function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// ---- Init: check of sessie al actief is ----
+fetch("/spelleider-status")
+    .then(r => r.json())
+    .then(data => {
+        if (data.loggedIn) {
+            isLoggedIn = true;
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("appScreen").style.display   = "block";
+            laadAanvragen();
+            laadSpelers();
+        }
+    });
+
+setInterval(() => { if (isLoggedIn) laadSpelers(); }, 4000);
+</script>
+</body>
+</html>
