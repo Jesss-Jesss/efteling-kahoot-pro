@@ -1,13 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-    <title>Test Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efteling Quiz — Inloggen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --gold: #f0c040;
+    --dark: #0a0d14;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(255,255,255,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Lato', sans-serif;
+    background: var(--dark);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.05) 0%, transparent 60%),
+        url("https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg") center/cover no-repeat;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10,13,20,0.6) 0%, rgba(10,13,20,0.97) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.card {
+    position: relative;
+    z-index: 10;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 48px 44px 44px;
+    width: 380px;
+    text-align: center;
+    animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.logo span { color: white; font-weight: 700; }
+
+.subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+}
+
+.input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.input-wrap input {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: white;
+    font-family: 'Lato', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.input-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+
+.input-wrap input:focus {
+    border-color: rgba(240,192,64,0.5);
+    background: rgba(255,255,255,0.09);
+}
+
+.btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--gold);
+    color: #0a0d14;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 4px;
+}
+.btn:hover  { opacity: 0.88; }
+.btn:active { transform: scale(0.98); }
+
+.error-msg {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #e05555;
+    min-height: 18px;
+}
+</style>
 </head>
 <body>
-    <h2>Login Test</h2>
+<div class="card">
+    <div class="logo">Efteling <span>Quiz</span></div>
+    <div class="subtitle">Host Dashboard</div>
+
     <form action="/host-login" method="POST">
-        <input type="password" name="password" placeholder="Wachtwoord" required>
-        <button type="submit">Login</button>
+        <div class="input-wrap">
+            <input type="password" name="password" placeholder="Wachtwoord" required autofocus>
+        </div>
+        <button type="submit" class="btn">INLOGGEN</button>
     </form>
+
+    <!-- Toon fout als inloggen mislukt via query param -->
+    <div class="error-msg" id="errMsg"></div>
+</div>
+
+<script>
+// Toon foutmelding als redirect terug naar login met ?error=1
+if (window.location.search.includes("error=1")) {
+    document.getElementById("errMsg").textContent = "Ongeldig wachtwoord. Probeer opnieuw.";
+}
+</script>
 </body>
 </html>
