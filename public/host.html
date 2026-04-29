@@ -198,7 +198,7 @@ main {
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 10px;
     padding: 9px 12px;
-    animation: slideIn 0.3s ease both;
+    /* FIX: geen animatie zodat rijen niet herstarten bij elke refresh */
 }
 @keyframes slideIn {
     from { opacity:0; transform:translateX(-8px); }
@@ -406,12 +406,14 @@ function renderPlayers(players) {
     const joinedMap = {};
     (players || []).forEach(p => { joinedMap[p.name] = p; });
 
-    const joined = (players || []).filter(p => p.character).length;
+    // FIX: joined = speler staat in currentGame.players, niet pas als die een personage heeft
+    const joined = (players || []).length;
     count.textContent = joined + "/" + allPlayers.length;
 
     list.innerHTML = "";
     allPlayers.forEach(ap => {
         const p = joinedMap[ap.name];
+        const isJoined = !!p;                        // in de lijst = gejoind
         const hasCharacter = p && p.character;
         const imgUrl = hasCharacter ? characterMap[p.character] : null;
 
@@ -423,10 +425,10 @@ function renderPlayers(players) {
                 : `<div class="player-avatar-placeholder">👤</div>`}
             <div class="player-info">
                 <div class="player-name">${ap.name}</div>
-                <div class="player-character">${hasCharacter ? p.character : 'Nog geen personage'}</div>
+                <div class="player-character">${hasCharacter ? p.character : isJoined ? 'Personage kiezen...' : 'Nog niet gejoind'}</div>
             </div>
-            <span class="player-badge ${hasCharacter ? 'badge--joined' : 'badge--waiting'}">
-                ${hasCharacter ? 'JOINED' : 'WACHT'}
+            <span class="player-badge ${isJoined ? 'badge--joined' : 'badge--waiting'}">
+                ${isJoined ? 'JOINED' : 'WACHT'}
             </span>
         `;
         list.appendChild(row);
