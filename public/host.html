@@ -3,116 +3,530 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
-<link rel="stylesheet" href="/style.css">
+<title>Host Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-body { font-family: Arial; background:#0f172a; color:white; padding:20px; }
-h1 { text-align:center; }
-.section { margin-bottom:30px; }
-.qr-grid { display:flex; flex-wrap:wrap; gap:20px; }
-.qr-card { text-align:center; background:#1e293b; padding:10px; border-radius:12px; width:150px; }
-.qr-card img { width:120px; height:120px; }
-#helpOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); color:white; text-align:center; padding-top:20%; font-size:2em; z-index:1000; }
-#helpOverlay button { margin-top:20px; font-size:0.5em; padding:10px 20px; }
-#refreshBtn, #helpBtn { padding:10px 20px; font-size:1em; margin:5px; border:none; border-radius:8px; cursor:pointer; }
-#refreshBtn { background:#3b82f6; color:white; }
-#helpBtn { background:#f59e0b; color:black; }
+:root {
+    --gold: #f0c040;
+    --dark: #0a0d14;
+    --card: rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.08);
+    --red: #e05555;
+    --green: #4caf82;
+    --blue: #5b9cf6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Lato', sans-serif;
+    background: var(--dark);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.05) 0%, transparent 60%),
+        url("https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg") center/cover no-repeat;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10,13,20,0.7) 0%, rgba(10,13,20,0.95) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+header {
+    position: relative;
+    z-index: 10;
+    padding: 28px 40px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+.logo span { color: white; font-weight: 700; }
+
+.status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(76,175,130,0.12);
+    border: 1px solid rgba(76,175,130,0.3);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+.status-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(0.8); }
+}
+
+main {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 22px;
+    padding: 28px 40px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.5s ease both;
+}
+.panel:nth-child(1) { animation-delay: 0.05s; }
+.panel:nth-child(2) { animation-delay: 0.12s; }
+.panel:nth-child(3) { animation-delay: 0.19s; }
+
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--card-border);
+}
+.panel-icon { font-size: 18px; line-height: 1; }
+.panel-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+}
+.panel-count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    min-width: 28px;
+    text-align: center;
+}
+
+.panel--players .panel-header { border-bottom-color: rgba(240,192,64,0.2); }
+.panel--players .panel-title  { color: var(--gold); }
+.panel--players .panel-count  { background: rgba(240,192,64,0.12); color: var(--gold); }
+
+.panel--help .panel-header { border-bottom-color: rgba(91,156,246,0.2); }
+.panel--help .panel-title  { color: var(--blue); }
+.panel--help .panel-count  { background: rgba(91,156,246,0.12); color: var(--blue); }
+
+.panel--errors .panel-header { border-bottom-color: rgba(224,85,85,0.2); }
+.panel--errors .panel-title  { color: var(--red); }
+.panel--errors .panel-count  { background: rgba(224,85,85,0.12); color: var(--red); }
+
+.panel-body {
+    flex: 1;
+    padding: 14px 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-height: 240px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-track { background: transparent; }
+.panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0.3;
+    font-size: 13px;
+    text-align: center;
+    padding: 30px 0;
+}
+.empty-state .empty-icon { font-size: 30px; }
+
+/* Player rows */
+.player-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 9px 12px;
+    animation: slideIn 0.3s ease both;
+}
+@keyframes slideIn {
+    from { opacity:0; transform:translateX(-8px); }
+    to   { opacity:1; transform:translateX(0); }
+}
+.player-avatar {
+    width: 42px; height: 42px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.06);
+    flex-shrink: 0;
+}
+.player-avatar-placeholder {
+    width: 42px; height: 42px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.player-info { flex: 1; min-width: 0; }
+.player-name {
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.player-character {
+    font-size: 12px;
+    color: rgba(255,255,255,0.38);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.player-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 50px;
+    flex-shrink: 0;
+}
+.badge--joined  { background: rgba(76,175,130,0.15); color: var(--green); border: 1px solid rgba(76,175,130,0.25); }
+.badge--waiting { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.09); }
+
+/* Help rows */
+.help-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    background: rgba(91,156,246,0.06);
+    border: 1px solid rgba(91,156,246,0.15);
+    border-radius: 10px;
+    padding: 11px 13px;
+    animation: slideIn 0.3s ease both;
+}
+.help-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.help-info { flex: 1; }
+.help-name  { font-weight: 700; font-size: 14px; color: var(--blue); }
+.help-time  { font-size: 11px; color: rgba(255,255,255,0.32); margin-top: 2px; }
+
+/* Error rows */
+.error-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    background: rgba(224,85,85,0.06);
+    border: 1px solid rgba(224,85,85,0.15);
+    border-radius: 10px;
+    padding: 11px 13px;
+    animation: slideIn 0.3s ease both;
+}
+.error-icon   { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+.error-info   { flex: 1; }
+.error-msg    { font-size: 13px; font-weight: 700; color: var(--red); }
+.error-detail { font-size: 11px; color: rgba(255,255,255,0.32); margin-top: 2px; }
+
+.dismiss-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.2);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+.dismiss-btn:hover { color: rgba(255,255,255,0.6); }
+
+@media (max-width: 900px) {
+    main   { grid-template-columns: 1fr; padding: 16px; }
+    header { padding: 16px 20px; }
+}
 </style>
 </head>
 <body>
-<h1>🎮 Dashboard</h1>
-<div class="section">
-    <button id="refreshBtn">🔄 Refresh</button>
-    <button id="helpBtn">❓ Vraag om hulp</button>
-</div>
-<div class="section" id="instructions">
-    <h2>Deel 1/6: Hoe joinen</h2>
-    <p>Ga naar: <a href="https://tinyurl.com/EftelingQuiz" target="_blank">tinyurl.com/EftelingQuiz</a> en scan je QR-code.</p>
-</div>
-<div class="section" id="qrSection">
-    <h2>QR Codes</h2>
-    <div id="qrGrid" class="qr-grid"></div>
-</div>
-<div class="section" id="joinedNames">
-    <h2>Spelers die gejoint zijn</h2>
-    <ul id="joinedList"></ul>
-</div>
-<div class="section" id="helpRequests">
-    <h2>Hulp aanvragen</h2>
-    <ul id="helpList"></ul>
-</div>
-<div id="helpOverlay">
-    <p>Hulp is onderweg...</p>
-    <button onclick="closeHelp()">Annuleer</button>
-</div>
+
+<header>
+    <div class="logo">Efteling <span>Quiz</span></div>
+    <div class="status-pill">
+        <div class="status-dot"></div>
+        LIVE
+    </div>
+</header>
+
+<main>
+    <!-- SPELERS -->
+    <div class="panel panel--players">
+        <div class="panel-header">
+            <span class="panel-icon">👥</span>
+            <span class="panel-title">Spelers</span>
+            <span class="panel-count" id="playerCount">0/6</span>
+        </div>
+        <div class="panel-body" id="playersList">
+            <div class="empty-state">
+                <div class="empty-icon">🎭</div>
+                <div>Wachten op spelers...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HULP -->
+    <div class="panel panel--help">
+        <div class="panel-header">
+            <span class="panel-icon">🙋</span>
+            <span class="panel-title">Hulp aanvragen</span>
+            <span class="panel-count" id="helpCount">0</span>
+        </div>
+        <div class="panel-body" id="helpList">
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <div>Geen hulp aanvragen</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOUTMELDINGEN -->
+    <div class="panel panel--errors">
+        <div class="panel-header">
+            <span class="panel-icon">⚠️</span>
+            <span class="panel-title">Foutmeldingen</span>
+            <span class="panel-count" id="errorCount">0</span>
+        </div>
+        <div class="panel-body" id="errorList">
+            <div class="empty-state">
+                <div class="empty-icon">🟢</div>
+                <div>Geen foutmeldingen</div>
+            </div>
+        </div>
+    </div>
+</main>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
-let helpRequests = [];
 
-document.getElementById("helpBtn").onclick = () => {
-    document.getElementById("helpOverlay").style.display = "block";
+const allPlayers = [
+    { name: "Jestin", joinId: 1001 },
+    { name: "Luca",   joinId: 1002 },
+    { name: "Jules",  joinId: 1003 },
+    { name: "Levi",   joinId: 1004 },
+    { name: "Bink",   joinId: 1005 },
+    { name: "Symen",  joinId: 1006 }
+];
+
+const characterMap = {
+    "Jokie":       "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
+    "Jet":         "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4",
+    "Assepoester": "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08",
+    "Roodkapje":   "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644",
+    "Klein Duimpje": "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC",
+    "Langnek":     "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B",
+    "Reus":        "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2",
+    "Heks":        "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398",
+    "Fakir":       "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E",
+    "Ezel":        "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2",
+    "Draak":       "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D",
+    "Sprookjesboom": "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328",
+    "Pardoes":     "https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9",
+    "Pardijn":     "https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C"
 };
-function closeHelp() {
-    document.getElementById("helpOverlay").style.display = "none";
+
+let helpRequests = [];
+let errorLog = [];
+
+function now() {
+    return new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-document.getElementById("refreshBtn").onclick = () => { renderDashboard(); };
+function addError(msg, detail) {
+    errorLog.push({ msg, detail: detail || '', time: now() });
+    renderErrors();
+}
 
-function renderDashboard() {
+function renderPlayers(players) {
+    const list  = document.getElementById("playersList");
+    const count = document.getElementById("playerCount");
+
+    const joinedMap = {};
+    (players || []).forEach(p => { joinedMap[p.name] = p; });
+
+    const joined = (players || []).filter(p => p.character).length;
+    count.textContent = joined + "/" + allPlayers.length;
+
+    list.innerHTML = "";
+    allPlayers.forEach(ap => {
+        const p = joinedMap[ap.name];
+        const hasCharacter = p && p.character;
+        const imgUrl = hasCharacter ? characterMap[p.character] : null;
+
+        const row = document.createElement("div");
+        row.className = "player-row";
+        row.innerHTML = `
+            ${imgUrl
+                ? `<img class="player-avatar" src="${imgUrl}" alt="${p.character}">`
+                : `<div class="player-avatar-placeholder">👤</div>`}
+            <div class="player-info">
+                <div class="player-name">${ap.name}</div>
+                <div class="player-character">${hasCharacter ? p.character : 'Nog geen personage'}</div>
+            </div>
+            <span class="player-badge ${hasCharacter ? 'badge--joined' : 'badge--waiting'}">
+                ${hasCharacter ? 'JOINED' : 'WACHT'}
+            </span>
+        `;
+        list.appendChild(row);
+    });
+}
+
+function renderHelp() {
+    const list  = document.getElementById("helpList");
+    const count = document.getElementById("helpCount");
+    count.textContent = helpRequests.length;
+
+    if (helpRequests.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div>Geen hulp aanvragen</div></div>`;
+        return;
+    }
+    list.innerHTML = "";
+    helpRequests.forEach((req, i) => {
+        const row = document.createElement("div");
+        row.className = "help-row";
+        row.innerHTML = `
+            <div class="help-icon">🙋</div>
+            <div class="help-info">
+                <div class="help-name">${req.name}</div>
+                <div class="help-time">${req.time}</div>
+            </div>
+            <button class="dismiss-btn" onclick="dismissHelp(${i})">✕</button>
+        `;
+        list.appendChild(row);
+    });
+}
+
+function dismissHelp(i) {
+    helpRequests.splice(i, 1);
+    renderHelp();
+}
+
+function renderErrors() {
+    const list  = document.getElementById("errorList");
+    const count = document.getElementById("errorCount");
+    count.textContent = errorLog.length;
+
+    if (errorLog.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🟢</div><div>Geen foutmeldingen</div></div>`;
+        return;
+    }
+    list.innerHTML = "";
+    errorLog.forEach((e, i) => {
+        const row = document.createElement("div");
+        row.className = "error-row";
+        row.innerHTML = `
+            <div class="error-icon">⚠️</div>
+            <div class="error-info">
+                <div class="error-msg">${e.msg}</div>
+                <div class="error-detail">${e.detail ? e.detail + ' · ' : ''}${e.time}</div>
+            </div>
+            <button class="dismiss-btn" onclick="dismissError(${i})">✕</button>
+        `;
+        list.appendChild(row);
+    });
+}
+
+function dismissError(i) {
+    errorLog.splice(i, 1);
+    renderErrors();
+}
+
+function loadDashboard() {
     fetch("/scores-full")
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("Server fout " + res.status);
+            return res.json();
+        })
         .then(data => {
-            const qrGrid     = document.getElementById("qrGrid");
-            const joinedList = document.getElementById("joinedList");
-            const helpList   = document.getElementById("helpList");
-
-            qrGrid.innerHTML     = "";
-            joinedList.innerHTML = "";
-            helpList.innerHTML   = "";
-
-            // BUG FIX: QR-codes tonen voor spelers die nog GEEN personage gekozen hebben
-            (data.players || []).forEach(p => {
-                if (!p.character) {
-                    const card = document.createElement("div");
-                    card.className = "qr-card";
-                    card.innerHTML = `
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://efteling-kahoot-pro.onrender.com/player/${p.joinId}">
-                        <p>${p.name}</p>
-                    `;
-                    qrGrid.appendChild(card);
-                }
-            });
-
-            // BUG FIX: joinedList werd nooit gevuld — nu wel
-            (data.players || []).forEach(p => {
-                if (p.character) {
-                    const li = document.createElement("li");
-                    li.textContent = `${p.name} — ${p.character}`;
-                    joinedList.appendChild(li);
-                }
-            });
-
-            // Hulp aanvragen
-            helpRequests.forEach(name => {
-                const li = document.createElement("li");
-                li.textContent = name || "Niet bekend";
-                helpList.appendChild(li);
-            });
+            renderPlayers(data.players || []);
+        })
+        .catch(err => {
+            addError("Kon data niet laden", err.message);
         });
 }
 
 socket.on("gameUpdate", payload => {
-    if (payload.type === "playersUpdate") renderDashboard();
+    if (payload.type === "playersUpdate") {
+        renderPlayers((payload.data && payload.data.players) || []);
+    }
     if (payload.type === "helpRequest") {
-        // BUG FIX: payload.name was kapot geschreven als [payload.name](http://...)
-        helpRequests.push(payload.name || "Niet bekend");
-        renderDashboard();
+        helpRequests.push({ name: payload.name || "Onbekend", time: now() });
+        renderHelp();
+    }
+    if (payload.type === "error") {
+        addError(payload.message || "Onbekende fout", payload.detail || '');
     }
 });
 
-window.addEventListener("load", () => { renderDashboard(); });
+socket.on("connect_error", () => addError("Verbinding mislukt", "Socket.IO"));
+socket.on("disconnect",    () => addError("Verbinding verloren", "Herlaad de pagina"));
+
+window.addEventListener("load", () => {
+    loadDashboard();
+    setInterval(loadDashboard, 3000);
+});
 </script>
 </body>
 </html>
