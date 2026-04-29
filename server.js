@@ -22,6 +22,9 @@ let currentGame = {
     scores: {}
 };
 
+// Wachtende join-aanvragen: token -> { name, playerId, socketId }
+let pendingApprovals = {};
+
 // ---------------- MIDDLEWARE ----------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -122,13 +125,12 @@ app.get("/player/:joinId", (req, res) => {
         return res.send("Ongeldige spelercode");
     }
 
-    // BUG FIX: naam direct in template literal is XSS-gevoelig bij rare tekens,
-    // maar omdat allowedNames vaste strings zijn is dit hier veilig.
+    // Sla naam + gameId op in localStorage en stuur naar wachtpagina
     res.send(`
 <script>
 localStorage.setItem("playerName", "${player.name}");
 localStorage.setItem("gameId", "${currentGame.id}");
-window.location.href="/player-step3.html";
+window.location.href="/join-aanvraag.html";
 </script>
     `);
 });
@@ -185,6 +187,84 @@ app.post("/join", (req, res) => {
 
     io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     return res.json({ success: true });
+});
+
+// ---------------- SPELLEIDER LOGIN ----------------
+const SPELLEIDER_PASSWORD = "1234"; // zelfde wachtwoord, apart gehouden voor uitbreidbaarheid
+
+app.get("/join-indien", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "join-indien.html"));
+});
+
+app.post("/spelleider-login", (req, res) => {
+    const password = (req.body.password || "").trim();
+    if (password === SPELLEIDER_PASSWORD) {
+        req.session.spelleider = true;
+        return res.json({ success: true });
+    }
+    return res.status(401).json({ error: "Ongeldig wachtwoord" });
+});
+
+app.get("/spelleider-status", (req, res) => {
+    res.json({ loggedIn: !!req.session.spelleider });
+});
+
+// ---------------- JOIN AANVRAAG ----------------
+// Speler vraagt een token aan om goedkeuring te wachten
+app.post("/api/join-aanvragen", (req, res) => {
+    const { name, playerId } = req.body;
+
+    if (!quizStarted)
+        return res.status(400).json({ error: "Quiz niet gestart" });
+
+    if (!allowedNames.includes(name))
+        return res.status(403).json({ error: "Naam niet toegestaan" });
+
+    // Genereer uniek token voor deze aanvraag
+    const token = "tok_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    pendingApprovals[token] = { name, playerId, time: Date.now() };
+
+    // Stuur naar spelleider via socket
+    io.emit("gameUpdate", { type: "joinAanvraag", token, name });
+
+    return res.json({ success: true, token });
+});
+
+// Spelleider accepteert
+app.post("/api/join-accepteren", (req, res) => {
+    if (!req.session.spelleider) return res.status(401).json({ error: "Niet ingelogd" });
+
+    const { token } = req.body;
+    const aanvraag = pendingApprovals[token];
+    if (!aanvraag) return res.status(404).json({ error: "Aanvraag niet gevonden" });
+
+    delete pendingApprovals[token];
+
+    // Stuur naar de wachtende speler
+    io.emit("joinBeslissing", { token, beslissing: "geaccepteerd", name: aanvraag.name });
+
+    return res.json({ success: true });
+});
+
+// Spelleider wijst af
+app.post("/api/join-afwijzen", (req, res) => {
+    if (!req.session.spelleider) return res.status(401).json({ error: "Niet ingelogd" });
+
+    const { token } = req.body;
+    const aanvraag = pendingApprovals[token];
+    if (!aanvraag) return res.status(404).json({ error: "Aanvraag niet gevonden" });
+
+    delete pendingApprovals[token];
+
+    io.emit("joinBeslissing", { token, beslissing: "afgewezen", name: aanvraag.name });
+
+    return res.json({ success: true });
+});
+
+// Geeft lijst van openstaande aanvragen terug (voor join-indien.html)
+app.get("/api/join-aanvragen", (req, res) => {
+    if (!req.session.spelleider) return res.status(401).json({ error: "Niet ingelogd" });
+    res.json({ aanvragen: Object.entries(pendingApprovals).map(([token, v]) => ({ token, ...v })) });
 });
 
 // ---------------- LEADERBOARD ----------------
