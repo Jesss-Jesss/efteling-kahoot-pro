@@ -96,7 +96,8 @@ app.get("/start-quiz", (req, res) => {
 // ---------------- QUIZ SELECTIE & EDITOR ----------------
 
 app.get("/quiz-editor", (req, res) => {
-    res.send("WERKT");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send("<h1>WERKT NU 👌</h1>");
 });
 
 // Alle quizzen ophalen
