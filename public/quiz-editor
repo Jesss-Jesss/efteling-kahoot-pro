@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --gold: #f0c040;
+    --dark: #0a0d14;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(255,255,255,0.09);
+    --green: #4caf82;
+    --red: #e05555;
+    --blue: #5b9cf6;
+    --purple: #a78bfa;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family:'Lato',sans-serif;
+    background:var(--dark);
+    color:white;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.04) 0%, transparent 60%);
+    z-index:0; pointer-events:none;
+}
+
+/* ---- HEADER ---- */
+header {
+    position:sticky; top:0; z-index:100;
+    background:rgba(10,13,20,0.96);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--card-border);
+    padding:14px 28px;
+    display:flex; align-items:center; gap:16px;
+}
+.logo {
+    font-family:'Cinzel',serif; font-size:17px; font-weight:900;
+    color:var(--gold); letter-spacing:3px; text-transform:uppercase;
+    white-space:nowrap;
+}
+.logo span { color:white; font-weight:700; }
+
+.quiz-naam-input {
+    flex:1;
+    padding:9px 14px;
+    background:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:9px;
+    color:white;
+    font-family:'Lato',sans-serif;
+    font-size:15px; font-weight:700;
+    outline:none;
+    transition:border-color .2s;
+    min-width:0;
+}
+.quiz-naam-input::placeholder { color:rgba(255,255,255,0.28); font-weight:400; }
+.quiz-naam-input:focus { border-color:rgba(240,192,64,0.5); }
+
+.header-btns { display:flex; gap:10px; flex-shrink:0; }
+
+.btn-terug {
+    padding:9px 16px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:9px;
+    color:rgba(255,255,255,0.45);
+    font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .2s; white-space:nowrap;
+}
+.btn-terug:hover { color:white; border-color:rgba(255,255,255,0.28); }
+
+.btn-opslaan {
+    padding:9px 22px;
+    background:var(--gold);
+    color:#0a0d14;
+    border:none; border-radius:9px;
+    font-family:'Cinzel',serif;
+    font-size:12px; font-weight:700; letter-spacing:1.5px;
+    cursor:pointer; transition:opacity .2s, transform .1s;
+    white-space:nowrap;
+}
+.btn-opslaan:hover  { opacity:.88; }
+.btn-opslaan:active { transform:scale(.98); }
+
+.opslaan-status {
+    font-size:12px; color:rgba(255,255,255,0.3);
+    white-space:nowrap;
+}
+.opslaan-status.ok  { color:var(--green); }
+.opslaan-status.err { color:var(--red); }
+
+/* ---- LAYOUT ---- */
+.editor-layout {
+    position:relative; z-index:10;
+    display:flex;
+    flex:1;
+    min-height:0;
+}
+
+/* ---- SIDEBAR ---- */
+.sidebar {
+    width:240px; flex-shrink:0;
+    background:rgba(255,255,255,0.02);
+    border-right:1px solid var(--card-border);
+    display:flex; flex-direction:column;
+    overflow-y:auto;
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+
+.sidebar-header {
+    padding:16px 16px 10px;
+    font-family:'Cinzel',serif;
+    font-size:10px; font-weight:700;
+    letter-spacing:2px; text-transform:uppercase;
+    color:rgba(255,255,255,0.28);
+    border-bottom:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:space-between;
+}
+
+.vraag-teller { color:rgba(255,255,255,0.5); font-family:'Lato',sans-serif; }
+
+#vraagLijst {
+    flex:1;
+    padding:10px 10px 0;
+    display:flex; flex-direction:column; gap:6px;
+}
+
+.sidebar-item {
+    padding:10px 12px;
+    border-radius:9px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:background .15s, border-color .15s;
+    display:flex; align-items:center; gap:10px;
+}
+.sidebar-item:hover { background:rgba(255,255,255,0.05); }
+.sidebar-item.active {
+    background:rgba(240,192,64,0.09);
+    border-color:rgba(240,192,64,0.3);
+}
+
+.sidebar-num {
+    width:22px; height:22px;
+    background:rgba(255,255,255,0.08);
+    border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700;
+    color:rgba(255,255,255,0.4);
+    flex-shrink:0;
+}
+.sidebar-item.active .sidebar-num {
+    background:rgba(240,192,64,0.2);
+    color:var(--gold);
+}
+
+.sidebar-tekst {
+    flex:1; min-width:0;
+    font-size:12px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    color:rgba(255,255,255,0.55);
+}
+.sidebar-item.active .sidebar-tekst { color:white; }
+
+.sidebar-type {
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:4px;
+    flex-shrink:0;
+}
+.type-meerkeuze { background:rgba(91,156,246,0.15); color:var(--blue); }
+.type-open      { background:rgba(167,139,250,0.15); color:var(--purple); }
+
+.btn-nieuw-vraag {
+    margin:10px;
+    padding:11px;
+    background:rgba(255,255,255,0.04);
+    border:1px dashed rgba(255,255,255,0.15);
+    border-radius:9px;
+    color:rgba(255,255,255,0.4);
+    font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .2s;
+    text-align:center;
+}
+.btn-nieuw-vraag:hover { background:rgba(255,255,255,0.08); color:white; border-color:rgba(255,255,255,0.3); }
+
+/* ---- EDITOR HOOFD ---- */
+.editor-main {
+    flex:1; overflow-y:auto;
+    padding:32px 40px 80px;
+    display:flex; flex-direction:column; align-items:center;
+}
+.editor-main::-webkit-scrollbar { width:5px; }
+.editor-main::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+
+/* Leeg scherm */
+.leeg-scherm {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:16px; opacity:.3; text-align:center;
+    padding:60px 0;
+}
+.leeg-icon { font-size:48px; }
+.leeg-tekst { font-size:15px; }
+
+/* Vraag editor kaart */
+.vraag-editor {
+    width:100%; max-width:720px;
+    animation:fadeUp .25s ease both;
+}
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+.vraag-topbar {
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:20px;
+}
+.vraag-badge {
+    font-family:'Cinzel',serif;
+    font-size:11px; font-weight:700; letter-spacing:1.5px;
+    color:rgba(255,255,255,0.35);
+    white-space:nowrap;
+}
+
+/* Type toggle */
+.type-toggle {
+    display:flex;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--card-border);
+    border-radius:9px;
+    overflow:hidden;
+}
+.type-toggle button {
+    flex:1; padding:8px 14px;
+    background:none; border:none;
+    color:rgba(255,255,255,0.38);
+    font-family:'Lato',sans-serif;
+    font-size:12px; font-weight:700;
+    cursor:pointer; transition:all .15s;
+    white-space:nowrap;
+}
+.type-toggle button.active-meerkeuze {
+    background:rgba(91,156,246,0.15);
+    color:var(--blue);
+}
+.type-toggle button.active-open {
+    background:rgba(167,139,250,0.15);
+    color:var(--purple);
+}
+
+/* Tijdlimiet & punten */
+.vraag-settings {
+    display:flex; gap:10px; margin-left:auto;
+}
+.setting-select {
+    padding:7px 10px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px;
+    color:white;
+    font-family:'Lato',sans-serif;
+    font-size:12px; outline:none;
+    cursor:pointer;
+}
+.setting-select option { background:#1a2035; }
+
+/* Vraag tekst input */
+.vraag-input-wrap {
+    background:rgba(255,255,255,0.04);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:20px;
+    transition:border-color .2s;
+}
+.vraag-input-wrap:focus-within { border-color:rgba(255,255,255,0.2); }
+
+.vraag-input {
+    width:100%;
+    background:none; border:none;
+    color:white;
+    font-family:'Lato',sans-serif;
+    font-size:20px; font-weight:700;
+    outline:none; resize:none;
+    min-height:60px;
+    line-height:1.4;
+}
+.vraag-input::placeholder { color:rgba(255,255,255,0.2); font-weight:400; }
+
+.vraag-char-count {
+    margin-top:8px;
+    font-size:11px; color:rgba(255,255,255,0.2);
+    text-align:right;
+}
+
+/* Antwoorden grid */
+.antwoorden-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:16px;
+}
+
+/* Antwoord kaart */
+.antwoord-kaart {
+    background:rgba(255,255,255,0.04);
+    border:2px solid var(--card-border);
+    border-radius:12px;
+    padding:14px 14px 12px;
+    transition:border-color .2s, background .2s;
+    position:relative;
+}
+.antwoord-kaart.correct {
+    border-color:var(--green);
+    background:rgba(76,175,130,0.08);
+}
+
+/* Kleur accent links */
+.antwoord-kaart::before {
+    content:'';
+    position:absolute; left:0; top:10px; bottom:10px;
+    width:4px; border-radius:4px;
+    background:var(--ak-color, rgba(255,255,255,0.15));
+}
+.antwoord-kaart:nth-child(1)::before { --ak-color:#e05555; }
+.antwoord-kaart:nth-child(2)::before { --ak-color:#5b9cf6; }
+.antwoord-kaart:nth-child(3)::before { --ak-color:var(--gold); }
+.antwoord-kaart:nth-child(4)::before { --ak-color:var(--green); }
+
+.antwoord-toprow {
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:8px;
+}
+.antwoord-letter {
+    width:22px; height:22px;
+    border-radius:6px;
+    background:rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700;
+    color:rgba(255,255,255,0.4);
+    flex-shrink:0;
+}
+.antwoord-kaart.correct .antwoord-letter {
+    background:rgba(76,175,130,0.25);
+    color:var(--green);
+}
+
+.correct-toggle {
+    margin-left:auto;
+    background:none; border:none;
+    cursor:pointer; font-size:14px;
+    padding:2px; line-height:1;
+    opacity:.4; transition:opacity .2s, transform .2s;
+}
+.correct-toggle:hover { opacity:1; }
+.antwoord-kaart.correct .correct-toggle { opacity:1; transform:scale(1.1); }
+
+.antwoord-input {
+    width:100%; background:none; border:none;
+    color:white;
+    font-family:'Lato',sans-serif;
+    font-size:14px; font-weight:700;
+    outline:none;
+}
+.antwoord-input::placeholder { color:rgba(255,255,255,0.22); font-weight:400; }
+
+.antwoord-verwijder {
+    position:absolute; top:8px; right:8px;
+    background:none; border:none;
+    color:rgba(255,255,255,0.18);
+    font-size:13px; cursor:pointer;
+    padding:2px 4px; border-radius:4px;
+    transition:color .2s;
+}
+.antwoord-verwijder:hover { color:var(--red); }
+
+/* Antwoord toevoegen knop */
+.btn-antwoord-toevoegen {
+    grid-column:1/-1;
+    padding:12px;
+    background:rgba(255,255,255,0.03);
+    border:1px dashed rgba(255,255,255,0.12);
+    border-radius:12px;
+    color:rgba(255,255,255,0.35);
+    font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .2s;
+    text-align:center;
+}
+.btn-antwoord-toevoegen:hover { background:rgba(255,255,255,0.07); color:white; border-color:rgba(255,255,255,0.28); }
+
+/* Open vraag hint */
+.open-hint {
+    background:rgba(167,139,250,0.07);
+    border:1px solid rgba(167,139,250,0.2);
+    border-radius:12px;
+    padding:18px 20px;
+    font-size:13px; color:rgba(255,255,255,0.5);
+    line-height:1.6;
+}
+.open-hint strong { color:var(--purple); }
+
+/* Verwijder vraag knop */
+.btn-vraag-verwijder {
+    margin-top:8px;
+    padding:9px 18px;
+    background:rgba(224,85,85,0.08);
+    border:1px solid rgba(224,85,85,0.2);
+    border-radius:9px;
+    color:var(--red);
+    font-size:12px; font-weight:700;
+    cursor:pointer; transition:background .2s;
+    align-self:flex-start;
+}
+.btn-vraag-verwijder:hover { background:rgba(224,85,85,0.18); }
+
+@media (max-width:700px) {
+    .antwoorden-grid { grid-template-columns:1fr; }
+    .sidebar { width:200px; }
+    .editor-main { padding:20px 16px 80px; }
+    .vraag-settings { display:none; }
+}
+@media (max-width:540px) {
+    .sidebar { display:none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Efteling <span>Quiz</span></div>
+    <input class="quiz-naam-input" id="quizNaamInput" placeholder="Quiz naam..." maxlength="60">
+    <div class="header-btns">
+        <span class="opslaan-status" id="opslaanStatus"></span>
+        <button class="btn-terug" onclick="gaTerug()">← Terug</button>
+        <button class="btn-opslaan" onclick="slaOp()">💾 OPSLAAN</button>
+    </div>
+</header>
+
+<div class="editor-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            Vragen
+            <span class="vraag-teller" id="vraagTeller">0</span>
+        </div>
+        <div id="vraagLijst"></div>
+        <button class="btn-nieuw-vraag" onclick="voegVraagToe()">＋ Vraag toevoegen</button>
+    </aside>
+
+    <!-- EDITOR HOOFD -->
+    <div class="editor-main" id="editorMain">
+        <div class="leeg-scherm" id="leegScherm">
+            <div class="leeg-icon">✏️</div>
+            <div class="leeg-tekst">Voeg een vraag toe om te beginnen</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ===================== STATE =====================
+let vragen = [];           // array van vraag-objecten
+let actiefIndex = null;    // index van geselecteerde vraag
+let quizId = null;         // null = nieuw, anders MongoDB _id
+
+const letters = ["A","B","C","D","E","F"];
+
+// ===================== INIT =====================
+window.addEventListener("load", () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (id) {
+        quizId = id;
+        laadQuiz(id);
+    }
+});
+
+function laadQuiz(id) {
+    fetch("/api/quizzen/" + id)
+        .then(r => r.json())
+        .then(data => {
+            if (data.quiz) {
+                document.getElementById("quizNaamInput").value = data.quiz.naam;
+                vragen = data.quiz.vragen.map(v => ({
+                    type:       v.type || "meerkeuze",
+                    vraag:      v.vraag || "",
+                    antwoorden: v.antwoorden || maakStandaardAntwoorden(),
+                    tijdlimiet: v.tijdlimiet || 20,
+                    punten:     v.punten || 1000
+                }));
+                renderSidebar();
+                if (vragen.length > 0) selecteerVraag(0);
+            }
+        });
+}
+
+// ===================== VRAAG TOEVOEGEN =====================
+function voegVraagToe() {
+    vragen.push({
+        type:       "meerkeuze",
+        vraag:      "",
+        antwoorden: maakStandaardAntwoorden(),
+        tijdlimiet: 20,
+        punten:     1000
+    });
+    renderSidebar();
+    selecteerVraag(vragen.length - 1);
+}
+
+function maakStandaardAntwoorden() {
+    return [
+        { tekst: "", correct: false },
+        { tekst: "", correct: false },
+        { tekst: "", correct: false },
+        { tekst: "", correct: false }
+    ];
+}
+
+// ===================== SIDEBAR =====================
+function renderSidebar() {
+    const lijst = document.getElementById("vraagLijst");
+    const teller = document.getElementById("vraagTeller");
+    teller.textContent = vragen.length;
+    lijst.innerHTML = "";
+
+    vragen.forEach((v, i) => {
+        const item = document.createElement("div");
+        item.className = "sidebar-item" + (i === actiefIndex ? " active" : "");
+        item.onclick = () => selecteerVraag(i);
+        item.innerHTML = `
+            <div class="sidebar-num">${i + 1}</div>
+            <div class="sidebar-tekst">${v.vraag || "Lege vraag"}</div>
+            <span class="sidebar-type type-${v.type}">${v.type === "meerkeuze" ? "MC" : "Open"}</span>
+        `;
+        lijst.appendChild(item);
+    });
+}
+
+// ===================== VRAAG SELECTEREN =====================
+function selecteerVraag(index) {
+    // Sla huidige op voor vertrekken
+    if (actiefIndex !== null) leesVraagUitDOM(actiefIndex);
+
+    actiefIndex = index;
+    renderSidebar();
+    renderEditor(index);
+}
+
+// ===================== EDITOR RENDEREN =====================
+function renderEditor(index) {
+    const main = document.getElementById("editorMain");
+    const v = vragen[index];
+
+    document.getElementById("leegScherm").style.display = "none";
+
+    // Verwijder oude editor als die er is
+    const oud = document.getElementById("vraagEditorEl");
+    if (oud) oud.remove();
+
+    const el = document.createElement("div");
+    el.className = "vraag-editor";
+    el.id = "vraagEditorEl";
+
+    el.innerHTML = `
+        <!-- Topbar -->
+        <div class="vraag-topbar">
+            <span class="vraag-badge">VRAAG ${index + 1} VAN ${vragen.length}</span>
+
+            <div class="type-toggle">
+                <button id="btnMeerkeuze"
+                    class="${v.type === "meerkeuze" ? "active-meerkeuze" : ""}"
+                    onclick="wisselType('meerkeuze')">
+                    🔘 Meerkeuze
+                </button>
+                <button id="btnOpen"
+                    class="${v.type === "open" ? "active-open" : ""}"
+                    onclick="wisselType('open')">
+                    ✏️ Open vraag
+                </button>
+            </div>
+
+            <div class="vraag-settings">
+                <select class="setting-select" id="tijdSelect" onchange="updateTijdlimiet()">
+                    ${[5,10,15,20,30,45,60,90,120].map(t =>
+                        `<option value="${t}" ${v.tijdlimiet == t ? "selected" : ""}>⏱ ${t}s</option>`
+                    ).join("")}
+                </select>
+                <select class="setting-select" id="puntSelect" onchange="updatePunten()">
+                    ${[500,1000,2000].map(p =>
+                        `<option value="${p}" ${v.punten == p ? "selected" : ""}>⭐ ${p}</option>`
+                    ).join("")}
+                </select>
+            </div>
+        </div>
+
+        <!-- Vraag invoer -->
+        <div class="vraag-input-wrap">
+            <textarea
+                class="vraag-input"
+                id="vraagInput"
+                placeholder="Typ hier je vraag..."
+                maxlength="200"
+                oninput="updateCharCount(this); autoResize(this);"
+            >${v.vraag}</textarea>
+            <div class="vraag-char-count" id="charCount">${v.vraag.length}/200</div>
+        </div>
+
+        <!-- Antwoorden of open hint -->
+        <div id="antwoordenZone"></div>
+
+        <!-- Verwijder knop -->
+        <button class="btn-vraag-verwijder" onclick="verwijderVraag(${index})">🗑 Vraag verwijderen</button>
+    `;
+
+    main.appendChild(el);
+
+    // Auto-resize textarea
+    const ta = document.getElementById("vraagInput");
+    autoResize(ta);
+
+    // Antwoorden renderen
+    renderAntwoorden(v);
+}
+
+// ===================== ANTWOORDEN =====================
+function renderAntwoorden(v) {
+    const zone = document.getElementById("antwoordenZone");
+    zone.innerHTML = "";
+
+    if (v.type === "open") {
+        zone.innerHTML = `
+            <div class="open-hint">
+                <strong>Open vraag</strong> — spelers typen zelf een antwoord in.
+                De host beoordeelt de antwoorden handmatig na afloop.<br><br>
+                Je hoeft hier geen antwoorden in te vullen.
+            </div>`;
+        return;
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "antwoorden-grid";
+    grid.id = "antwoordenGrid";
+
+    v.antwoorden.forEach((a, i) => {
+        grid.appendChild(maakAntwoordKaart(a, i));
+    });
+
+    // Toevoegen knop als er minder dan 6 antwoorden zijn
+    if (v.antwoorden.length < 6) {
+        const addBtn = document.createElement("button");
+        addBtn.className = "btn-antwoord-toevoegen";
+        addBtn.textContent = "＋ Antwoord toevoegen";
+        addBtn.onclick = voegAntwoordToe;
+        grid.appendChild(addBtn);
+    }
+
+    zone.appendChild(grid);
+}
+
+function maakAntwoordKaart(a, i) {
+    const kaart = document.createElement("div");
+    kaart.className = "antwoord-kaart" + (a.correct ? " correct" : "");
+    kaart.dataset.index = i;
+
+    kaart.innerHTML = `
+        <div class="antwoord-toprow">
+            <div class="antwoord-letter">${letters[i]}</div>
+            <button class="correct-toggle" onclick="toggleCorrect(${i})" title="Markeer als correct">
+                ${a.correct ? "✅" : "⬜"}
+            </button>
+        </div>
+        <input
+            class="antwoord-input"
+            placeholder="Antwoord ${letters[i]}..."
+            value="${a.tekst.replace(/"/g, '&quot;')}"
+            oninput="updateAntwoord(${i}, this.value)"
+        >
+        ${i >= 2 ? `<button class="antwoord-verwijder" onclick="verwijderAntwoord(${i})">✕</button>` : ""}
+    `;
+
+    return kaart;
+}
+
+function toggleCorrect(antwoordIndex) {
+    leesVraagUitDOM(actiefIndex);
+    const v = vragen[actiefIndex];
+    // Zet alle correct op false, dan de geklikte op true
+    v.antwoorden.forEach((a, i) => a.correct = (i === antwoordIndex));
+    renderAntwoorden(v);
+}
+
+function updateAntwoord(i, tekst) {
+    vragen[actiefIndex].antwoorden[i].tekst = tekst;
+}
+
+function voegAntwoordToe() {
+    leesVraagUitDOM(actiefIndex);
+    const v = vragen[actiefIndex];
+    if (v.antwoorden.length >= 6) return;
+    v.antwoorden.push({ tekst: "", correct: false });
+    renderAntwoorden(v);
+}
+
+function verwijderAntwoord(i) {
+    leesVraagUitDOM(actiefIndex);
+    const v = vragen[actiefIndex];
+    if (v.antwoorden.length <= 2) return; // minimum 2
+    v.antwoorden.splice(i, 1);
+    renderAntwoorden(v);
+}
+
+// ===================== TYPE WISSELEN =====================
+function wisselType(type) {
+    leesVraagUitDOM(actiefIndex);
+    vragen[actiefIndex].type = type;
+
+    // Update toggle knoppen
+    document.getElementById("btnMeerkeuze").className = type === "meerkeuze" ? "active-meerkeuze" : "";
+    document.getElementById("btnOpen").className      = type === "open"      ? "active-open"      : "";
+
+    // Herrender alleen de antwoorden zone
+    renderAntwoorden(vragen[actiefIndex]);
+    renderSidebar();
+}
+
+// ===================== INSTELLINGEN =====================
+function updateTijdlimiet() {
+    const sel = document.getElementById("tijdSelect");
+    if (sel) vragen[actiefIndex].tijdlimiet = Number(sel.value);
+}
+
+function updatePunten() {
+    const sel = document.getElementById("puntSelect");
+    if (sel) vragen[actiefIndex].punten = Number(sel.value);
+}
+
+function updateCharCount(ta) {
+    const el = document.getElementById("charCount");
+    if (el) el.textContent = ta.value.length + "/200";
+}
+
+function autoResize(ta) {
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + "px";
+}
+
+// ===================== VRAAG UIT DOM LEZEN =====================
+function leesVraagUitDOM(index) {
+    if (index === null || index >= vragen.length) return;
+    const v = vragen[index];
+
+    const vraagInput = document.getElementById("vraagInput");
+    if (vraagInput) v.vraag = vraagInput.value;
+
+    const tijdSel = document.getElementById("tijdSelect");
+    if (tijdSel) v.tijdlimiet = Number(tijdSel.value);
+
+    const puntSel = document.getElementById("puntSelect");
+    if (puntSel) v.punten = Number(puntSel.value);
+
+    // Antwoord teksten uitlezen
+    if (v.type === "meerkeuze") {
+        const inputs = document.querySelectorAll(".antwoord-input");
+        inputs.forEach((inp, i) => {
+            if (v.antwoorden[i]) v.antwoorden[i].tekst = inp.value;
+        });
+    }
+}
+
+// ===================== VRAAG VERWIJDEREN =====================
+function verwijderVraag(index) {
+    if (!confirm("Vraag " + (index + 1) + " verwijderen?")) return;
+    vragen.splice(index, 1);
+
+    if (vragen.length === 0) {
+        actiefIndex = null;
+        const oud = document.getElementById("vraagEditorEl");
+        if (oud) oud.remove();
+        document.getElementById("leegScherm").style.display = "flex";
+    } else {
+        actiefIndex = Math.min(index, vragen.length - 1);
+        renderEditor(actiefIndex);
+    }
+    renderSidebar();
+}
+
+// ===================== OPSLAAN =====================
+async function slaOp() {
+    // Laatste vraag uitlezen
+    if (actiefIndex !== null) leesVraagUitDOM(actiefIndex);
+
+    const naam = document.getElementById("quizNaamInput").value.trim();
+    if (!naam) {
+        toonStatus("Geef de quiz een naam!", "err");
+        document.getElementById("quizNaamInput").focus();
+        return;
+    }
+
+    const payload = { naam, vragen };
+
+    try {
+        let res;
+        if (quizId) {
+            res = await fetch("/api/quizzen/" + quizId, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            res = await fetch("/api/quizzen", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        const data = await res.json();
+        if (data.success) {
+            quizId = data.quiz._id;
+            // Update URL zonder reload
+            window.history.replaceState({}, "", "/quiz-editor?id=" + quizId);
+            toonStatus("✅ Opgeslagen", "ok");
+        } else {
+            toonStatus(data.error || "Opslaan mislukt", "err");
+        }
+    } catch (e) {
+        toonStatus("Server niet bereikbaar", "err");
+    }
+}
+
+function toonStatus(tekst, type) {
+    const el = document.getElementById("opslaanStatus");
+    el.textContent = tekst;
+    el.className = "opslaan-status " + type;
+    setTimeout(() => { el.textContent = ""; el.className = "opslaan-status"; }, 3000);
+}
+
+// ===================== TERUG =====================
+function gaTerug() {
+    if (vragen.length > 0) {
+        if (!confirm("Terug gaan? Niet-opgeslagen wijzigingen gaan verloren.")) return;
+    }
+    window.location.href = "/quiz-select";
+}
+
+// Auto-opslaan elke 60 seconden als quiz al bestaat
+setInterval(() => {
+    if (quizId && vragen.length > 0) slaOp();
+}, 60000);
+</script>
+</body>
+</html>
