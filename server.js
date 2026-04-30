@@ -6,9 +6,6 @@ const session  = require("express-session");
 const mongoose = require("mongoose");
 
 const app    = express();
-app.get("/quiz-editor", (req, res) => {
-    res.send("TEST WERKT");
-});
 const server = http.createServer(app);
 const io     = new Server(server);
 const PORT   = process.env.PORT || 10000;
@@ -97,20 +94,9 @@ app.get("/start-quiz", (req, res) => {
 });
 
 // ---------------- QUIZ SELECTIE & EDITOR ----------------
-app.get("/quiz-select", (req, res) => {
-    if (!req.session.loggedIn) return res.redirect("/host-login");
-
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Content-Disposition", "inline");
-    res.sendFile(path.join(__dirname, "public", "quiz-select.html"));
-});
 
 app.get("/quiz-editor", (req, res) => {
-    if (!req.session.loggedIn) return res.redirect("/host-login");
-
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Content-Disposition", "inline"); // 🔥 SUPER BELANGRIJK
-    res.sendFile(path.join(__dirname, "public", "quiz-editor.html"));
+    res.send("WERKT");
 });
 
 // Alle quizzen ophalen
