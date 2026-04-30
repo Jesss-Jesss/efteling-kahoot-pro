@@ -55,7 +55,24 @@ let pendingApprovals = {};
 // ---------------- MIDDLEWARE ----------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"), { index: false }));
+app.use(express.static(path.join(__dirname, "public"), {
+    index: false,
+    setHeaders: (res, filePath) => {
+        // HTML bestanden nooit direct als statisch bestand serveren
+        // zodat de routes (met sessie-check) altijd gebruikt worden
+        if (filePath.endsWith(".html")) {
+            res.setHeader("Content-Type", "text/html");
+        }
+    }
+}));
+
+// Blokkeer directe toegang tot .html bestanden via static
+app.use((req, res, next) => {
+    if (req.path.endsWith(".html")) {
+        return res.redirect(req.path.replace(".html", ""));
+    }
+    next();
+});
 
 app.set("trust proxy", 1);
 
