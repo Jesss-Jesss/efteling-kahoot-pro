@@ -55,9 +55,24 @@ let pendingApprovals = {};
 // ---------------- MIDDLEWARE ----------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), {
+    index: false,
+    setHeaders: (res, filePath) => {
+        // HTML bestanden nooit direct als statisch bestand serveren
+        // zodat de routes (met sessie-check) altijd gebruikt worden
+        if (filePath.endsWith(".html")) {
+            res.setHeader("Content-Type", "text/html");
+        }
+    }
+}));
 
-
+// Blokkeer directe toegang tot .html bestanden via static
+app.use((req, res, next) => {
+    if (req.path.endsWith(".html")) {
+        return res.redirect(req.path.replace(".html", ""));
+    }
+    next();
+});
 
 app.set("trust proxy", 1);
 
@@ -76,7 +91,7 @@ app.use(session({
 app.get("/", (req, res) => res.redirect("/host-login"));
 
 app.get("/host-login", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "host-login.html"));
+    res.sendFile(path.join(__dirname, "views", "host-login.html"));
 });
 
 app.post("/host-login", (req, res) => {
@@ -90,14 +105,18 @@ app.post("/host-login", (req, res) => {
 
 app.get("/start-quiz", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "public", "start-quiz.html"));
+    res.sendFile(path.join(__dirname, "views", "start-quiz.html"));
 });
 
 // ---------------- QUIZ SELECTIE & EDITOR ----------------
+app.get("/quiz-select", (req, res) => {
+    if (!req.session.loggedIn) return res.redirect("/host-login");
+    res.sendFile(path.join(__dirname, "views", "quiz-select"));
+});
 
 app.get("/quiz-editor", (req, res) => {
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send("<h1>WERKT NU 👌</h1>");
+    if (!req.session.loggedIn) return res.redirect("/host-login");
+    res.sendFile(path.join(__dirname, "views", "quiz-editor.html"));
 });
 
 // Alle quizzen ophalen
@@ -168,12 +187,12 @@ app.delete("/api/quizzen/:id", async (req, res) => {
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "public", "host.html"));
+    res.sendFile(path.join(__dirname, "views", "host.html"));
 });
 
 app.get("/host.html", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "public", "host.html"));
+    res.sendFile(path.join(__dirname, "views", "host.html"));
 });
 
 // ---------------- START QUIZ ----------------
@@ -214,7 +233,7 @@ app.post("/api/start-quiz", async (req, res) => {
 });
 
 app.get("/player", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "player-scan.html"));
+    res.sendFile(path.join(__dirname, "views", "player-scan.html"));
 });
 
 // ---------------- PLAYER ----------------
@@ -342,8 +361,8 @@ app.get("/api/join-aanvragen", (req, res) => {
 
 // ---------------- LEADERBOARD ----------------
 app.get("/leaderboard", (req, res) => {
-    if (!quizStarted) return res.sendFile(path.join(__dirname, "public", "quiz-not-started.html"));
-    return res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
+    if (!quizStarted) return res.sendFile(path.join(__dirname, "views", "quiz-not-started.html"));
+    return res.sendFile(path.join(__dirname, "views", "leaderboard.html"));
 });
 
 // ---------------- SCORES ----------------
