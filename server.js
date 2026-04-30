@@ -111,7 +111,7 @@ app.get("/start-quiz", (req, res) => {
 // ---------------- QUIZ SELECTIE & EDITOR ----------------
 app.get("/quiz-select", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "views", "quiz-select"));
+    res.sendFile(path.join(__dirname, "views", "quiz-select.html"));
 });
 
 app.get("/quiz-editor", (req, res) => {
