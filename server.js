@@ -91,7 +91,7 @@ app.use(session({
 app.get("/", (req, res) => res.redirect("/host-login"));
 
 app.get("/host-login", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "host-login.html"));
+    res.sendFile(path.join(__dirname, "public", "host-login.html"));
 });
 
 app.post("/host-login", (req, res) => {
@@ -105,18 +105,18 @@ app.post("/host-login", (req, res) => {
 
 app.get("/start-quiz", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "views", "start-quiz.html"));
+    res.sendFile(path.join(__dirname, "public", "start-quiz.html"));
 });
 
 // ---------------- QUIZ SELECTIE & EDITOR ----------------
 app.get("/quiz-select", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "views", "quiz-select.html"));
+    res.sendFile(path.join(__dirname, "public", "quiz-select.html"));
 });
 
 app.get("/quiz-editor", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "views", "quiz-editor.html"));
+    res.sendFile(path.join(__dirname, "public", "quiz-editor.html"));
 });
 
 // Alle quizzen ophalen
@@ -187,12 +187,12 @@ app.delete("/api/quizzen/:id", async (req, res) => {
 // ---------------- HOST DASHBOARD ----------------
 app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "views", "host.html"));
+    res.sendFile(path.join(__dirname, "public", "host.html"));
 });
 
 app.get("/host.html", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
-    res.sendFile(path.join(__dirname, "views", "host.html"));
+    res.sendFile(path.join(__dirname, "public", "host.html"));
 });
 
 // ---------------- START QUIZ ----------------
@@ -233,7 +233,7 @@ app.post("/api/start-quiz", async (req, res) => {
 });
 
 app.get("/player", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "player-scan.html"));
+    res.sendFile(path.join(__dirname, "public", "player-scan.html"));
 });
 
 // ---------------- PLAYER ----------------
@@ -361,8 +361,8 @@ app.get("/api/join-aanvragen", (req, res) => {
 
 // ---------------- LEADERBOARD ----------------
 app.get("/leaderboard", (req, res) => {
-    if (!quizStarted) return res.sendFile(path.join(__dirname, "views", "quiz-not-started.html"));
-    return res.sendFile(path.join(__dirname, "views", "leaderboard.html"));
+    if (!quizStarted) return res.sendFile(path.join(__dirname, "public", "quiz-not-started.html"));
+    return res.sendFile(path.join(__dirname, "public", "leaderboard.html"));
 });
 
 // ---------------- SCORES ----------------
