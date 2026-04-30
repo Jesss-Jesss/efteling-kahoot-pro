@@ -6,6 +6,9 @@ const session  = require("express-session");
 const mongoose = require("mongoose");
 
 const app    = express();
+app.get("/quiz-editor", (req, res) => {
+    res.send("TEST WERKT");
+});
 const server = http.createServer(app);
 const io     = new Server(server);
 const PORT   = process.env.PORT || 10000;
