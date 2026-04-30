@@ -97,14 +97,16 @@ app.get("/start-quiz", (req, res) => {
 app.get("/quiz-select", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
 
-    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Content-Disposition", "inline");
     res.sendFile(path.join(__dirname, "public", "quiz-select.html"));
 });
 
 app.get("/quiz-editor", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
 
-    res.setHeader("Content-Type", "text/html"); // 🔥 dit is de fix
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Content-Disposition", "inline"); // 🔥 SUPER BELANGRIJK
     res.sendFile(path.join(__dirname, "public", "quiz-editor.html"));
 });
 
