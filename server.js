@@ -111,11 +111,15 @@ app.get("/start-quiz", (req, res) => {
 // ---------------- QUIZ SELECTIE & EDITOR ----------------
 app.get("/quiz-select", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
+
+    res.setHeader("Content-Type", "text/html");
     res.sendFile(path.join(__dirname, "public", "quiz-select.html"));
 });
 
 app.get("/quiz-editor", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
+
+    res.setHeader("Content-Type", "text/html"); // 🔥 dit is de fix
     res.sendFile(path.join(__dirname, "public", "quiz-editor.html"));
 });
 
