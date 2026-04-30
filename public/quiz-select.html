@@ -258,7 +258,7 @@ main {
     <div class="page-title">Kies een quiz</div>
     <div class="page-sub">Selecteer een bestaande quiz of maak een nieuwe aan.</div>
 
-    <a href="/quiz-editor" class="new-quiz-btn">
+    <a href="/quiz-editor" class="new-quiz-btn" target="_blank" rel="noopener">
         <span class="plus">＋</span>
         Nieuwe quiz maken
     </a>
@@ -358,7 +358,7 @@ function selecteerQuiz(id, naam, card) {
 
 function bewerkQuiz(id, e) {
     e.stopPropagation();
-    window.location.href = "/quiz-editor?id=" + id;
+    window.open("/quiz-editor?id=" + id, "_blank");
 }
 
 function verwijderQuiz(id, e) {
