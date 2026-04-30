@@ -297,7 +297,7 @@ function tijdGeleden(datum) {
 }
 
 function laadQuizzen() {
-    fetch("/api/quizzen")
+    fetch("/api/quizzen", { credentials: "include" })
         .then(r => r.json())
         .then(data => {
             const grid = document.getElementById("quizGrid");
@@ -364,7 +364,7 @@ function bewerkQuiz(id, e) {
 function verwijderQuiz(id, e) {
     e.stopPropagation();
     if (!confirm("Quiz verwijderen?")) return;
-    fetch("/api/quizzen/" + id, { method: "DELETE" })
+    fetch("/api/quizzen/" + id, { method: "DELETE", credentials: "include" })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -397,6 +397,7 @@ function startQuiz() {
     fetch("/api/start-quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ gameId, quizId: selectedQuizId })
     })
     .then(r => r.json())
