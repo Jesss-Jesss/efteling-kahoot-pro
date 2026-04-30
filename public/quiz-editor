@@ -490,7 +490,7 @@ window.addEventListener("load", () => {
 });
 
 function laadQuiz(id) {
-    fetch("/api/quizzen/" + id)
+    fetch("/api/quizzen/" + id, { credentials: "include" })
         .then(r => r.json())
         .then(data => {
             if (data.quiz) {
@@ -818,12 +818,14 @@ async function slaOp() {
             res = await fetch("/api/quizzen/" + quizId, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(payload)
             });
         } else {
             res = await fetch("/api/quizzen", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(payload)
             });
         }
