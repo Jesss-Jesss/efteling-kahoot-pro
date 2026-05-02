@@ -58,15 +58,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"), {
     index: false,
     setHeaders: (res, filePath) => {
-        // HTML bestanden nooit direct als statisch bestand serveren
-        // zodat de routes (met sessie-check) altijd gebruikt worden
         if (filePath.endsWith(".html")) {
             res.setHeader("Content-Type", "text/html");
         }
     }
 }));
 
-// Blokkeer directe toegang tot .html bestanden via static
 app.use((req, res, next) => {
     if (req.path.endsWith(".html")) {
         return res.redirect(req.path.replace(".html", ""));
@@ -119,7 +116,6 @@ app.get("/quiz-editor", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "quiz-editor.html"));
 });
 
-// Alle quizzen ophalen
 app.get("/api/quizzen", async (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
     try {
@@ -130,7 +126,6 @@ app.get("/api/quizzen", async (req, res) => {
     }
 });
 
-// Één quiz ophalen
 app.get("/api/quizzen/:id", async (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
     try {
@@ -142,7 +137,6 @@ app.get("/api/quizzen/:id", async (req, res) => {
     }
 });
 
-// Nieuwe quiz aanmaken
 app.post("/api/quizzen", async (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
     try {
@@ -156,7 +150,6 @@ app.post("/api/quizzen", async (req, res) => {
     }
 });
 
-// Quiz bijwerken
 app.put("/api/quizzen/:id", async (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
     try {
@@ -173,7 +166,6 @@ app.put("/api/quizzen/:id", async (req, res) => {
     }
 });
 
-// Quiz verwijderen
 app.delete("/api/quizzen/:id", async (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
     try {
@@ -395,6 +387,56 @@ io.on("connection", (socket) => {
     console.log("Nieuwe gebruiker verbonden");
     socket.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     socket.emit("phaseUpdate", "lobby");
+
+    // Stuur huidige vraagstatus naar nieuw verbonden client
+    if (currentGame.quizData && currentGame.huidigeVraag >= 0) {
+        socket.emit("vraagUpdate", {
+            huidigeVraag: currentGame.huidigeVraag,
+            quizData:     currentGame.quizData
+        });
+    }
+
+    // ---- QUIZ NAVIGATIE (alleen host mag dit sturen) ----
+    socket.on("volgendeVraag", () => {
+        if (!currentGame.quizData) return;
+        const totaal = currentGame.quizData.vragen.length;
+        if (currentGame.huidigeVraag < totaal - 1) {
+            currentGame.huidigeVraag++;
+            const payload = {
+                huidigeVraag: currentGame.huidigeVraag,
+                quizData:     currentGame.quizData
+            };
+            io.emit("vraagUpdate", payload);
+            console.log("Volgende vraag:", currentGame.huidigeVraag);
+        }
+    });
+
+    socket.on("vorigeVraag", () => {
+        if (!currentGame.quizData) return;
+        if (currentGame.huidigeVraag > 0) {
+            currentGame.huidigeVraag--;
+            const payload = {
+                huidigeVraag: currentGame.huidigeVraag,
+                quizData:     currentGame.quizData
+            };
+            io.emit("vraagUpdate", payload);
+            console.log("Vorige vraag:", currentGame.huidigeVraag);
+        }
+    });
+
+    socket.on("springNaarVraag", ({ index }) => {
+        if (!currentGame.quizData) return;
+        const totaal = currentGame.quizData.vragen.length;
+        if (index >= 0 && index < totaal) {
+            currentGame.huidigeVraag = index;
+            const payload = {
+                huidigeVraag: currentGame.huidigeVraag,
+                quizData:     currentGame.quizData
+            };
+            io.emit("vraagUpdate", payload);
+            console.log("Spring naar vraag:", index);
+        }
+    });
 
     socket.on("helpRequest", data => {
         io.emit("gameUpdate", { type: "helpRequest", name: data.name || "Niet bekend" });
