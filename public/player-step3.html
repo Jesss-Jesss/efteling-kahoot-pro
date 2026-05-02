@@ -487,16 +487,53 @@ function toonVraag(p) {
 
     const grid = document.getElementById("qGrid");
     grid.innerHTML = "";
-    p.antwoorden.forEach((a, i) => {
-        const btn = document.createElement("button");
-        btn.className = "q-btn"; btn.dataset.i = i;
-        btn.textContent = a.tekst;
-        btn.onclick = () => stuurAntwoord(i);
-        grid.appendChild(btn);
-    });
-
     document.getElementById("qKlaar").style.display = "none";
-    grid.style.display = "grid";
+
+    if (p.type === "open") {
+        // Open vraag: tekstveld + verzendknop
+        grid.style.display = "block";
+        grid.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+                <input id="openAntwoordInput" type="text" placeholder="Typ je antwoord..."
+                    style="width:100%;padding:16px 18px;font-size:17px;font-family:inherit;
+                           border-radius:12px;border:2px solid rgba(255,255,255,0.2);
+                           background:rgba(255,255,255,0.08);color:white;outline:none;
+                           transition:border-color .2s;"
+                    autocomplete="off" autocorrect="off" spellcheck="false"
+                    oninput="this.style.borderColor='rgba(240,192,64,0.6)'"
+                />
+                <button id="openAntwoordBtn"
+                    style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;
+                           border:none;border-radius:12px;
+                           background:rgba(240,192,64,0.18);color:#f0c040;
+                           border:1.5px solid rgba(240,192,64,0.4);cursor:pointer;
+                           transition:background .15s,transform .1s;"
+                    onclick="stuurOpenAntwoord()">
+                    Verstuur antwoord →
+                </button>
+            </div>
+        `;
+        // Enter key ook versturen
+        setTimeout(() => {
+            const inp = document.getElementById("openAntwoordInput");
+            if (inp) {
+                inp.focus();
+                inp.addEventListener("keydown", e => {
+                    if (e.key === "Enter") stuurOpenAntwoord();
+                });
+            }
+        }, 100);
+    } else {
+        // Meerkeuze: gekleurde knoppen
+        grid.style.display = "grid";
+        (p.antwoorden || []).forEach((a, i) => {
+            const btn = document.createElement("button");
+            btn.className = "q-btn"; btn.dataset.i = i;
+            btn.textContent = a.tekst;
+            btn.onclick = () => stuurAntwoord(i);
+            grid.appendChild(btn);
+        });
+    }
 
     startTimer(p.tijdlimiet || 20, p.vraagStartTijd || Date.now());
 }
@@ -534,6 +571,26 @@ function stuurAntwoord(index) {
     document.getElementById("qKlaar").style.display = "flex";
 }
 
+function stuurOpenAntwoord() {
+    if (heeftGeantwoord) return;
+    const inp = document.getElementById("openAntwoordInput");
+    if (!inp) return;
+    const tekst = (inp.value || "").trim();
+    if (!tekst) {
+        inp.style.borderColor = "rgba(224,85,85,0.8)";
+        inp.placeholder = "Vul eerst een antwoord in!";
+        return;
+    }
+    heeftGeantwoord = true;
+    clearInterval(timerInterval);
+    socket.emit("openAntwoord", { name, antwoordTekst: tekst });
+    inp.disabled = true;
+    inp.style.opacity = "0.5";
+    const btn = document.getElementById("openAntwoordBtn");
+    if (btn) { btn.disabled = true; btn.style.opacity = "0.5"; btn.textContent = "✓ Antwoord verzonden"; }
+    document.getElementById("qKlaar").style.display = "flex";
+}
+
 /* ---- RESULTATEN ---- */
 function toonResultaten(p) {
     clearInterval(timerInterval);
@@ -550,8 +607,10 @@ function toonResultaten(p) {
     // Antwoord balkjes
     const lijst = document.getElementById("resAntwLijst");
     lijst.innerHTML = "";
-    if (p.resultaten && p.resultaten.antwoorden) {
-        p.resultaten.antwoorden.forEach(a => {
+    const res = p.resultaten;
+    if (res) {
+        const items = res.type === "open" ? (res.groepen || []) : (res.antwoorden || []);
+        items.forEach(a => {
             const rij = document.createElement("div");
             rij.className = "res-antw-rij";
             rij.innerHTML = `
@@ -641,10 +700,11 @@ function toonEindpodium(p) {
    ============================================================ */
 socket.on("faseUpdate", p => {
     const f = p.fase;
-    if (f === "lobby")        quizScherm(null);
-    else if (f === "vraag")   toonVraag(p);
+    if (f === "lobby")           quizScherm(null);
+    else if (f === "vraag")      toonVraag(p);
+    else if (f === "keuring")    toonWacht();   // spelers wachten terwijl host keurt
     else if (f === "resultaten") toonResultaten(p);
-    else if (f === "podium")  toonTussenstand(p);
+    else if (f === "podium")     toonTussenstand(p);
     else if (f === "eindpodium") toonEindpodium(p);
 });
 
