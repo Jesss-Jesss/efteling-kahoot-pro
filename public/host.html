@@ -15,8 +15,7 @@
     --green: #4caf82;
     --blue: #5b9cf6;
 }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
     font-family: 'Lato', sans-serif;
@@ -25,472 +24,247 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
 }
-
 body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+    content:'';
+    position:fixed; inset:0;
     background:
-        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(240,192,64,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,156,246,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 50% at 20% 10%,rgba(240,192,64,0.07) 0%,transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%,rgba(91,156,246,0.05) 0%,transparent 60%),
         url("https://www.efteling.com/nl/-/media/images/nieuw-events/winterefteling/sfeerbeeld/1024x576-baron-1898-winter-efteling-avond.jpg") center/cover no-repeat;
-    opacity: 0.18;
-    z-index: 0;
-    pointer-events: none;
+    opacity:.18; z-index:0; pointer-events:none;
 }
-
 body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(10,13,20,0.7) 0%, rgba(10,13,20,0.95) 100%);
-    z-index: 0;
-    pointer-events: none;
+    content:''; position:fixed; inset:0;
+    background:linear-gradient(180deg,rgba(10,13,20,0.7) 0%,rgba(10,13,20,0.95) 100%);
+    z-index:0; pointer-events:none;
 }
 
 header {
-    position: relative;
-    z-index: 10;
-    padding: 28px 40px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--card-border);
+    position:relative; z-index:10;
+    padding:28px 40px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--card-border);
 }
-
-.logo {
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    font-weight: 900;
-    color: var(--gold);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-.logo span { color: white; font-weight: 700; }
+.logo { font-family:'Cinzel',serif; font-size:22px; font-weight:900; color:var(--gold); letter-spacing:3px; text-transform:uppercase; }
+.logo span { color:white; font-weight:700; }
 
 .status-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(76,175,130,0.12);
-    border: 1px solid rgba(76,175,130,0.3);
-    border-radius: 50px;
-    padding: 6px 16px;
-    font-size: 12px;
-    color: var(--green);
-    font-weight: 700;
-    letter-spacing: 1.5px;
+    display:flex; align-items:center; gap:8px;
+    background:rgba(76,175,130,0.12); border:1px solid rgba(76,175,130,0.3);
+    border-radius:50px; padding:6px 16px;
+    font-size:12px; color:var(--green); font-weight:700; letter-spacing:1.5px;
 }
-.status-dot {
-    width: 8px; height: 8px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0%,100% { opacity:1; transform:scale(1); }
-    50%      { opacity:0.4; transform:scale(0.8); }
-}
+.status-dot { width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
 
 main {
-    position: relative;
-    z-index: 10;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 22px;
-    padding: 28px 40px 40px;
-    max-width: 1400px;
-    margin: 0 auto;
+    position:relative; z-index:10;
+    display:grid; grid-template-columns:1fr 1fr 1fr;
+    gap:22px; padding:28px 40px 40px;
+    max-width:1400px; margin:0 auto;
 }
-
-/* Quiz beheer panel spans full width below the 3 columns */
-.panel--quiz {
-    grid-column: 1 / -1;
-}
+.panel--quiz { grid-column: 1 / -1; }
 
 .panel {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    animation: fadeUp 0.5s ease both;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:16px; overflow:hidden;
+    display:flex; flex-direction:column;
+    animation:fadeUp 0.5s ease both;
 }
-.panel:nth-child(1) { animation-delay: 0.05s; }
-.panel:nth-child(2) { animation-delay: 0.12s; }
-.panel:nth-child(3) { animation-delay: 0.19s; }
-.panel:nth-child(4) { animation-delay: 0.26s; }
-
-@keyframes fadeUp {
-    from { opacity:0; transform:translateY(18px); }
-    to   { opacity:1; transform:translateY(0); }
-}
+.panel:nth-child(1){animation-delay:.05s}
+.panel:nth-child(2){animation-delay:.12s}
+.panel:nth-child(3){animation-delay:.19s}
+.panel:nth-child(4){animation-delay:.26s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
 
 .panel-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 22px 14px;
-    border-bottom: 1px solid var(--card-border);
+    display:flex; align-items:center; gap:10px;
+    padding:18px 22px 14px; border-bottom:1px solid var(--card-border);
 }
-.panel-icon { font-size: 18px; line-height: 1; }
-.panel-title {
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
-}
-.panel-count {
-    margin-left: auto;
-    background: rgba(255,255,255,0.08);
-    border-radius: 50px;
-    padding: 2px 10px;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.45);
-    min-width: 28px;
-    text-align: center;
-}
+.panel-icon { font-size:18px; line-height:1; }
+.panel-title { font-family:'Cinzel',serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.55); }
+.panel-count { margin-left:auto; background:rgba(255,255,255,.08); border-radius:50px; padding:2px 10px; font-size:12px; font-weight:700; color:rgba(255,255,255,.45); min-width:28px; text-align:center; }
 
-.panel--players .panel-header { border-bottom-color: rgba(240,192,64,0.2); }
-.panel--players .panel-title  { color: var(--gold); }
-.panel--players .panel-count  { background: rgba(240,192,64,0.12); color: var(--gold); }
+.panel--players .panel-header { border-bottom-color:rgba(240,192,64,.2); }
+.panel--players .panel-title  { color:var(--gold); }
+.panel--players .panel-count  { background:rgba(240,192,64,.12);color:var(--gold); }
 
-.panel--help .panel-header { border-bottom-color: rgba(91,156,246,0.2); }
-.panel--help .panel-title  { color: var(--blue); }
-.panel--help .panel-count  { background: rgba(91,156,246,0.12); color: var(--blue); }
+.panel--help .panel-header { border-bottom-color:rgba(91,156,246,.2); }
+.panel--help .panel-title  { color:var(--blue); }
+.panel--help .panel-count  { background:rgba(91,156,246,.12);color:var(--blue); }
 
-.panel--errors .panel-header { border-bottom-color: rgba(224,85,85,0.2); }
-.panel--errors .panel-title  { color: var(--red); }
-.panel--errors .panel-count  { background: rgba(224,85,85,0.12); color: var(--red); }
+.panel--errors .panel-header { border-bottom-color:rgba(224,85,85,.2); }
+.panel--errors .panel-title  { color:var(--red); }
+.panel--errors .panel-count  { background:rgba(224,85,85,.12);color:var(--red); }
 
-.panel--quiz .panel-header { border-bottom-color: rgba(240,192,64,0.15); }
-.panel--quiz .panel-title  { color: var(--gold); }
+.panel--quiz .panel-header { border-bottom-color:rgba(240,192,64,.15); }
+.panel--quiz .panel-title  { color:var(--gold); }
 
 .panel-body {
-    flex: 1;
-    padding: 14px 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    min-height: 240px;
-    max-height: 500px;
-    overflow-y: auto;
+    flex:1; padding:14px 16px 18px;
+    display:flex; flex-direction:column; gap:9px;
+    min-height:240px; max-height:500px; overflow-y:auto;
 }
-.panel-body::-webkit-scrollbar { width: 4px; }
-.panel-body::-webkit-scrollbar-track { background: transparent; }
-.panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.panel-body::-webkit-scrollbar { width:4px; }
+.panel-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1);border-radius:4px; }
 
-.empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    opacity: 0.3;
-    font-size: 13px;
-    text-align: center;
-    padding: 30px 0;
-}
-.empty-state .empty-icon { font-size: 30px; }
+.empty-state { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:.3;font-size:13px;text-align:center;padding:30px 0; }
+.empty-state .empty-icon { font-size:30px; }
 
-/* Player rows */
-.player-row {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    padding: 9px 12px;
-}
-.player-avatar {
-    width: 42px; height: 42px;
-    border-radius: 8px;
-    object-fit: contain;
-    background: rgba(255,255,255,0.06);
-    flex-shrink: 0;
-}
-.player-avatar-placeholder {
-    width: 42px; height: 42px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-}
-.player-info { flex: 1; min-width: 0; }
-.player-name {
-    font-weight: 700;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.player-character {
-    font-size: 12px;
-    color: rgba(255,255,255,0.38);
-    margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.player-badge {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 3px 8px;
-    border-radius: 50px;
-    flex-shrink: 0;
-}
-.badge--joined  { background: rgba(76,175,130,0.15); color: var(--green); border: 1px solid rgba(76,175,130,0.25); }
-.badge--waiting { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.09); }
+.player-row { display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:9px 12px; }
+.player-avatar { width:42px;height:42px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,.06);flex-shrink:0; }
+.player-avatar-placeholder { width:42px;height:42px;border-radius:8px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+.player-info { flex:1;min-width:0; }
+.player-name { font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.player-character { font-size:12px;color:rgba(255,255,255,.38);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.player-badge { font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:50px;flex-shrink:0; }
+.badge--joined  { background:rgba(76,175,130,.15);color:var(--green);border:1px solid rgba(76,175,130,.25); }
+.badge--waiting { background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.09); }
 
-/* Help rows */
-.help-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 11px;
-    background: rgba(91,156,246,0.06);
-    border: 1px solid rgba(91,156,246,0.15);
-    border-radius: 10px;
-    padding: 11px 13px;
-    animation: slideIn 0.3s ease both;
-}
-.help-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
-.help-info { flex: 1; }
-.help-name  { font-weight: 700; font-size: 14px; color: var(--blue); }
-.help-time  { font-size: 11px; color: rgba(255,255,255,0.32); margin-top: 2px; }
+.help-row { display:flex;align-items:flex-start;gap:11px;background:rgba(91,156,246,.06);border:1px solid rgba(91,156,246,.15);border-radius:10px;padding:11px 13px;animation:slideIn .3s ease both; }
+.help-icon { font-size:20px;flex-shrink:0;margin-top:1px; }
+.help-info { flex:1; }
+.help-name { font-weight:700;font-size:14px;color:var(--blue); }
+.help-time { font-size:11px;color:rgba(255,255,255,.32);margin-top:2px; }
 
-/* Error rows */
-.error-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 11px;
-    background: rgba(224,85,85,0.06);
-    border: 1px solid rgba(224,85,85,0.15);
-    border-radius: 10px;
-    padding: 11px 13px;
-    animation: slideIn 0.3s ease both;
-}
-.error-icon   { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
-.error-info   { flex: 1; }
-.error-msg    { font-size: 13px; font-weight: 700; color: var(--red); }
-.error-detail { font-size: 11px; color: rgba(255,255,255,0.32); margin-top: 2px; }
+.error-row { display:flex;align-items:flex-start;gap:11px;background:rgba(224,85,85,.06);border:1px solid rgba(224,85,85,.15);border-radius:10px;padding:11px 13px;animation:slideIn .3s ease both; }
+.error-icon { font-size:16px;flex-shrink:0;margin-top:2px; }
+.error-info { flex:1; }
+.error-msg { font-size:13px;font-weight:700;color:var(--red); }
+.error-detail { font-size:11px;color:rgba(255,255,255,.32);margin-top:2px; }
 
-.dismiss-btn {
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.2);
-    cursor: pointer;
-    font-size: 13px;
-    padding: 2px 5px;
-    border-radius: 4px;
-    transition: color 0.2s;
-    flex-shrink: 0;
-    align-self: flex-start;
-}
-.dismiss-btn:hover { color: rgba(255,255,255,0.6); }
+.dismiss-btn { background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;transition:color .2s;flex-shrink:0;align-self:flex-start; }
+.dismiss-btn:hover { color:rgba(255,255,255,.6); }
 
-@keyframes slideIn {
-    from { opacity:0; transform:translateX(-8px); }
-    to   { opacity:1; transform:translateX(0); }
+@keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+
+/* ======== QUIZ BEHEER PANEL ======== */
+.quiz-body { padding:20px 22px 22px; display:flex; flex-direction:column; gap:20px; }
+
+/* Fase indicator */
+.fase-balk {
+    display:flex; gap:6px; align-items:center;
+}
+.fase-stap {
+    flex:1; height:4px; border-radius:2px;
+    background:rgba(255,255,255,.08);
+    transition:background .4s;
+}
+.fase-stap.actief    { background:var(--gold); }
+.fase-stap.geweest   { background:rgba(76,175,130,.5); }
+.fase-label {
+    font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px;
+    color:rgba(255,255,255,.3); text-transform:uppercase; min-width:120px; text-align:right;
 }
 
-/* ---- QUIZ BEHEER PANEL ---- */
-.quiz-body {
-    padding: 20px 22px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
+/* Voortgang */
+.quiz-status-row { display:flex; align-items:center; gap:14px; }
+.quiz-vraag-label { font-family:'Cinzel',serif; font-size:11px; letter-spacing:1.5px; color:rgba(255,255,255,.35); text-transform:uppercase; flex-shrink:0; }
+.quiz-vraag-nummer { font-family:'Cinzel',serif; font-size:22px; font-weight:900; color:var(--gold); flex-shrink:0; min-width:48px; }
+.quiz-progress-bar { flex:1; height:4px; background:rgba(255,255,255,.08); border-radius:2px; overflow:hidden; }
+.quiz-progress-fill { height:100%; background:var(--gold); border-radius:2px; transition:width .4s ease; width:0%; }
+.antwoord-teller { font-size:12px; color:rgba(255,255,255,.3); flex-shrink:0; white-space:nowrap; }
 
-.quiz-status-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+/* Huidige vraag preview */
+.quiz-vraag-box {
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+    border-radius:12px; padding:14px 16px;
+    font-size:15px; font-weight:700; line-height:1.4;
+    color:rgba(255,255,255,.9); min-height:52px;
 }
+.quiz-vraag-box.leeg { color:rgba(255,255,255,.2); font-weight:400; font-style:italic; font-size:13px; }
 
-.quiz-vraag-label {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: rgba(255,255,255,0.35);
-    text-transform: uppercase;
-    flex-shrink: 0;
-}
+/* === FASE-SPECIFIEKE PREVIEW === */
 
-.quiz-vraag-nummer {
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    font-weight: 900;
-    color: var(--gold);
-    flex-shrink: 0;
-    min-width: 48px;
+/* Resultaten balk */
+.resultaten-preview {
+    display:flex; flex-direction:column; gap:8px;
 }
+.resultaat-balk-rij { display:flex; align-items:center; gap:10px; }
+.resultaat-balk-label { font-size:13px; color:rgba(255,255,255,.6); min-width:120px; max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.resultaat-balk-wrap { flex:1; height:26px; background:rgba(255,255,255,.06); border-radius:6px; overflow:hidden; position:relative; }
+.resultaat-balk-fill {
+    height:100%; border-radius:6px;
+    display:flex; align-items:center; padding-left:8px;
+    font-size:12px; font-weight:700;
+    transition:width .6s cubic-bezier(.22,.61,.36,1);
+    min-width:0;
+}
+.balk-correct { background:rgba(76,175,130,.5); color:var(--green); }
+.balk-fout    { background:rgba(224,85,85,.35); color:var(--red); }
+.resultaat-pct { font-size:12px; font-weight:700; color:rgba(255,255,255,.4); min-width:36px; text-align:right; }
 
-.quiz-progress-bar {
-    flex: 1;
-    height: 4px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 2px;
-    overflow: hidden;
+/* Podium preview */
+.podium-preview { display:flex; flex-direction:column; gap:7px; }
+.podium-rij {
+    display:flex; align-items:center; gap:12px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
+    border-radius:10px; padding:9px 13px;
 }
-.quiz-progress-fill {
-    height: 100%;
-    background: var(--gold);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    width: 0%;
-}
+.podium-rij.top1 { background:rgba(255,215,0,.07); border-color:rgba(255,215,0,.2); }
+.podium-rij.top2 { background:rgba(192,192,192,.06); border-color:rgba(192,192,192,.15); }
+.podium-rij.top3 { background:rgba(205,127,50,.06); border-color:rgba(205,127,50,.15); }
+.podium-rang { font-family:'Cinzel',serif; font-size:16px; font-weight:900; min-width:28px; text-align:center; }
+.podium-naam { flex:1; font-weight:700; font-size:14px; }
+.podium-score { font-weight:900; font-size:15px; color:var(--gold); }
 
-.quiz-huidige-vraag {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.4;
-    color: rgba(255,255,255,0.9);
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-}
-.quiz-huidige-vraag.leeg {
-    color: rgba(255,255,255,0.2);
-    font-weight: 400;
-    font-style: italic;
-    font-size: 13px;
-}
-
-/* Navigatie knoppen */
-.quiz-nav {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
+/* Navigatie */
+.quiz-nav { display:flex; gap:10px; align-items:center; }
 .nav-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 0 20px;
-    height: 42px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.7);
-    font-family: 'Lato', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
-    flex-shrink: 0;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    padding:0 20px; height:44px; border-radius:10px;
+    border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05);
+    color:rgba(255,255,255,.7); font-family:'Lato',sans-serif;
+    font-size:13px; font-weight:700; letter-spacing:.5px;
+    cursor:pointer; transition:background .15s,border-color .15s,color .15s,transform .1s;
+    flex-shrink:0;
 }
-.nav-btn:hover:not(:disabled) {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.22);
-    color: white;
-}
-.nav-btn:active:not(:disabled) { transform: scale(0.97); }
-.nav-btn:disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-}
+.nav-btn:hover:not(:disabled) { background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:white; }
+.nav-btn:active:not(:disabled) { transform:scale(.97); }
+.nav-btn:disabled { opacity:.25; cursor:not-allowed; }
 
 .nav-btn--next {
-    background: rgba(240,192,64,0.12);
-    border-color: rgba(240,192,64,0.3);
-    color: var(--gold);
-    padding: 0 26px;
-    font-size: 14px;
+    background:rgba(240,192,64,.12); border-color:rgba(240,192,64,.3);
+    color:var(--gold); padding:0 28px; font-size:14px;
 }
-.nav-btn--next:hover:not(:disabled) {
-    background: rgba(240,192,64,0.22);
-    border-color: rgba(240,192,64,0.5);
-    color: var(--gold);
-}
+.nav-btn--next:hover:not(:disabled) { background:rgba(240,192,64,.22);border-color:rgba(240,192,64,.5);color:var(--gold); }
+.nav-spacer { flex:1; }
 
-.nav-spacer { flex: 1; }
-
-/* Vragenlijst */
-.quiz-lijst-label {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.25);
-    text-transform: uppercase;
-    margin-bottom: 2px;
-}
-
-.quiz-lijst {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-}
-
+/* Snelnavigatie chips */
+.quiz-lijst-label { font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; color:rgba(255,255,255,.25); text-transform:uppercase; margin-bottom:6px; }
+.quiz-lijst { display:flex; flex-wrap:wrap; gap:7px; }
 .vraag-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.45);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
-    position: relative;
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:36px; height:36px; padding:0 10px;
+    border-radius:8px; border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.04); color:rgba(255,255,255,.45);
+    font-size:13px; font-weight:700; cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s,transform .1s;
 }
-.vraag-chip:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.2);
-    color: white;
-}
-.vraag-chip:active { transform: scale(0.95); }
+.vraag-chip:hover { background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:white; }
+.vraag-chip:active { transform:scale(.95); }
+.vraag-chip.actief  { background:rgba(240,192,64,.18);border-color:rgba(240,192,64,.45);color:var(--gold); }
+.vraag-chip.geweest { background:rgba(76,175,130,.1);border-color:rgba(76,175,130,.2);color:var(--green); }
 
-.vraag-chip.actief {
-    background: rgba(240,192,64,0.18);
-    border-color: rgba(240,192,64,0.45);
-    color: var(--gold);
-}
+.quiz-geen-quiz { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:28px 0 20px;opacity:.3;font-size:13px;text-align:center; }
+.quiz-geen-quiz .geen-icon { font-size:28px; }
 
-.vraag-chip.geweest {
-    background: rgba(76,175,130,0.1);
-    border-color: rgba(76,175,130,0.2);
-    color: var(--green);
+/* fase label kleuren */
+.fase-tag {
+    font-size:10px;font-weight:700;letter-spacing:1px;
+    padding:3px 10px;border-radius:50px;
+    background:rgba(255,255,255,.06);color:rgba(255,255,255,.3);
+    border:1px solid rgba(255,255,255,.08);
 }
+.fase-tag.vraag     { background:rgba(91,156,246,.15);color:var(--blue);border-color:rgba(91,156,246,.3); }
+.fase-tag.resultaten{ background:rgba(240,192,64,.12);color:var(--gold);border-color:rgba(240,192,64,.3); }
+.fase-tag.podium    { background:rgba(76,175,130,.12);color:var(--green);border-color:rgba(76,175,130,.3); }
+.fase-tag.eindpodium{ background:rgba(255,215,0,.15);color:#ffd700;border-color:rgba(255,215,0,.4); }
 
-.quiz-geen-quiz {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 28px 0 20px;
-    opacity: 0.3;
-    font-size: 13px;
-    text-align: center;
-}
-.quiz-geen-quiz .geen-icon { font-size: 28px; }
-
-@media (max-width: 900px) {
-    main   { grid-template-columns: 1fr; padding: 16px; }
-    header { padding: 16px 20px; }
-    .panel--quiz { grid-column: 1; }
+@media(max-width:900px){
+    main{grid-template-columns:1fr;padding:16px;}
+    header{padding:16px 20px;}
+    .panel--quiz{grid-column:1;}
 }
 </style>
 </head>
@@ -498,10 +272,7 @@ main {
 
 <header>
     <div class="logo">Efteling <span>Quiz</span></div>
-    <div class="status-pill">
-        <div class="status-dot"></div>
-        LIVE
-    </div>
+    <div class="status-pill"><div class="status-dot"></div>LIVE</div>
 </header>
 
 <main>
@@ -513,10 +284,7 @@ main {
             <span class="panel-count" id="playerCount">0/6</span>
         </div>
         <div class="panel-body" id="playersList">
-            <div class="empty-state">
-                <div class="empty-icon">🎭</div>
-                <div>Wachten op spelers...</div>
-            </div>
+            <div class="empty-state"><div class="empty-icon">🎭</div><div>Wachten op spelers...</div></div>
         </div>
     </div>
 
@@ -528,10 +296,7 @@ main {
             <span class="panel-count" id="helpCount">0</span>
         </div>
         <div class="panel-body" id="helpList">
-            <div class="empty-state">
-                <div class="empty-icon">✅</div>
-                <div>Geen hulp aanvragen</div>
-            </div>
+            <div class="empty-state"><div class="empty-icon">✅</div><div>Geen hulp aanvragen</div></div>
         </div>
     </div>
 
@@ -543,10 +308,7 @@ main {
             <span class="panel-count" id="errorCount">0</span>
         </div>
         <div class="panel-body" id="errorList">
-            <div class="empty-state">
-                <div class="empty-icon">🟢</div>
-                <div>Geen foutmeldingen</div>
-            </div>
+            <div class="empty-state"><div class="empty-icon">🟢</div><div>Geen foutmeldingen</div></div>
         </div>
     </div>
 
@@ -555,45 +317,41 @@ main {
         <div class="panel-header">
             <span class="panel-icon">🎮</span>
             <span class="panel-title">Quiz Beheer</span>
-            <span class="panel-count" id="quizNaam" style="background:rgba(240,192,64,0.08);color:rgba(240,192,64,0.5);font-size:11px;letter-spacing:1px;">Geen quiz gestart</span>
+            <span class="fase-tag" id="faseTag">LOBBY</span>
+            <span class="panel-count" id="quizNaam" style="background:rgba(240,192,64,.08);color:rgba(240,192,64,.5);font-size:11px;letter-spacing:1px;margin-left:8px;">Geen quiz</span>
         </div>
         <div class="quiz-body" id="quizBody">
+
             <div class="quiz-geen-quiz" id="geenQuizState">
                 <div class="geen-icon">🎲</div>
                 <div>Start eerst een quiz via het selectiescherm</div>
             </div>
 
-            <!-- Wordt zichtbaar zodra quiz geladen is -->
-            <div id="quizControls" style="display:none; flex-direction:column; gap:18px;">
+            <div id="quizControls" style="display:none;flex-direction:column;gap:18px;">
 
-                <!-- Voortgang -->
+                <!-- Voortgang + antwoord-teller -->
                 <div class="quiz-status-row">
                     <span class="quiz-vraag-label">Vraag</span>
                     <span class="quiz-vraag-nummer" id="vraagNummer">—</span>
                     <span class="quiz-vraag-label" id="vraagTotaal">/ 0</span>
-                    <div class="quiz-progress-bar">
-                        <div class="quiz-progress-fill" id="progressFill"></div>
-                    </div>
-                    <span class="quiz-vraag-label" id="tijdLabel" style="min-width:60px;text-align:right;"></span>
+                    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="progressFill"></div></div>
+                    <span class="antwoord-teller" id="antwoordTeller"></span>
                 </div>
 
                 <!-- Huidige vraag tekst -->
-                <div class="quiz-huidige-vraag leeg" id="huidigeVraagTekst">
-                    Druk op "Volgende" om de quiz te starten
-                </div>
+                <div class="quiz-vraag-box leeg" id="huidigeVraagTekst">Druk op "Volgende" om de quiz te starten</div>
 
-                <!-- Navigatie -->
+                <!-- FASE-SPECIFIEKE CONTENT -->
+                <div id="faseContent"></div>
+
+                <!-- Navigatie knoppen -->
                 <div class="quiz-nav">
-                    <button class="nav-btn" id="btnVorige" onclick="stuurVorige()" disabled>
-                        ← Vorige
-                    </button>
+                    <button class="nav-btn" id="btnVorige" onclick="stuurVorige()" disabled>← Vorige</button>
                     <div class="nav-spacer"></div>
-                    <button class="nav-btn nav-btn--next" id="btnVolgende" onclick="stuurVolgende()">
-                        Volgende →
-                    </button>
+                    <button class="nav-btn nav-btn--next" id="btnVolgende" onclick="stuurVolgende()" id="btnVolgende">Volgende →</button>
                 </div>
 
-                <!-- Direct springen -->
+                <!-- Snelnavigatie -->
                 <div>
                     <div class="quiz-lijst-label">Snel navigeren</div>
                     <div class="quiz-lijst" id="vraagLijst"></div>
@@ -609,14 +367,9 @@ main {
 const socket = io();
 
 const allPlayers = [
-    { name: "Jestin", joinId: 1001 },
-    { name: "Luca",   joinId: 1002 },
-    { name: "Jules",  joinId: 1003 },
-    { name: "Levi",   joinId: 1004 },
-    { name: "Bink",   joinId: 1005 },
-    { name: "Symen",  joinId: 1006 }
+    {name:"Jestin",joinId:1001},{name:"Luca",joinId:1002},{name:"Jules",joinId:1003},
+    {name:"Levi",joinId:1004},{name:"Bink",joinId:1005},{name:"Symen",joinId:1006}
 ];
-
 const characterMap = {
     "Jokie":         "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
     "Jet":           "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4",
@@ -636,51 +389,36 @@ const characterMap = {
 
 let helpRequests = [];
 let errorLog = [];
-
-// Quiz state (gesynchroniseerd via socket)
 let quizData = null;
 let huidigeVraag = -1;
+let huidigeFase = "lobby";
+let totaalVragen = 0;
+let lastPayload = null;
 
-function now() {
-    return new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
-
-function addError(msg, detail) {
-    errorLog.push({ msg, detail: detail || '', time: now() });
-    renderErrors();
-}
+function now() { return new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function addError(msg,detail) { errorLog.push({msg,detail:detail||'',time:now()}); renderErrors(); }
 
 // ---- SPELERS ----
 function renderPlayers(players) {
     const list  = document.getElementById("playersList");
     const count = document.getElementById("playerCount");
-
     const joinedMap = {};
-    (players || []).forEach(p => { joinedMap[p.name] = p; });
-
-    const joined = (players || []).length;
-    count.textContent = joined + "/" + allPlayers.length;
-
+    (players||[]).forEach(p=>{ joinedMap[p.name]=p; });
+    count.textContent = (players||[]).length + "/6";
     list.innerHTML = "";
     allPlayers.forEach(ap => {
         const p = joinedMap[ap.name];
         const isJoined = !!p;
-        const hasCharacter = p && p.character;
-        const imgUrl = hasCharacter ? characterMap[p.character] : null;
-
+        const imgUrl = p && p.character ? characterMap[p.character] : null;
         const row = document.createElement("div");
         row.className = "player-row";
         row.innerHTML = `
-            ${imgUrl
-                ? `<img class="player-avatar" src="${imgUrl}" alt="${p.character}">`
-                : `<div class="player-avatar-placeholder">👤</div>`}
+            ${imgUrl ? `<img class="player-avatar" src="${imgUrl}" alt="${p.character}">` : `<div class="player-avatar-placeholder">👤</div>`}
             <div class="player-info">
                 <div class="player-name">${ap.name}</div>
-                <div class="player-character">${hasCharacter ? p.character : isJoined ? 'Personage kiezen...' : 'Nog niet gejoind'}</div>
+                <div class="player-character">${p && p.character ? p.character : isJoined ? 'Personage kiezen...' : 'Nog niet gejoind'}</div>
             </div>
-            <span class="player-badge ${isJoined ? 'badge--joined' : 'badge--waiting'}">
-                ${isJoined ? 'JOINED' : 'WACHT'}
-            </span>
+            <span class="player-badge ${isJoined?'badge--joined':'badge--waiting'}">${isJoined?'JOINED':'WACHT'}</span>
         `;
         list.appendChild(row);
     });
@@ -688,106 +426,64 @@ function renderPlayers(players) {
 
 // ---- HULP ----
 function renderHelp() {
-    const list  = document.getElementById("helpList");
-    const count = document.getElementById("helpCount");
-    count.textContent = helpRequests.length;
-
-    if (helpRequests.length === 0) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div>Geen hulp aanvragen</div></div>`;
-        return;
-    }
-    list.innerHTML = "";
-    helpRequests.forEach((req, i) => {
-        const row = document.createElement("div");
-        row.className = "help-row";
-        row.innerHTML = `
-            <div class="help-icon">🙋</div>
-            <div class="help-info">
-                <div class="help-name">${req.name}</div>
-                <div class="help-time">${req.time}</div>
-            </div>
-            <button class="dismiss-btn" onclick="dismissHelp(${i})">✕</button>
-        `;
+    const list = document.getElementById("helpList");
+    document.getElementById("helpCount").textContent = helpRequests.length;
+    if (!helpRequests.length) { list.innerHTML=`<div class="empty-state"><div class="empty-icon">✅</div><div>Geen hulp aanvragen</div></div>`; return; }
+    list.innerHTML="";
+    helpRequests.forEach((req,i)=>{
+        const row=document.createElement("div"); row.className="help-row";
+        row.innerHTML=`<div class="help-icon">🙋</div><div class="help-info"><div class="help-name">${req.name}</div><div class="help-time">${req.time}</div></div><button class="dismiss-btn" onclick="dismissHelp(${i})">✕</button>`;
         list.appendChild(row);
     });
 }
-
-function dismissHelp(i) {
-    helpRequests.splice(i, 1);
-    renderHelp();
-}
+function dismissHelp(i){ helpRequests.splice(i,1); renderHelp(); }
 
 // ---- ERRORS ----
 function renderErrors() {
-    const list  = document.getElementById("errorList");
-    const count = document.getElementById("errorCount");
-    count.textContent = errorLog.length;
-
-    if (errorLog.length === 0) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🟢</div><div>Geen foutmeldingen</div></div>`;
-        return;
-    }
-    list.innerHTML = "";
-    errorLog.forEach((e, i) => {
-        const row = document.createElement("div");
-        row.className = "error-row";
-        row.innerHTML = `
-            <div class="error-icon">⚠️</div>
-            <div class="error-info">
-                <div class="error-msg">${e.msg}</div>
-                <div class="error-detail">${e.detail ? e.detail + ' · ' : ''}${e.time}</div>
-            </div>
-            <button class="dismiss-btn" onclick="dismissError(${i})">✕</button>
-        `;
+    const list = document.getElementById("errorList");
+    document.getElementById("errorCount").textContent = errorLog.length;
+    if (!errorLog.length) { list.innerHTML=`<div class="empty-state"><div class="empty-icon">🟢</div><div>Geen foutmeldingen</div></div>`; return; }
+    list.innerHTML="";
+    errorLog.forEach((e,i)=>{
+        const row=document.createElement("div"); row.className="error-row";
+        row.innerHTML=`<div class="error-icon">⚠️</div><div class="error-info"><div class="error-msg">${e.msg}</div><div class="error-detail">${e.detail?e.detail+' · ':''}${e.time}</div></div><button class="dismiss-btn" onclick="dismissError(${i})">✕</button>`;
         list.appendChild(row);
     });
 }
-
-function dismissError(i) {
-    errorLog.splice(i, 1);
-    renderErrors();
-}
+function dismissError(i){ errorLog.splice(i,1); renderErrors(); }
 
 // ---- QUIZ BEHEER ----
-function renderQuizPanel() {
-    const geenState   = document.getElementById("geenQuizState");
-    const controls    = document.getElementById("quizControls");
-    const quizNaamEl  = document.getElementById("quizNaam");
+function renderQuizPanel(payload) {
+    const geenState  = document.getElementById("geenQuizState");
+    const controls   = document.getElementById("quizControls");
+    const quizNaamEl = document.getElementById("quizNaam");
+    const faseTagEl  = document.getElementById("faseTag");
 
-    if (!quizData || !quizData.vragen || quizData.vragen.length === 0) {
-        geenState.style.display  = "flex";
-        controls.style.display   = "none";
-        quizNaamEl.textContent   = "Geen quiz gestart";
+    if (!quizData) {
+        geenState.style.display = "flex";
+        controls.style.display  = "none";
+        quizNaamEl.textContent  = "Geen quiz";
         return;
     }
 
-    geenState.style.display  = "none";
-    controls.style.display   = "flex";
+    geenState.style.display = "none";
+    controls.style.display  = "flex";
+    quizNaamEl.textContent  = quizData.naam || "Quiz";
 
-    const totaal = quizData.vragen.length;
-    quizNaamEl.textContent = quizData.naam || "Quiz";
+    // Fase tag
+    const faseTeksten = { lobby:"LOBBY", vraag:"VRAAG", resultaten:"RESULTATEN", podium:"PODIUM", eindpodium:"EINDPODIUM" };
+    faseTagEl.textContent = faseTeksten[huidigeFase] || huidigeFase.toUpperCase();
+    faseTagEl.className = "fase-tag " + huidigeFase;
 
-    // Vraagnummer
-    const numEl = document.getElementById("vraagNummer");
-    numEl.textContent = huidigeVraag >= 0 ? (huidigeVraag + 1) : "—";
-    document.getElementById("vraagTotaal").textContent = "/ " + totaal;
-
-    // Voortgangsbalk
-    const pct = huidigeVraag >= 0 ? ((huidigeVraag + 1) / totaal * 100) : 0;
+    // Vraagnummer + progress
+    document.getElementById("vraagNummer").textContent = huidigeVraag >= 0 ? (huidigeVraag + 1) : "—";
+    document.getElementById("vraagTotaal").textContent = "/ " + totaalVragen;
+    const pct = huidigeVraag >= 0 ? ((huidigeVraag + 1) / totaalVragen * 100) : 0;
     document.getElementById("progressFill").style.width = pct + "%";
-
-    // Tijdlimiet
-    const tijdEl = document.getElementById("tijdLabel");
-    if (huidigeVraag >= 0 && quizData.vragen[huidigeVraag]) {
-        const v = quizData.vragen[huidigeVraag];
-        tijdEl.textContent = "⏱ " + (v.tijdlimiet || 20) + "s";
-    } else {
-        tijdEl.textContent = "";
-    }
 
     // Vraag tekst
     const vraagEl = document.getElementById("huidigeVraagTekst");
-    if (huidigeVraag >= 0 && quizData.vragen[huidigeVraag]) {
+    if (huidigeVraag >= 0 && quizData.vragen && quizData.vragen[huidigeVraag]) {
         vraagEl.textContent = quizData.vragen[huidigeVraag].vraag;
         vraagEl.classList.remove("leeg");
     } else {
@@ -795,90 +491,167 @@ function renderQuizPanel() {
         vraagEl.classList.add("leeg");
     }
 
+    // Fase-specifieke content
+    renderFaseContent(payload);
+
     // Knoppen
-    document.getElementById("btnVorige").disabled   = (huidigeVraag <= 0);
-    document.getElementById("btnVolgende").disabled = (huidigeVraag >= totaal - 1);
+    const isLaatste = huidigeVraag >= totaalVragen - 1;
+    const btnVor = document.getElementById("btnVorige");
+    const btnVol = document.getElementById("btnVolgende");
+
+    btnVor.disabled = (huidigeFase === "lobby" || (huidigeFase === "vraag" && huidigeVraag <= 0) || huidigeFase === "resultaten" || huidigeFase === "podium" || huidigeFase === "eindpodium");
+
+    if (huidigeFase === "lobby") {
+        btnVol.textContent = "Start Quiz →";
+        btnVol.disabled = false;
+    } else if (huidigeFase === "vraag") {
+        btnVol.textContent = "Toon Resultaten →";
+        btnVol.disabled = false;
+    } else if (huidigeFase === "resultaten") {
+        btnVol.textContent = isLaatste ? "Eindpodium →" : "Tussenstand →";
+        btnVol.disabled = false;
+    } else if (huidigeFase === "podium") {
+        btnVol.textContent = "Volgende Vraag →";
+        btnVol.disabled = isLaatste;
+    } else if (huidigeFase === "eindpodium") {
+        btnVol.textContent = "Quiz Klaar ✓";
+        btnVol.disabled = true;
+    }
 
     // Chips
     const lijstEl = document.getElementById("vraagLijst");
     lijstEl.innerHTML = "";
-    quizData.vragen.forEach((v, i) => {
-        const chip = document.createElement("button");
-        chip.className = "vraag-chip";
-        if (i === huidigeVraag) chip.classList.add("actief");
-        else if (i < huidigeVraag) chip.classList.add("geweest");
-        chip.textContent = i + 1;
-        chip.title = v.vraag;
-        chip.onclick = () => springNaar(i);
-        lijstEl.appendChild(chip);
-    });
+    if (quizData.vragen) {
+        quizData.vragen.forEach((v, i) => {
+            const chip = document.createElement("button");
+            chip.className = "vraag-chip";
+            if (i === huidigeVraag) chip.classList.add("actief");
+            else if (i < huidigeVraag) chip.classList.add("geweest");
+            chip.textContent = i + 1;
+            chip.title = v.vraag;
+            chip.onclick = () => socket.emit("springNaarVraag", { index: i });
+            lijstEl.appendChild(chip);
+        });
+    }
 }
 
-function stuurVolgende() {
-    socket.emit("volgendeVraag");
+function renderFaseContent(payload) {
+    const el = document.getElementById("faseContent");
+    el.innerHTML = "";
+
+    if (huidigeFase === "vraag" && payload) {
+        // Antwoord teller
+        document.getElementById("antwoordTeller").textContent = "";
+        return;
+    }
+
+    if (huidigeFase === "resultaten" && payload && payload.resultaten) {
+        const res = payload.resultaten;
+        const div = document.createElement("div");
+        div.className = "resultaten-preview";
+        res.antwoorden.forEach(a => {
+            const rij = document.createElement("div");
+            rij.className = "resultaat-balk-rij";
+            const isCorrect = a.correct;
+            rij.innerHTML = `
+                <div class="resultaat-balk-label">${a.tekst}</div>
+                <div class="resultaat-balk-wrap">
+                    <div class="resultaat-balk-fill ${isCorrect?'balk-correct':'balk-fout'}" style="width:${a.procent}%">
+                        ${a.procent > 15 ? a.aantal + 'x' : ''}
+                    </div>
+                </div>
+                <div class="resultaat-pct">${a.procent}%</div>
+            `;
+            div.appendChild(rij);
+        });
+        el.appendChild(div);
+        return;
+    }
+
+    if ((huidigeFase === "podium" || huidigeFase === "eindpodium") && payload && payload.podium) {
+        const div = document.createElement("div");
+        div.className = "podium-preview";
+        payload.podium.forEach((p, i) => {
+            const rij = document.createElement("div");
+            const cls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+            rij.className = "podium-rij " + cls;
+            const symbool = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+            rij.innerHTML = `
+                <div class="podium-rang">${symbool}</div>
+                <div class="podium-naam">${p.name}</div>
+                <div class="podium-score">${p.score.toLocaleString('nl-NL')} pts</div>
+            `;
+            div.appendChild(rij);
+        });
+        el.appendChild(div);
+        return;
+    }
 }
 
-function stuurVorige() {
-    socket.emit("vorigeVraag");
-}
-
-function springNaar(index) {
-    socket.emit("springNaarVraag", { index });
-}
+// ---- NAVIGATIE ----
+function stuurVolgende() { socket.emit("volgendeVraag"); }
+function stuurVorige()   { socket.emit("vorigeVraag"); }
 
 // ---- DATA LADEN ----
 function loadDashboard() {
     fetch("/scores-full")
-        .then(res => {
-            if (!res.ok) throw new Error("Server fout " + res.status);
-            return res.json();
-        })
-        .then(data => {
-            renderPlayers(data.players || []);
-        })
-        .catch(err => {
-            addError("Kon data niet laden", err.message);
-        });
+        .then(r=>{ if(!r.ok) throw new Error("Server fout "+r.status); return r.json(); })
+        .then(data=>renderPlayers(data.players||[]))
+        .catch(err=>addError("Kon data niet laden",err.message));
 }
 
 // ---- SOCKET ----
 socket.on("gameUpdate", payload => {
     if (payload.type === "playersUpdate") {
-        renderPlayers((payload.data && payload.data.players) || []);
-
-        // Quiz data meeladen vanuit gameUpdate
+        renderPlayers((payload.data&&payload.data.players)||[]);
         if (payload.data && payload.data.quizData) {
-            quizData     = payload.data.quizData;
+            quizData = payload.data.quizData;
+            totaalVragen = quizData.vragen ? quizData.vragen.length : 0;
             huidigeVraag = payload.data.huidigeVraag != null ? payload.data.huidigeVraag : -1;
-            renderQuizPanel();
         } else if (!payload.data || !payload.data.quizId) {
-            quizData     = null;
-            huidigeVraag = -1;
-            renderQuizPanel();
+            quizData = null; huidigeVraag = -1; huidigeFase = "lobby";
         }
+        renderQuizPanel(lastPayload);
     }
     if (payload.type === "helpRequest") {
-        helpRequests.push({ name: payload.name || "Onbekend", time: now() });
+        helpRequests.push({name:payload.name||"Onbekend",time:now()});
         renderHelp();
     }
-    if (payload.type === "error") {
-        addError(payload.message || "Onbekende fout", payload.detail || '');
+    if (payload.type === "error") addError(payload.message||"Onbekende fout", payload.detail||'');
+});
+
+socket.on("faseUpdate", payload => {
+    huidigeFase  = payload.fase;
+    huidigeVraag = payload.huidigeVraag != null ? payload.huidigeVraag : huidigeVraag;
+    totaalVragen = payload.totaalVragen || totaalVragen;
+    lastPayload  = payload;
+    // Als quizData nog niet geladen is via gameUpdate, probeer het uit payload
+    if (!quizData && payload.quizData) {
+        quizData = payload.quizData;
+        totaalVragen = quizData.vragen ? quizData.vragen.length : 0;
     }
+    renderQuizPanel(payload);
 });
 
-socket.on("vraagUpdate", payload => {
-    // Server stuurt vraagindex en quizdata mee
-    huidigeVraag = payload.huidigeVraag;
-    if (payload.quizData) quizData = payload.quizData;
-    renderQuizPanel();
+socket.on("antwoordUpdate", ({aantalGeantwoord, totaalSpelers}) => {
+    document.getElementById("antwoordTeller").textContent =
+        aantalGeantwoord + " / " + totaalSpelers + " geantwoord";
 });
 
-socket.on("connect_error", () => addError("Verbinding mislukt", "Socket.IO"));
-socket.on("disconnect",    () => addError("Verbinding verloren", "Herlaad de pagina"));
+socket.on("connect_error", ()=>addError("Verbinding mislukt","Socket.IO"));
+socket.on("disconnect",    ()=>addError("Verbinding verloren","Herlaad de pagina"));
 
 window.addEventListener("load", () => {
     loadDashboard();
     setInterval(loadDashboard, 3000);
+    // Herstel staat
+    fetch("/api/game-state").then(r=>r.json()).then(state=>{
+        if (state.quizData) { quizData=state.quizData; totaalVragen=quizData.vragen?quizData.vragen.length:0; }
+        if (state.fase) huidigeFase=state.fase;
+        if (state.huidigeVraag!=null) huidigeVraag=state.huidigeVraag;
+        lastPayload = state;
+        renderQuizPanel(state);
+    }).catch(()=>{});
 });
 </script>
 </body>
