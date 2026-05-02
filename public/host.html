@@ -334,21 +334,26 @@ function renderFaseContent(payload) {
         groepen.forEach(groep=>{
             const kaart=document.createElement("div");
             kaart.className="keuring-kaart"+(groep.beslissing==="goed"?" goed":groep.beslissing==="fout"?" fout":"");
-            kaart.dataset.sleutel=groep.sleutel;
 
             const namenStr=groep.namen.join(", ");
             const aantalStr=groep.namen.length+" speler"+(groep.namen.length!==1?"s":"");
 
-            kaart.innerHTML=`
-                <div class="keuring-antw-info">
-                    <div class="keuring-tekst">"${groep.tekst}"</div>
-                    <div class="keuring-namen">${namenStr} · ${aantalStr}</div>
-                </div>
-                <div class="keuring-knoppen">
-                    <button class="keur-btn keur-btn--goed${groep.beslissing==='goed'?' actief':''}" onclick="keur('${groep.sleutel}','goed',this)">✓ Goed</button>
-                    <button class="keur-btn keur-btn--fout${groep.beslissing==='fout'?' actief':''}" onclick="keur('${groep.sleutel}','fout',this)">✗ Fout</button>
-                </div>
-            `;
+            const info=document.createElement("div"); info.className="keuring-antw-info";
+            const tekst=document.createElement("div"); tekst.className="keuring-tekst"; tekst.textContent='"'+groep.tekst+'"';
+            const namen=document.createElement("div"); namen.className="keuring-namen"; namen.textContent=namenStr+" · "+aantalStr;
+            info.appendChild(tekst); info.appendChild(namen);
+
+            const knoppen=document.createElement("div"); knoppen.className="keuring-knoppen";
+            const btnGoed=document.createElement("button");
+            btnGoed.className="keur-btn keur-btn--goed"+(groep.beslissing==="goed"?" actief":"");
+            btnGoed.textContent="✓ Goed";
+            const btnFout=document.createElement("button");
+            btnFout.className="keur-btn keur-btn--fout"+(groep.beslissing==="fout"?" actief":"");
+            btnFout.textContent="✗ Fout";
+            btnGoed.addEventListener("click",function(){ keur(groep.sleutel,"goed",kaart,btnGoed,btnFout); });
+            btnFout.addEventListener("click",function(){ keur(groep.sleutel,"fout",kaart,btnGoed,btnFout); });
+            knoppen.appendChild(btnGoed); knoppen.appendChild(btnFout);
+            kaart.appendChild(info); kaart.appendChild(knoppen);
             sectie.appendChild(kaart);
         });
 
@@ -394,13 +399,22 @@ function renderFaseContent(payload) {
     }
 }
 
-function keur(sleutel, beslissing, btnEl) {
+function keur(sleutel, beslissing, kaart, btnGoed, btnFout) {
     socket.emit("keurAntwoord", { sleutel, beslissing });
     // Optimistische UI update
-    const kaart=btnEl.closest(".keuring-kaart");
     kaart.className="keuring-kaart "+(beslissing==="goed"?"goed":"fout");
-    kaart.querySelectorAll(".keur-btn").forEach(b=>b.classList.remove("actief"));
-    btnEl.classList.add("actief");
+    btnGoed.classList.toggle("actief", beslissing==="goed");
+    btnFout.classList.toggle("actief", beslissing==="fout");
+    // Update lastPayload zodat knoptoestand klopt
+    if(lastPayload && lastPayload.openGroepen && lastPayload.openGroepen[sleutel]) {
+        lastPayload.openGroepen[sleutel].beslissing = beslissing;
+    }
+    // Hercheck of alle gekeurd zijn → Volgende-knop activeren
+    const groepen=lastPayload&&lastPayload.openGroepen?Object.values(lastPayload.openGroepen):[];
+    const alleGekeurd=groepen.length>0&&groepen.every(g=>g.beslissing!==null);
+    document.getElementById("btnVolgende").disabled=!alleGekeurd;
+    const voortEl=document.getElementById("keuringVoortgang");
+    if(voortEl) voortEl.textContent=groepen.filter(g=>g.beslissing!==null).length+" / "+groepen.length+" gekeurd";
 }
 
 function stuurVolgende() { socket.emit("volgendeVraag"); }
