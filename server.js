@@ -41,16 +41,71 @@ const allowedNames = ["Jestin","Luca","Jules","Levi","Bink","Symen"];
 let nextJoinId = 1001;
 let pendingPlayers = [];
 
+// Fase per vraag: "lobby" | "vraag" | "resultaten" | "podium" | "eindpodium"
 let currentGame = {
     id: null,
     players: [],
     scores: {},
     quizId: null,
     quizData: null,
-    huidigeVraag: -1
+    huidigeVraag: -1,
+    fase: "lobby",
+    // Antwoorden voor de huidige vraag: { playerName: { antwoordIndex, tijdstip } }
+    antwoorden: {},
+    vraagStartTijd: null
 };
 
 let pendingApprovals = {};
+
+// ---------------- HELPERS ----------------
+function berekenPunten(vraag, seconden) {
+    // Basispunten + bonus voor snelheid (max tijdlimiet seconden)
+    const basis = vraag.punten || 1000;
+    const tijdlimiet = vraag.tijdlimiet || 20;
+    const overig = Math.max(0, tijdlimiet - seconden);
+    const bonus = Math.round((overig / tijdlimiet) * basis * 0.1); // max 10% bonus
+    return basis + bonus;
+}
+
+function berekenResultaten() {
+    if (!currentGame.quizData) return null;
+    const vraag = currentGame.quizData.vragen[currentGame.huidigeVraag];
+    if (!vraag) return null;
+
+    const tellingen = {};
+    vraag.antwoorden.forEach((a, i) => { tellingen[i] = 0; });
+
+    const details = {};
+    Object.entries(currentGame.antwoorden).forEach(([name, data]) => {
+        const idx = data.antwoordIndex;
+        tellingen[idx] = (tellingen[idx] || 0) + 1;
+        details[name] = data;
+    });
+
+    const totaal = Object.values(tellingen).reduce((s, n) => s + n, 0);
+
+    return {
+        vraag: vraag.vraag,
+        antwoorden: vraag.antwoorden.map((a, i) => ({
+            tekst: a.tekst,
+            correct: a.correct,
+            aantal: tellingen[i] || 0,
+            procent: totaal > 0 ? Math.round((tellingen[i] || 0) / totaal * 100) : 0
+        })),
+        totaalAntwoorden: totaal,
+        spelersDetails: details
+    };
+}
+
+function berekenPodium() {
+    const gesorteerd = Object.entries(currentGame.scores)
+        .map(([name, score]) => {
+            const player = currentGame.players.find(p => p.name === name);
+            return { name, score, character: player?.character || null };
+        })
+        .sort((a, b) => b.score - a.score);
+    return gesorteerd;
+}
 
 // ---------------- MIDDLEWARE ----------------
 app.use(express.urlencoded({ extended: true }));
@@ -58,16 +113,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"), {
     index: false,
     setHeaders: (res, filePath) => {
-        if (filePath.endsWith(".html")) {
-            res.setHeader("Content-Type", "text/html");
-        }
+        if (filePath.endsWith(".html")) res.setHeader("Content-Type", "text/html");
     }
 }));
 
 app.use((req, res, next) => {
-    if (req.path.endsWith(".html")) {
-        return res.redirect(req.path.replace(".html", ""));
-    }
+    if (req.path.endsWith(".html")) return res.redirect(req.path.replace(".html", ""));
     next();
 });
 
@@ -87,9 +138,8 @@ app.use(session({
 // ---------------- LOGIN ----------------
 app.get("/", (req, res) => res.redirect("/host-login"));
 
-app.get("/host-login", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "host-login.html"));
-});
+app.get("/host-login", (req, res) =>
+    res.sendFile(path.join(__dirname, "public", "host-login.html")));
 
 app.post("/host-login", (req, res) => {
     const password = (req.body.password || "").trim();
@@ -121,9 +171,7 @@ app.get("/api/quizzen", async (req, res) => {
     try {
         const quizzen = await Quiz.find({}, "naam aangemaakt bijgewerkt vragen").sort({ bijgewerkt: -1 });
         res.json({ quizzen });
-    } catch (e) {
-        res.status(500).json({ error: "Fout bij ophalen quizzen" });
-    }
+    } catch (e) { res.status(500).json({ error: "Fout bij ophalen quizzen" }); }
 });
 
 app.get("/api/quizzen/:id", async (req, res) => {
@@ -132,9 +180,7 @@ app.get("/api/quizzen/:id", async (req, res) => {
         const quiz = await Quiz.findById(req.params.id);
         if (!quiz) return res.status(404).json({ error: "Quiz niet gevonden" });
         res.json({ quiz });
-    } catch (e) {
-        res.status(500).json({ error: "Fout bij ophalen quiz" });
-    }
+    } catch (e) { res.status(500).json({ error: "Fout bij ophalen quiz" }); }
 });
 
 app.post("/api/quizzen", async (req, res) => {
@@ -145,9 +191,7 @@ app.post("/api/quizzen", async (req, res) => {
         const quiz = new Quiz({ naam, vragen: vragen || [] });
         await quiz.save();
         res.json({ success: true, quiz });
-    } catch (e) {
-        res.status(500).json({ error: "Fout bij aanmaken quiz" });
-    }
+    } catch (e) { res.status(500).json({ error: "Fout bij aanmaken quiz" }); }
 });
 
 app.put("/api/quizzen/:id", async (req, res) => {
@@ -161,9 +205,7 @@ app.put("/api/quizzen/:id", async (req, res) => {
         );
         if (!quiz) return res.status(404).json({ error: "Quiz niet gevonden" });
         res.json({ success: true, quiz });
-    } catch (e) {
-        res.status(500).json({ error: "Fout bij opslaan quiz" });
-    }
+    } catch (e) { res.status(500).json({ error: "Fout bij opslaan quiz" }); }
 });
 
 app.delete("/api/quizzen/:id", async (req, res) => {
@@ -171,9 +213,7 @@ app.delete("/api/quizzen/:id", async (req, res) => {
     try {
         await Quiz.findByIdAndDelete(req.params.id);
         res.json({ success: true });
-    } catch (e) {
-        res.status(500).json({ error: "Fout bij verwijderen quiz" });
-    }
+    } catch (e) { res.status(500).json({ error: "Fout bij verwijderen quiz" }); }
 });
 
 // ---------------- HOST DASHBOARD ----------------
@@ -181,7 +221,6 @@ app.get("/host", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
     res.sendFile(path.join(__dirname, "public", "host.html"));
 });
-
 app.get("/host.html", (req, res) => {
     if (!req.session.loggedIn) return res.redirect("/host-login");
     res.sendFile(path.join(__dirname, "public", "host.html"));
@@ -190,10 +229,9 @@ app.get("/host.html", (req, res) => {
 // ---------------- START QUIZ ----------------
 app.post("/api/start-quiz", async (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
-
     const { gameId, quizId } = req.body;
-    if (!gameId)  return res.json({ error: "Game ID verplicht" });
-    if (!quizId)  return res.json({ error: "Selecteer eerst een quiz" });
+    if (!gameId) return res.json({ error: "Game ID verplicht" });
+    if (!quizId) return res.json({ error: "Selecteer eerst een quiz" });
 
     try {
         const quiz = await Quiz.findById(quizId);
@@ -206,6 +244,9 @@ app.post("/api/start-quiz", async (req, res) => {
         currentGame.quizId       = quizId;
         currentGame.quizData     = quiz;
         currentGame.huidigeVraag = -1;
+        currentGame.fase         = "lobby";
+        currentGame.antwoorden   = {};
+        currentGame.vraagStartTijd = null;
         nextJoinId = 1001;
 
         pendingPlayers = [
@@ -218,61 +259,52 @@ app.post("/api/start-quiz", async (req, res) => {
         ];
 
         io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
+        io.emit("faseUpdate", { fase: "lobby" });
         return res.json({ success: true });
     } catch (e) {
         return res.status(500).json({ error: "Fout bij starten quiz" });
     }
 });
 
-app.get("/player", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "player-scan.html"));
-});
-
 // ---------------- PLAYER ----------------
+app.get("/player", (req, res) =>
+    res.sendFile(path.join(__dirname, "public", "player-scan.html")));
+
 app.get("/player/:joinId", (req, res) => {
     if (!quizStarted) return res.send("Quiz nog niet gestart");
-
     const joinId = Number(req.params.joinId);
     const player = pendingPlayers.find(p => p.joinId === joinId);
-
-    if (!player) {
-        console.log("Ongeldige joinId:", joinId);
-        return res.send("Ongeldige spelercode");
-    }
-
-    res.send(`
-<script>
-localStorage.setItem("playerName", "${player.name}");
-localStorage.setItem("gameId", "${currentGame.id}");
+    if (!player) return res.send("Ongeldige spelercode");
+    res.send(`<script>
+localStorage.setItem("playerName","${player.name}");
+localStorage.setItem("gameId","${currentGame.id}");
 window.location.href="/join-aanvraag.html";
-</script>
-    `);
+</script>`);
 });
+
+// Player quiz-pagina (antwoorden geven)
+app.get("/quiz", (req, res) =>
+    res.sendFile(path.join(__dirname, "public", "quiz-player.html")));
 
 // ---------------- JOIN ----------------
 app.post("/join", (req, res) => {
     const { name, gameId, character, playerId } = req.body;
-
     if (!quizStarted || gameId !== currentGame.id)
         return res.status(400).json({ error: "Ongeldige Game ID" });
-
     if (!allowedNames.includes(name))
         return res.status(403).json({ error: "Naam niet toegestaan" });
 
     const existingPlayer = currentGame.players.find(
-        p => p.name.toLowerCase() === name.toLowerCase()
-    );
+        p => p.name.toLowerCase() === name.toLowerCase());
 
     if (existingPlayer) {
         if (existingPlayer.playerId !== playerId)
             return res.status(400).json({ error: "Naam al in gebruik!" });
-
         if (character) {
             const taken = currentGame.players.find(p => p.character === character && p.name !== name);
             if (taken) return res.status(400).json({ error: "Dit personage is al gekozen!" });
             existingPlayer.character = character;
         }
-
         io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
         return res.json({ success: true });
     }
@@ -283,9 +315,7 @@ app.post("/join", (req, res) => {
     }
 
     currentGame.players.push({
-        name,
-        character: character || null,
-        playerId,
+        name, character: character || null, playerId,
         joinId: pendingPlayers.find(p => p.name === name)?.joinId || nextJoinId++
     });
     currentGame.scores[name] = 0;
@@ -297,9 +327,8 @@ app.post("/join", (req, res) => {
 // ---------------- SPELLEIDER LOGIN ----------------
 const SPELLEIDER_PASSWORD = "1234";
 
-app.get("/join-indienen", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "join-indienen.html"));
-});
+app.get("/join-indienen", (req, res) =>
+    res.sendFile(path.join(__dirname, "public", "join-indienen.html")));
 
 app.post("/spelleider-login", (req, res) => {
     const password = (req.body.password || "").trim();
@@ -310,16 +339,14 @@ app.post("/spelleider-login", (req, res) => {
     return res.status(401).json({ error: "Ongeldig wachtwoord" });
 });
 
-app.get("/spelleider-status", (req, res) => {
-    res.json({ loggedIn: !!req.session.spelleider });
-});
+app.get("/spelleider-status", (req, res) =>
+    res.json({ loggedIn: !!req.session.spelleider }));
 
 // ---------------- JOIN AANVRAAG ----------------
 app.post("/api/join-aanvragen", (req, res) => {
     const { name, playerId } = req.body;
     if (!quizStarted) return res.status(400).json({ error: "Quiz niet gestart" });
     if (!allowedNames.includes(name)) return res.status(403).json({ error: "Naam niet toegestaan" });
-
     const token = "tok_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
     pendingApprovals[token] = { name, playerId, time: Date.now() };
     io.emit("gameUpdate", { type: "joinAanvraag", token, name });
@@ -366,19 +393,33 @@ app.get("/scores-full", (req, res) => {
     });
 });
 
+// ---------------- GAME STATE (voor reconnect) ----------------
+app.get("/api/game-state", (req, res) => {
+    res.json({
+        fase: currentGame.fase,
+        huidigeVraag: currentGame.huidigeVraag,
+        quizData: currentGame.quizData,
+        scores: currentGame.scores,
+        players: currentGame.players,
+        vraagStartTijd: currentGame.vraagStartTijd,
+        resultaten: currentGame.fase === "resultaten" ? berekenResultaten() : null,
+        podium: (currentGame.fase === "podium" || currentGame.fase === "eindpodium") ? berekenPodium() : null
+    });
+});
+
 // ---------------- RESET GAME ----------------
 app.post("/reset-game", (req, res) => {
     if (!req.session.loggedIn) return res.status(401).json({ error: "Niet ingelogd" });
     quizStarted = false;
-    currentGame.players      = [];
-    currentGame.scores       = {};
-    currentGame.id           = null;
-    currentGame.quizId       = null;
-    currentGame.quizData     = null;
-    currentGame.huidigeVraag = -1;
+    Object.assign(currentGame, {
+        players: [], scores: {}, id: null, quizId: null,
+        quizData: null, huidigeVraag: -1, fase: "lobby",
+        antwoorden: {}, vraagStartTijd: null
+    });
     nextJoinId = 1001;
     pendingPlayers = [];
     io.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
+    io.emit("faseUpdate", { fase: "lobby" });
     return res.json({ success: true });
 });
 
@@ -388,39 +429,48 @@ io.on("connection", (socket) => {
     socket.emit("gameUpdate", { type: "playersUpdate", data: currentGame });
     socket.emit("phaseUpdate", "lobby");
 
-    // Stuur huidige vraagstatus naar nieuw verbonden client
-    if (currentGame.quizData && currentGame.huidigeVraag >= 0) {
-        socket.emit("vraagUpdate", {
-            huidigeVraag: currentGame.huidigeVraag,
-            quizData:     currentGame.quizData
-        });
+    // Stuur huidige staat bij reconnect
+    if (currentGame.fase && currentGame.fase !== "lobby") {
+        const payload = buildFasePayload(currentGame.fase);
+        socket.emit("faseUpdate", payload);
     }
 
-    // ---- QUIZ NAVIGATIE (alleen host mag dit sturen) ----
+    // ---- QUIZ NAVIGATIE (host) ----
     socket.on("volgendeVraag", () => {
         if (!currentGame.quizData) return;
         const totaal = currentGame.quizData.vragen.length;
-        if (currentGame.huidigeVraag < totaal - 1) {
-            currentGame.huidigeVraag++;
-            const payload = {
-                huidigeVraag: currentGame.huidigeVraag,
-                quizData:     currentGame.quizData
-            };
-            io.emit("vraagUpdate", payload);
-            console.log("Volgende vraag:", currentGame.huidigeVraag);
+
+        if (currentGame.fase === "lobby" || currentGame.fase === "podium") {
+            // Ga naar volgende vraag
+            if (currentGame.huidigeVraag < totaal - 1) {
+                currentGame.huidigeVraag++;
+                currentGame.fase = "vraag";
+                currentGame.antwoorden = {};
+                currentGame.vraagStartTijd = Date.now();
+                io.emit("faseUpdate", buildFasePayload("vraag"));
+            }
+        } else if (currentGame.fase === "vraag") {
+            // Ga naar resultaten
+            // Verwerk scores voor wie correct heeft geantwoord
+            verwerkScores();
+            currentGame.fase = "resultaten";
+            io.emit("faseUpdate", buildFasePayload("resultaten"));
+        } else if (currentGame.fase === "resultaten") {
+            // Ga naar podium
+            const isLaatste = currentGame.huidigeVraag >= totaal - 1;
+            currentGame.fase = isLaatste ? "eindpodium" : "podium";
+            io.emit("faseUpdate", buildFasePayload(currentGame.fase));
         }
     });
 
     socket.on("vorigeVraag", () => {
         if (!currentGame.quizData) return;
-        if (currentGame.huidigeVraag > 0) {
+        if (currentGame.fase === "vraag" && currentGame.huidigeVraag > 0) {
             currentGame.huidigeVraag--;
-            const payload = {
-                huidigeVraag: currentGame.huidigeVraag,
-                quizData:     currentGame.quizData
-            };
-            io.emit("vraagUpdate", payload);
-            console.log("Vorige vraag:", currentGame.huidigeVraag);
+            currentGame.fase = "vraag";
+            currentGame.antwoorden = {};
+            currentGame.vraagStartTijd = Date.now();
+            io.emit("faseUpdate", buildFasePayload("vraag"));
         }
     });
 
@@ -429,12 +479,40 @@ io.on("connection", (socket) => {
         const totaal = currentGame.quizData.vragen.length;
         if (index >= 0 && index < totaal) {
             currentGame.huidigeVraag = index;
-            const payload = {
-                huidigeVraag: currentGame.huidigeVraag,
-                quizData:     currentGame.quizData
-            };
-            io.emit("vraagUpdate", payload);
-            console.log("Spring naar vraag:", index);
+            currentGame.fase = "vraag";
+            currentGame.antwoorden = {};
+            currentGame.vraagStartTijd = Date.now();
+            io.emit("faseUpdate", buildFasePayload("vraag"));
+        }
+    });
+
+    // ---- ANTWOORD VAN SPELER ----
+    socket.on("antwoord", ({ name, antwoordIndex }) => {
+        if (currentGame.fase !== "vraag") return;
+        if (!allowedNames.includes(name)) return;
+        if (currentGame.antwoorden[name]) return; // al geantwoord
+
+        const nu = Date.now();
+        const seconden = currentGame.vraagStartTijd
+            ? (nu - currentGame.vraagStartTijd) / 1000
+            : 0;
+
+        currentGame.antwoorden[name] = { antwoordIndex, seconden, tijdstip: nu };
+
+        // Bevestig aan de speler zelf
+        socket.emit("antwoordBevestigd", { name, antwoordIndex });
+
+        // Stuur update hoeveel spelers al geantwoord hebben
+        io.emit("antwoordUpdate", {
+            aantalGeantwoord: Object.keys(currentGame.antwoorden).length,
+            totaalSpelers: currentGame.players.length
+        });
+
+        // Als iedereen heeft geantwoord, automatisch naar resultaten
+        if (Object.keys(currentGame.antwoorden).length >= currentGame.players.length) {
+            verwerkScores();
+            currentGame.fase = "resultaten";
+            io.emit("faseUpdate", buildFasePayload("resultaten"));
         }
     });
 
@@ -442,6 +520,50 @@ io.on("connection", (socket) => {
         io.emit("gameUpdate", { type: "helpRequest", name: data.name || "Niet bekend" });
     });
 });
+
+function verwerkScores() {
+    if (!currentGame.quizData) return;
+    const vraag = currentGame.quizData.vragen[currentGame.huidigeVraag];
+    if (!vraag) return;
+
+    Object.entries(currentGame.antwoorden).forEach(([name, data]) => {
+        const antwoord = vraag.antwoorden[data.antwoordIndex];
+        if (antwoord && antwoord.correct) {
+            const punten = berekenPunten(vraag, data.seconden);
+            currentGame.scores[name] = (currentGame.scores[name] || 0) + punten;
+        }
+    });
+}
+
+function buildFasePayload(fase) {
+    const base = {
+        fase,
+        huidigeVraag: currentGame.huidigeVraag,
+        totaalVragen: currentGame.quizData ? currentGame.quizData.vragen.length : 0
+    };
+
+    if (fase === "vraag" && currentGame.quizData) {
+        const v = currentGame.quizData.vragen[currentGame.huidigeVraag];
+        return {
+            ...base,
+            vraag: v.vraag,
+            antwoorden: v.antwoorden.map(a => ({ tekst: a.tekst })), // geen correct meesturen
+            tijdlimiet: v.tijdlimiet || 20,
+            punten: v.punten || 1000,
+            vraagStartTijd: currentGame.vraagStartTijd
+        };
+    }
+
+    if (fase === "resultaten") {
+        return { ...base, resultaten: berekenResultaten(), scores: currentGame.scores };
+    }
+
+    if (fase === "podium" || fase === "eindpodium") {
+        return { ...base, podium: berekenPodium(), scores: currentGame.scores };
+    }
+
+    return base;
+}
 
 // ---------------- SERVER ----------------
 server.listen(PORT, "0.0.0.0", () => {
