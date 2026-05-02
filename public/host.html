@@ -103,6 +103,11 @@ main {
     margin: 0 auto;
 }
 
+/* Quiz beheer panel spans full width below the 3 columns */
+.panel--quiz {
+    grid-column: 1 / -1;
+}
+
 .panel {
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -115,6 +120,7 @@ main {
 .panel:nth-child(1) { animation-delay: 0.05s; }
 .panel:nth-child(2) { animation-delay: 0.12s; }
 .panel:nth-child(3) { animation-delay: 0.19s; }
+.panel:nth-child(4) { animation-delay: 0.26s; }
 
 @keyframes fadeUp {
     from { opacity:0; transform:translateY(18px); }
@@ -161,6 +167,9 @@ main {
 .panel--errors .panel-title  { color: var(--red); }
 .panel--errors .panel-count  { background: rgba(224,85,85,0.12); color: var(--red); }
 
+.panel--quiz .panel-header { border-bottom-color: rgba(240,192,64,0.15); }
+.panel--quiz .panel-title  { color: var(--gold); }
+
 .panel-body {
     flex: 1;
     padding: 14px 16px 18px;
@@ -198,11 +207,6 @@ main {
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 10px;
     padding: 9px 12px;
-    /* FIX: geen animatie zodat rijen niet herstarten bij elke refresh */
-}
-@keyframes slideIn {
-    from { opacity:0; transform:translateX(-8px); }
-    to   { opacity:1; transform:translateX(0); }
 }
 .player-avatar {
     width: 42px; height: 42px;
@@ -294,9 +298,199 @@ main {
 }
 .dismiss-btn:hover { color: rgba(255,255,255,0.6); }
 
+@keyframes slideIn {
+    from { opacity:0; transform:translateX(-8px); }
+    to   { opacity:1; transform:translateX(0); }
+}
+
+/* ---- QUIZ BEHEER PANEL ---- */
+.quiz-body {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.quiz-status-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.quiz-vraag-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.quiz-vraag-nummer {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--gold);
+    flex-shrink: 0;
+    min-width: 48px;
+}
+
+.quiz-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.quiz-progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+.quiz-huidige-vraag {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.9);
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+}
+.quiz-huidige-vraag.leeg {
+    color: rgba(255,255,255,0.2);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 13px;
+}
+
+/* Navigatie knoppen */
+.quiz-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 20px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    flex-shrink: 0;
+}
+.nav-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.22);
+    color: white;
+}
+.nav-btn:active:not(:disabled) { transform: scale(0.97); }
+.nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+.nav-btn--next {
+    background: rgba(240,192,64,0.12);
+    border-color: rgba(240,192,64,0.3);
+    color: var(--gold);
+    padding: 0 26px;
+    font-size: 14px;
+}
+.nav-btn--next:hover:not(:disabled) {
+    background: rgba(240,192,64,0.22);
+    border-color: rgba(240,192,64,0.5);
+    color: var(--gold);
+}
+
+.nav-spacer { flex: 1; }
+
+/* Vragenlijst */
+.quiz-lijst-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.quiz-lijst {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.vraag-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.45);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    position: relative;
+}
+.vraag-chip:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+    color: white;
+}
+.vraag-chip:active { transform: scale(0.95); }
+
+.vraag-chip.actief {
+    background: rgba(240,192,64,0.18);
+    border-color: rgba(240,192,64,0.45);
+    color: var(--gold);
+}
+
+.vraag-chip.geweest {
+    background: rgba(76,175,130,0.1);
+    border-color: rgba(76,175,130,0.2);
+    color: var(--green);
+}
+
+.quiz-geen-quiz {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px 0 20px;
+    opacity: 0.3;
+    font-size: 13px;
+    text-align: center;
+}
+.quiz-geen-quiz .geen-icon { font-size: 28px; }
+
 @media (max-width: 900px) {
     main   { grid-template-columns: 1fr; padding: 16px; }
     header { padding: 16px 20px; }
+    .panel--quiz { grid-column: 1; }
 }
 </style>
 </head>
@@ -355,6 +549,59 @@ main {
             </div>
         </div>
     </div>
+
+    <!-- QUIZ BEHEER -->
+    <div class="panel panel--quiz">
+        <div class="panel-header">
+            <span class="panel-icon">🎮</span>
+            <span class="panel-title">Quiz Beheer</span>
+            <span class="panel-count" id="quizNaam" style="background:rgba(240,192,64,0.08);color:rgba(240,192,64,0.5);font-size:11px;letter-spacing:1px;">Geen quiz gestart</span>
+        </div>
+        <div class="quiz-body" id="quizBody">
+            <div class="quiz-geen-quiz" id="geenQuizState">
+                <div class="geen-icon">🎲</div>
+                <div>Start eerst een quiz via het selectiescherm</div>
+            </div>
+
+            <!-- Wordt zichtbaar zodra quiz geladen is -->
+            <div id="quizControls" style="display:none; flex-direction:column; gap:18px;">
+
+                <!-- Voortgang -->
+                <div class="quiz-status-row">
+                    <span class="quiz-vraag-label">Vraag</span>
+                    <span class="quiz-vraag-nummer" id="vraagNummer">—</span>
+                    <span class="quiz-vraag-label" id="vraagTotaal">/ 0</span>
+                    <div class="quiz-progress-bar">
+                        <div class="quiz-progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="quiz-vraag-label" id="tijdLabel" style="min-width:60px;text-align:right;"></span>
+                </div>
+
+                <!-- Huidige vraag tekst -->
+                <div class="quiz-huidige-vraag leeg" id="huidigeVraagTekst">
+                    Druk op "Volgende" om de quiz te starten
+                </div>
+
+                <!-- Navigatie -->
+                <div class="quiz-nav">
+                    <button class="nav-btn" id="btnVorige" onclick="stuurVorige()" disabled>
+                        ← Vorige
+                    </button>
+                    <div class="nav-spacer"></div>
+                    <button class="nav-btn nav-btn--next" id="btnVolgende" onclick="stuurVolgende()">
+                        Volgende →
+                    </button>
+                </div>
+
+                <!-- Direct springen -->
+                <div>
+                    <div class="quiz-lijst-label">Snel navigeren</div>
+                    <div class="quiz-lijst" id="vraagLijst"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </main>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -371,24 +618,28 @@ const allPlayers = [
 ];
 
 const characterMap = {
-    "Jokie":       "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
-    "Jet":         "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4",
-    "Assepoester": "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08",
-    "Roodkapje":   "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644",
+    "Jokie":         "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
+    "Jet":           "https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4",
+    "Assepoester":   "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08",
+    "Roodkapje":     "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644",
     "Klein Duimpje": "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC",
-    "Langnek":     "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B",
-    "Reus":        "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2",
-    "Heks":        "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398",
-    "Fakir":       "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E",
-    "Ezel":        "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2",
-    "Draak":       "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D",
+    "Langnek":       "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B",
+    "Reus":          "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2",
+    "Heks":          "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398",
+    "Fakir":         "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E",
+    "Ezel":          "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2",
+    "Draak":         "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D",
     "Sprookjesboom": "https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328",
-    "Pardoes":     "https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9",
-    "Pardijn":     "https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C"
+    "Pardoes":       "https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9",
+    "Pardijn":       "https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C"
 };
 
 let helpRequests = [];
 let errorLog = [];
+
+// Quiz state (gesynchroniseerd via socket)
+let quizData = null;
+let huidigeVraag = -1;
 
 function now() {
     return new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -399,6 +650,7 @@ function addError(msg, detail) {
     renderErrors();
 }
 
+// ---- SPELERS ----
 function renderPlayers(players) {
     const list  = document.getElementById("playersList");
     const count = document.getElementById("playerCount");
@@ -406,14 +658,13 @@ function renderPlayers(players) {
     const joinedMap = {};
     (players || []).forEach(p => { joinedMap[p.name] = p; });
 
-    // FIX: joined = speler staat in currentGame.players, niet pas als die een personage heeft
     const joined = (players || []).length;
     count.textContent = joined + "/" + allPlayers.length;
 
     list.innerHTML = "";
     allPlayers.forEach(ap => {
         const p = joinedMap[ap.name];
-        const isJoined = !!p;                        // in de lijst = gejoind
+        const isJoined = !!p;
         const hasCharacter = p && p.character;
         const imgUrl = hasCharacter ? characterMap[p.character] : null;
 
@@ -435,6 +686,7 @@ function renderPlayers(players) {
     });
 }
 
+// ---- HULP ----
 function renderHelp() {
     const list  = document.getElementById("helpList");
     const count = document.getElementById("helpCount");
@@ -465,6 +717,7 @@ function dismissHelp(i) {
     renderHelp();
 }
 
+// ---- ERRORS ----
 function renderErrors() {
     const list  = document.getElementById("errorList");
     const count = document.getElementById("errorCount");
@@ -495,6 +748,85 @@ function dismissError(i) {
     renderErrors();
 }
 
+// ---- QUIZ BEHEER ----
+function renderQuizPanel() {
+    const geenState   = document.getElementById("geenQuizState");
+    const controls    = document.getElementById("quizControls");
+    const quizNaamEl  = document.getElementById("quizNaam");
+
+    if (!quizData || !quizData.vragen || quizData.vragen.length === 0) {
+        geenState.style.display  = "flex";
+        controls.style.display   = "none";
+        quizNaamEl.textContent   = "Geen quiz gestart";
+        return;
+    }
+
+    geenState.style.display  = "none";
+    controls.style.display   = "flex";
+
+    const totaal = quizData.vragen.length;
+    quizNaamEl.textContent = quizData.naam || "Quiz";
+
+    // Vraagnummer
+    const numEl = document.getElementById("vraagNummer");
+    numEl.textContent = huidigeVraag >= 0 ? (huidigeVraag + 1) : "—";
+    document.getElementById("vraagTotaal").textContent = "/ " + totaal;
+
+    // Voortgangsbalk
+    const pct = huidigeVraag >= 0 ? ((huidigeVraag + 1) / totaal * 100) : 0;
+    document.getElementById("progressFill").style.width = pct + "%";
+
+    // Tijdlimiet
+    const tijdEl = document.getElementById("tijdLabel");
+    if (huidigeVraag >= 0 && quizData.vragen[huidigeVraag]) {
+        const v = quizData.vragen[huidigeVraag];
+        tijdEl.textContent = "⏱ " + (v.tijdlimiet || 20) + "s";
+    } else {
+        tijdEl.textContent = "";
+    }
+
+    // Vraag tekst
+    const vraagEl = document.getElementById("huidigeVraagTekst");
+    if (huidigeVraag >= 0 && quizData.vragen[huidigeVraag]) {
+        vraagEl.textContent = quizData.vragen[huidigeVraag].vraag;
+        vraagEl.classList.remove("leeg");
+    } else {
+        vraagEl.textContent = "Druk op \"Volgende\" om de quiz te starten";
+        vraagEl.classList.add("leeg");
+    }
+
+    // Knoppen
+    document.getElementById("btnVorige").disabled   = (huidigeVraag <= 0);
+    document.getElementById("btnVolgende").disabled = (huidigeVraag >= totaal - 1);
+
+    // Chips
+    const lijstEl = document.getElementById("vraagLijst");
+    lijstEl.innerHTML = "";
+    quizData.vragen.forEach((v, i) => {
+        const chip = document.createElement("button");
+        chip.className = "vraag-chip";
+        if (i === huidigeVraag) chip.classList.add("actief");
+        else if (i < huidigeVraag) chip.classList.add("geweest");
+        chip.textContent = i + 1;
+        chip.title = v.vraag;
+        chip.onclick = () => springNaar(i);
+        lijstEl.appendChild(chip);
+    });
+}
+
+function stuurVolgende() {
+    socket.emit("volgendeVraag");
+}
+
+function stuurVorige() {
+    socket.emit("vorigeVraag");
+}
+
+function springNaar(index) {
+    socket.emit("springNaarVraag", { index });
+}
+
+// ---- DATA LADEN ----
 function loadDashboard() {
     fetch("/scores-full")
         .then(res => {
@@ -509,9 +841,21 @@ function loadDashboard() {
         });
 }
 
+// ---- SOCKET ----
 socket.on("gameUpdate", payload => {
     if (payload.type === "playersUpdate") {
         renderPlayers((payload.data && payload.data.players) || []);
+
+        // Quiz data meeladen vanuit gameUpdate
+        if (payload.data && payload.data.quizData) {
+            quizData     = payload.data.quizData;
+            huidigeVraag = payload.data.huidigeVraag != null ? payload.data.huidigeVraag : -1;
+            renderQuizPanel();
+        } else if (!payload.data || !payload.data.quizId) {
+            quizData     = null;
+            huidigeVraag = -1;
+            renderQuizPanel();
+        }
     }
     if (payload.type === "helpRequest") {
         helpRequests.push({ name: payload.name || "Onbekend", time: now() });
@@ -520,6 +864,13 @@ socket.on("gameUpdate", payload => {
     if (payload.type === "error") {
         addError(payload.message || "Onbekende fout", payload.detail || '');
     }
+});
+
+socket.on("vraagUpdate", payload => {
+    // Server stuurt vraagindex en quizdata mee
+    huidigeVraag = payload.huidigeVraag;
+    if (payload.quizData) quizData = payload.quizData;
+    renderQuizPanel();
 });
 
 socket.on("connect_error", () => addError("Verbinding mislukt", "Socket.IO"));
