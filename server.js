@@ -36,7 +36,7 @@ const Quiz = mongoose.model("Quiz", quizSchema);
 let quizStarted = false;
 const DASHBOARD_PASSWORD = "1234";
 const SPELLEIDER_PASSWORD = "1234";
-const allowedNames = ["Stef + Margo","Hanneke","Evi","Marcel"];
+const allowedNames = ["Stef","Hanneke","Evi","Marcel"];
 let nextJoinId = 1001;
 let pendingPlayers = [];
 
