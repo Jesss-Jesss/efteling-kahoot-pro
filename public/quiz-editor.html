@@ -144,11 +144,33 @@ header {
     cursor:pointer;
     transition:background .15s, border-color .15s;
     display:flex; align-items:center; gap:10px;
+    position:relative;
 }
 .sidebar-item:hover { background:rgba(255,255,255,0.05); }
 .sidebar-item.active {
     background:rgba(240,192,64,0.09);
     border-color:rgba(240,192,64,0.3);
+}
+
+/* Dupliceer knop in sidebar (verschijnt bij hover) */
+.sidebar-dup-btn {
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:5px;
+    color:rgba(255,255,255,0.4);
+    font-size:11px; cursor:pointer;
+    padding:2px 6px; line-height:1.6;
+    opacity:0; transition:opacity .15s, color .15s, background .15s;
+    pointer-events:none;
+}
+.sidebar-item:hover .sidebar-dup-btn {
+    opacity:1; pointer-events:auto;
+}
+.sidebar-dup-btn:hover {
+    background:rgba(240,192,64,0.15);
+    color:var(--gold);
+    border-color:rgba(240,192,64,0.35);
 }
 
 .sidebar-num {
@@ -328,7 +350,6 @@ header {
     background:rgba(76,175,130,0.08);
 }
 
-/* Kleur accent links */
 .antwoord-kaart::before {
     content:'';
     position:absolute; left:0; top:10px; bottom:10px;
@@ -387,7 +408,6 @@ header {
 }
 .antwoord-verwijder:hover { color:var(--red); }
 
-/* Antwoord toevoegen knop */
 .btn-antwoord-toevoegen {
     grid-column:1/-1;
     padding:12px;
@@ -401,7 +421,6 @@ header {
 }
 .btn-antwoord-toevoegen:hover { background:rgba(255,255,255,0.07); color:white; border-color:rgba(255,255,255,0.28); }
 
-/* Open vraag hint */
 .open-hint {
     background:rgba(167,139,250,0.07);
     border:1px solid rgba(167,139,250,0.2);
@@ -412,9 +431,28 @@ header {
 }
 .open-hint strong { color:var(--purple); }
 
-/* Verwijder vraag knop */
+/* ---- ONDERSTE KNOPPEN RIJ ---- */
+.vraag-acties {
+    display:flex; gap:10px; margin-top:8px; align-items:center;
+}
+
+/* Dupliceer knop */
+.btn-vraag-dupliceer {
+    padding:9px 18px;
+    background:rgba(240,192,64,0.08);
+    border:1px solid rgba(240,192,64,0.22);
+    border-radius:9px;
+    color:var(--gold);
+    font-size:12px; font-weight:700;
+    cursor:pointer; transition:background .2s, transform .1s;
+    display:flex; align-items:center; gap:6px;
+    white-space:nowrap;
+}
+.btn-vraag-dupliceer:hover  { background:rgba(240,192,64,0.18); }
+.btn-vraag-dupliceer:active { transform:scale(.97); }
+
+/* Verwijder knop */
 .btn-vraag-verwijder {
-    margin-top:8px;
     padding:9px 18px;
     background:rgba(224,85,85,0.08);
     border:1px solid rgba(224,85,85,0.2);
@@ -422,9 +460,18 @@ header {
     color:var(--red);
     font-size:12px; font-weight:700;
     cursor:pointer; transition:background .2s;
-    align-self:flex-start;
+    display:flex; align-items:center; gap:6px;
+    white-space:nowrap;
 }
 .btn-vraag-verwijder:hover { background:rgba(224,85,85,0.18); }
+
+/* Dupliceer flash animatie */
+@keyframes dupFlash {
+    0%   { box-shadow:0 0 0 0 rgba(240,192,64,0.5); }
+    50%  { box-shadow:0 0 0 8px rgba(240,192,64,0); }
+    100% { box-shadow:0 0 0 0 rgba(240,192,64,0); }
+}
+.sidebar-item.dup-flash { animation:dupFlash .4s ease; }
 
 @media (max-width:700px) {
     .antwoorden-grid { grid-template-columns:1fr; }
@@ -473,9 +520,9 @@ header {
 
 <script>
 // ===================== STATE =====================
-let vragen = [];           // array van vraag-objecten
-let actiefIndex = null;    // index van geselecteerde vraag
-let quizId = null;         // null = nieuw, anders MongoDB _id
+let vragen = [];
+let actiefIndex = null;
+let quizId = null;
 
 const letters = ["A","B","C","D","E","F"];
 
@@ -530,6 +577,39 @@ function maakStandaardAntwoorden() {
     ];
 }
 
+// ===================== VRAAG DUPLICEREN =====================
+function dupliceerVraag(index) {
+    // Eerst huidige DOM-staat opslaan
+    if (actiefIndex !== null) leesVraagUitDOM(actiefIndex);
+
+    const origineel = vragen[index];
+
+    // Diepe kopie maken
+    const kopie = {
+        type:       origineel.type,
+        vraag:      origineel.vraag + " (kopie)",
+        antwoorden: origineel.antwoorden.map(a => ({ tekst: a.tekst, correct: a.correct })),
+        tijdlimiet: origineel.tijdlimiet,
+        punten:     origineel.punten
+    };
+
+    // Direct na de originele vraag invoegen
+    vragen.splice(index + 1, 0, kopie);
+    renderSidebar();
+
+    // Naar de kopie navigeren en even een flash geven
+    selecteerVraag(index + 1);
+
+    // Flash animatie op het nieuwe sidebar item
+    setTimeout(() => {
+        const items = document.querySelectorAll(".sidebar-item");
+        if (items[index + 1]) {
+            items[index + 1].classList.add("dup-flash");
+            setTimeout(() => items[index + 1].classList.remove("dup-flash"), 500);
+        }
+    }, 50);
+}
+
 // ===================== SIDEBAR =====================
 function renderSidebar() {
     const lijst = document.getElementById("vraagLijst");
@@ -540,21 +620,36 @@ function renderSidebar() {
     vragen.forEach((v, i) => {
         const item = document.createElement("div");
         item.className = "sidebar-item" + (i === actiefIndex ? " active" : "");
-        item.onclick = () => selecteerVraag(i);
+        item.onclick = (e) => {
+            // Niet triggeren als op de dup-knop geklikt
+            if (e.target.classList.contains("sidebar-dup-btn")) return;
+            selecteerVraag(i);
+        };
+
         item.innerHTML = `
             <div class="sidebar-num">${i + 1}</div>
             <div class="sidebar-tekst">${v.vraag || "Lege vraag"}</div>
             <span class="sidebar-type type-${v.type}">${v.type === "meerkeuze" ? "MC" : "Open"}</span>
         `;
+
+        // Dupliceer knop apart aanmaken (met eigen event, geen bubbling)
+        const dupBtn = document.createElement("button");
+        dupBtn.className = "sidebar-dup-btn";
+        dupBtn.title = "Dupliceer vraag";
+        dupBtn.textContent = "⧉";
+        dupBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dupliceerVraag(i);
+        });
+        item.appendChild(dupBtn);
+
         lijst.appendChild(item);
     });
 }
 
 // ===================== VRAAG SELECTEREN =====================
 function selecteerVraag(index) {
-    // Sla huidige op voor vertrekken
     if (actiefIndex !== null) leesVraagUitDOM(actiefIndex);
-
     actiefIndex = index;
     renderSidebar();
     renderEditor(index);
@@ -567,7 +662,6 @@ function renderEditor(index) {
 
     document.getElementById("leegScherm").style.display = "none";
 
-    // Verwijder oude editor als die er is
     const oud = document.getElementById("vraagEditorEl");
     if (oud) oud.remove();
 
@@ -576,7 +670,6 @@ function renderEditor(index) {
     el.id = "vraagEditorEl";
 
     el.innerHTML = `
-        <!-- Topbar -->
         <div class="vraag-topbar">
             <span class="vraag-badge">VRAAG ${index + 1} VAN ${vragen.length}</span>
 
@@ -607,7 +700,6 @@ function renderEditor(index) {
             </div>
         </div>
 
-        <!-- Vraag invoer -->
         <div class="vraag-input-wrap">
             <textarea
                 class="vraag-input"
@@ -619,20 +711,23 @@ function renderEditor(index) {
             <div class="vraag-char-count" id="charCount">${v.vraag.length}/200</div>
         </div>
 
-        <!-- Antwoorden of open hint -->
         <div id="antwoordenZone"></div>
 
-        <!-- Verwijder knop -->
-        <button class="btn-vraag-verwijder" onclick="verwijderVraag(${index})">🗑 Vraag verwijderen</button>
+        <div class="vraag-acties">
+            <button class="btn-vraag-dupliceer" onclick="dupliceerVraag(${index})">
+                ⧉ Dupliceer vraag
+            </button>
+            <button class="btn-vraag-verwijder" onclick="verwijderVraag(${index})">
+                🗑 Verwijderen
+            </button>
+        </div>
     `;
 
     main.appendChild(el);
 
-    // Auto-resize textarea
     const ta = document.getElementById("vraagInput");
     autoResize(ta);
 
-    // Antwoorden renderen
     renderAntwoorden(v);
 }
 
@@ -659,7 +754,6 @@ function renderAntwoorden(v) {
         grid.appendChild(maakAntwoordKaart(a, i));
     });
 
-    // Toevoegen knop als er minder dan 6 antwoorden zijn
     if (v.antwoorden.length < 6) {
         const addBtn = document.createElement("button");
         addBtn.className = "btn-antwoord-toevoegen";
@@ -698,7 +792,6 @@ function maakAntwoordKaart(a, i) {
 function toggleCorrect(antwoordIndex) {
     leesVraagUitDOM(actiefIndex);
     const v = vragen[actiefIndex];
-    // Zet alle correct op false, dan de geklikte op true
     v.antwoorden.forEach((a, i) => a.correct = (i === antwoordIndex));
     renderAntwoorden(v);
 }
@@ -718,7 +811,7 @@ function voegAntwoordToe() {
 function verwijderAntwoord(i) {
     leesVraagUitDOM(actiefIndex);
     const v = vragen[actiefIndex];
-    if (v.antwoorden.length <= 2) return; // minimum 2
+    if (v.antwoorden.length <= 2) return;
     v.antwoorden.splice(i, 1);
     renderAntwoorden(v);
 }
@@ -727,12 +820,8 @@ function verwijderAntwoord(i) {
 function wisselType(type) {
     leesVraagUitDOM(actiefIndex);
     vragen[actiefIndex].type = type;
-
-    // Update toggle knoppen
     document.getElementById("btnMeerkeuze").className = type === "meerkeuze" ? "active-meerkeuze" : "";
     document.getElementById("btnOpen").className      = type === "open"      ? "active-open"      : "";
-
-    // Herrender alleen de antwoorden zone
     renderAntwoorden(vragen[actiefIndex]);
     renderSidebar();
 }
@@ -772,7 +861,6 @@ function leesVraagUitDOM(index) {
     const puntSel = document.getElementById("puntSelect");
     if (puntSel) v.punten = Number(puntSel.value);
 
-    // Antwoord teksten uitlezen
     if (v.type === "meerkeuze") {
         const inputs = document.querySelectorAll(".antwoord-input");
         inputs.forEach((inp, i) => {
@@ -800,7 +888,6 @@ function verwijderVraag(index) {
 
 // ===================== OPSLAAN =====================
 async function slaOp() {
-    // Laatste vraag uitlezen
     if (actiefIndex !== null) leesVraagUitDOM(actiefIndex);
 
     const naam = document.getElementById("quizNaamInput").value.trim();
@@ -833,7 +920,6 @@ async function slaOp() {
         const data = await res.json();
         if (data.success) {
             quizId = data.quiz._id;
-            // Update URL zonder reload
             window.history.replaceState({}, "", "/quiz-editor?id=" + quizId);
             toonStatus("✅ Opgeslagen", "ok");
         } else {
