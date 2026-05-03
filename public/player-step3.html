@@ -677,7 +677,7 @@ function toonResultaten(p) {
     clearInterval(timerInterval);
     quizScherm("qResultaten");
     const scores=p.scores||{}, huidig=scores[name]||0, winst=huidig-vorigeScore;
-    document.getElementById("resIcon").textContent=winst>0?"🎉":"😅";
+    document.getElementById("resIcon").textContent=winst>0?"🎉":"😣";
     document.getElementById("resWinst").textContent=(winst>0?"+":"")+winst.toLocaleString("nl-NL")+" punten";
     document.getElementById("resTotaal").textContent="Totaal: "+huidig.toLocaleString("nl-NL")+" punten";
     const lijst=document.getElementById("resAntwLijst"); lijst.innerHTML="";
