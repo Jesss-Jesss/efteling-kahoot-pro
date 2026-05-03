@@ -609,6 +609,9 @@ function toonVraag(p) {
             </div>`;
         const inp = document.getElementById("openAntwoordInput");
         const btn = document.getElementById("openAntwoordBtn");
+        setTimeout(() => {
+    inp.focus();
+}, 50);
         inp.addEventListener("focus", ()=>{ inp.style.borderColor="rgba(240,192,64,0.6)"; });
         inp.addEventListener("blur",  ()=>{ inp.style.borderColor="rgba(255,255,255,0.2)"; });
         inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();} });
