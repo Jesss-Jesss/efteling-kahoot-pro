@@ -3,132 +3,254 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Player</title>
-<link rel="stylesheet" href="/style.css">
+<title>Efteling Quiz — Speler</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-/* ======= RESET & BASE ======= */
-*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
-    --gold: #f0c040;
-    --dark: #0a0d14;
+    --gold:  #f0c040;
+    --dark:  #07090f;
+    --dark2: #0d1220;
     --green: #4caf82;
-    --red: #e05555;
-    --blue: #5b9cf6;
-    --card: rgba(255,255,255,0.05);
+    --red:   #e05555;
+    --blue:  #5b9cf6;
+}
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height:100%; margin:0; padding:0; background:var(--dark); color:white; font-family:'Lato',sans-serif; overflow:hidden; }
+
+/* ══════════════════════════════
+   LOBBY PAGINA
+══════════════════════════════ */
+#lobbyPage {
+    position:fixed; inset:0; z-index:100;
+    display:flex; flex-direction:column;
+    align-items:center;
+    background: radial-gradient(ellipse 120% 80% at 50% 0%, #151b30 0%, #07090f 65%);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
 }
 
-/* ======= GALLERY & HELP (origineel, ongewijzigd) ======= */
-#galleryOverlay {
-    display: none; position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: white; overflow-y: auto; z-index: 9999;
+/* Sterren */
+#lobbyBg { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.lb-star {
+    position:absolute; border-radius:50%; background:white;
+    animation:lb-twinkle var(--d,3s) ease-in-out infinite;
+    animation-delay:var(--dl,0s);
 }
-#galleryHeader {
-    height: 60px; background: white; border-bottom: 2px solid #eee;
-    display: flex; justify-content: flex-end; align-items: center;
-    padding: 0 20px; position: sticky; top: 0; z-index: 10;
+@keyframes lb-twinkle { 0%,100%{opacity:var(--lo,.15)} 50%{opacity:var(--hi,.8)} }
+
+/* Goud gloed */
+#lobbyBg::after {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse 80% 35% at 50% 0%, rgba(240,192,64,.1) 0%, transparent 70%);
 }
-#closeGallery { background: none; border: none; font-size: 24px; cursor: pointer; }
-#galleryGrid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px; padding: 20px;
+
+#lobbyContent {
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center;
+    width:100%; max-width:420px;
+    padding:28px 20px 100px;
+    gap:20px;
 }
-.character-card {
-    background: white; border-radius: 20px; padding: 10px;
-    text-align: center; cursor: pointer; transition: 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+/* Header */
+#lobbyHeader { text-align:center; margin-bottom:4px; }
+.lb-logo {
+    font-family:'Cinzel',serif; font-size:20px; font-weight:900;
+    color:var(--gold); letter-spacing:4px; text-transform:uppercase;
 }
-.character-card:hover { transform: scale(1.05); }
-.character-card img { width: 100%; height: 110px; object-fit: contain; }
-.character-card p { color: black; font-weight: bold; font-size: 13px; margin-top: 6px; }
-.character-card.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
-#chosenImage { width: 130px; display: block; margin: auto; }
-#helpOverlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); z-index: 1100; color: white;
-    font-size: 2em; text-align: center; padding-top: 20%;
+.lb-logo span { color:rgba(255,255,255,.6); font-weight:700; }
+
+/* Welkom kaart */
+#welkomKaart {
+    width:100%;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(240,192,64,.15);
+    border-radius:24px; padding:28px 20px;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    animation:cardIn .5s cubic-bezier(.22,.61,.36,1) both;
 }
-#helpOverlay button { margin-top: 20px; font-size: 0.5em; padding: 10px 20px; }
+@keyframes cardIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+#avatarRing {
+    width:100px; height:100px; border-radius:20px;
+    background:rgba(255,255,255,.06);
+    border:2px solid rgba(240,192,64,.2);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; position:relative;
+}
+#chosenImage {
+    width:100%; height:100%; object-fit:contain;
+    display:none;
+}
+#avatarPlaceholder {
+    font-size:40px; color:rgba(255,255,255,.2);
+}
+
+#welkomNaam {
+    font-family:'Cinzel',serif; font-size:22px; font-weight:900;
+    color:white; letter-spacing:1px;
+}
+#welkomPersonage {
+    font-size:13px; color:rgba(255,255,255,.35);
+}
+
+#kiesPersonageBtn {
+    display:flex; align-items:center; gap:8px;
+    padding:13px 28px; border-radius:12px;
+    border:1.5px solid rgba(240,192,64,.35);
+    background:rgba(240,192,64,.1); color:var(--gold);
+    font-family:'Lato',sans-serif; font-size:15px; font-weight:700;
+    cursor:pointer; transition:background .15s, transform .1s;
+    -webkit-appearance:none; margin-top:4px;
+}
+#kiesPersonageBtn:active { transform:scale(.96); background:rgba(240,192,64,.2); }
+
+/* Status pill */
+#statusPill {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(76,175,130,.1); border:1px solid rgba(76,175,130,.25);
+    border-radius:50px; padding:8px 18px;
+    font-size:13px; font-weight:700; color:var(--green); letter-spacing:.5px;
+}
+.s-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green); animation:sdot 2s ease infinite;
+}
+@keyframes sdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+
+/* Help knop */
 #helpBtn {
-    position: fixed; left: 20px; bottom: 20px; z-index: 1200;
-    padding: 12px 20px; font-size: 1em; border: none; border-radius: 8px;
-    background: #3b82f6; color: white; cursor: pointer;
+    position:fixed; left:20px; bottom:24px; z-index:200;
+    padding:12px 20px; font-size:14px; font-weight:700;
+    font-family:'Lato',sans-serif;
+    border:1.5px solid rgba(91,156,246,.4); border-radius:12px;
+    background:rgba(91,156,246,.15); color:var(--blue);
+    cursor:pointer; -webkit-appearance:none;
+    transition:background .15s, transform .1s;
+}
+#helpBtn:active { transform:scale(.96); }
+
+/* ══════════════════════════════
+   GALLERY OVERLAY
+══════════════════════════════ */
+#galleryOverlay {
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:var(--dark); flex-direction:column;
+}
+#galleryOverlay.open { display:flex; }
+
+#galleryHeader {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px 14px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    flex-shrink:0;
+    background:rgba(7,9,15,.95);
+    position:sticky; top:0; z-index:10;
+}
+.g-titel {
+    font-family:'Cinzel',serif; font-size:14px; font-weight:700;
+    color:var(--gold); letter-spacing:2px; text-transform:uppercase;
+}
+#closeGallery {
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+    color:rgba(255,255,255,.6); font-size:16px; width:34px; height:34px;
+    border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    -webkit-appearance:none; transition:background .15s;
+}
+#closeGallery:active { background:rgba(255,255,255,.18); }
+
+#galleryGrid {
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr));
+    gap:10px; padding:16px;
 }
 
-/* ======= QUIZ OVERLAY ======= */
+.character-card {
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; padding:12px 8px;
+    text-align:center; cursor:pointer;
+    transition:border-color .2s, background .2s, transform .15s;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.character-card:active { transform:scale(.96); }
+.character-card.selected {
+    background:rgba(240,192,64,.1); border-color:rgba(240,192,64,.4);
+}
+.character-card.disabled {
+    opacity:.3; pointer-events:none; filter:grayscale(100%);
+}
+.character-card img { width:100%; height:90px; object-fit:contain; border-radius:8px; }
+.character-card p { color:rgba(255,255,255,.75); font-weight:700; font-size:11px; margin:0; }
+
+/* ══════════════════════════════
+   HELP OVERLAY
+══════════════════════════════ */
+#helpOverlay {
+    display:none; position:fixed; inset:0; z-index:10000;
+    background:rgba(0,0,0,.8); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center;
+}
+#helpOverlay.open { display:flex; }
+#helpOverlayInner {
+    background:rgba(13,18,32,.95); border:1px solid rgba(91,156,246,.3);
+    border-radius:24px; padding:36px 32px;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    text-align:center; max-width:300px;
+}
+#helpOverlayInner p { font-size:20px; font-weight:700; color:var(--blue); }
+#helpOverlayInner button {
+    padding:12px 28px; border-radius:10px;
+    border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
+    color:rgba(255,255,255,.6); font-size:14px; font-weight:700;
+    font-family:'Lato',sans-serif; cursor:pointer; -webkit-appearance:none;
+}
+
+/* ══════════════════════════════
+   QUIZ OVERLAY
+══════════════════════════════ */
 #quizOverlay {
-    display: none;
-    position: fixed; inset: 0; z-index: 2000;
-    background: var(--dark);
-    font-family: 'Lato', 'Arial', sans-serif;
-    color: white;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 24px 20px 40px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    display:none; position:fixed; inset:0; z-index:2000;
+    background:var(--dark);
+    font-family:'Lato',sans-serif; color:white;
+    flex-direction:column; align-items:center;
+    justify-content:flex-start;
+    padding:24px 20px 40px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
-#quizOverlay.active { display: flex; }
+#quizOverlay.active { display:flex; }
 
-/* --- WACHT scherm (in quiz overlay) --- */
+/* WACHT */
 #qWacht {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 14px; text-align: center;
+    display:flex; flex-direction:column; align-items:center;
+    gap:16px; text-align:center; padding-top:40px;
 }
-.q-logo {
-    font-family: 'Cinzel', 'Georgia', serif;
-    font-size: 18px; font-weight: 900;
-    color: var(--gold); letter-spacing: 3px; text-transform: uppercase;
-}
-.q-naam { font-size: 26px; font-weight: 900; }
-.q-sub { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
-.dot-rij { display: flex; gap: 6px; justify-content: center; }
-.dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--gold); animation: dotPop 1.4s ease infinite;
-}
-.dot:nth-child(2) { animation-delay: .2s; }
-.dot:nth-child(3) { animation-delay: .4s; }
+.q-logo { font-family:'Cinzel',serif; font-size:18px; font-weight:900; color:var(--gold); letter-spacing:3px; text-transform:uppercase; }
+.q-naam { font-size:28px; font-weight:900; }
+.q-sub { font-size:13px; color:rgba(255,255,255,.4); line-height:1.6; }
+.dot-rij { display:flex; gap:6px; justify-content:center; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--gold); animation:dotPop 1.4s ease infinite; }
+.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
 @keyframes dotPop { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
 
-/* --- VRAAG scherm --- */
-#qVraag {
-    display: none; flex-direction: column;
-    width: 100%; max-width: 460px; gap: 14px;
-}
-.q-header { display: flex; align-items: center; justify-content: space-between; }
-.q-nr-badge {
-    font-size: 11px; letter-spacing: 2px;
-    color: rgba(255,255,255,0.35); text-transform: uppercase;
-    font-family: 'Cinzel', serif;
-}
-.timer-wrap { position: relative; width: 52px; height: 52px; }
-.timer-wrap svg { transform: rotate(-90deg); }
+/* VRAAG */
+#qVraag { display:none; flex-direction:column; width:100%; max-width:460px; gap:14px; }
+.q-header { display:flex; align-items:center; justify-content:space-between; }
+.q-nr-badge { font-size:11px; letter-spacing:2px; color:rgba(255,255,255,.35); text-transform:uppercase; font-family:'Cinzel',serif; }
+.timer-wrap { position:relative; width:52px; height:52px; }
+.timer-wrap svg { transform:rotate(-90deg); }
 .t-bg { fill:none; stroke:rgba(255,255,255,.08); stroke-width:3; }
-.t-fill {
-    fill:none; stroke:var(--gold); stroke-width:3;
-    stroke-linecap:round; stroke-dasharray:126; stroke-dashoffset:0;
-    transition:stroke-dashoffset 1s linear, stroke .3s;
-}
-.t-num {
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:14px; font-weight:900; color:var(--gold);
-}
-.q-tekst {
-    font-size:19px; font-weight:700; line-height:1.45;
-    text-align:center; padding:6px 0;
-}
+.t-fill { fill:none; stroke:var(--gold); stroke-width:3; stroke-linecap:round; stroke-dasharray:126; stroke-dashoffset:0; transition:stroke-dashoffset 1s linear,stroke .3s; }
+.t-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; color:var(--gold); }
+.q-tekst { font-size:19px; font-weight:700; line-height:1.45; text-align:center; padding:6px 0; }
 .q-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .q-btn {
-    position:relative; border:none; border-radius:14px;
-    padding:20px 12px; font-size:15px; font-weight:700; color:white;
-    cursor:pointer; text-align:center; line-height:1.3;
-    transition:transform .12s, opacity .2s, filter .2s, box-shadow .15s;
-    min-height:82px;
+    border:none; border-radius:14px; padding:20px 12px;
+    font-size:15px; font-weight:700; color:white; cursor:pointer;
+    text-align:center; line-height:1.3; min-height:82px;
     display:flex; align-items:center; justify-content:center;
-    font-family: inherit;
+    font-family:'Lato',sans-serif;
+    transition:transform .12s, opacity .2s, filter .2s, box-shadow .15s;
+    -webkit-appearance:none;
 }
 .q-btn:active { transform:scale(.95); }
 .q-btn[data-i="0"] { background:#e05555; }
@@ -144,159 +266,108 @@
     font-weight:700; font-size:14px; color:var(--green);
 }
 
-/* --- RESULTATEN scherm --- */
-#qResultaten {
-    display:none; flex-direction:column;
-    width:100%; max-width:460px; gap:12px; align-items:center;
-}
+/* RESULTATEN */
+#qResultaten { display:none; flex-direction:column; width:100%; max-width:460px; gap:12px; align-items:center; padding-top:20px; }
 .res-icon { font-size:52px; line-height:1; animation:popIn .4s cubic-bezier(.22,.61,.36,1) both; }
 @keyframes popIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
-.res-label {
-    font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px;
-    color:rgba(255,255,255,.35); text-transform:uppercase;
-}
-.res-winst {
-    font-size:36px; font-weight:900; color:var(--gold);
-    animation:fadeUp .4s .1s ease both;
-}
+.res-label { font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px; color:rgba(255,255,255,.35); text-transform:uppercase; }
+.res-winst { font-size:36px; font-weight:900; color:var(--gold); animation:fadeUp .4s .1s ease both; }
 .res-totaal { font-size:13px; color:rgba(255,255,255,.35); }
 .res-antw-lijst { width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px; }
 .res-antw-rij { display:flex; align-items:center; gap:10px; }
 .res-antw-tekst { font-size:12px; color:rgba(255,255,255,.55); min-width:90px; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .res-antw-balk-wrap { flex:1; height:28px; background:rgba(255,255,255,.06); border-radius:7px; overflow:hidden; }
-.res-antw-balk {
-    height:100%; border-radius:7px;
-    display:flex; align-items:center; padding:0 8px;
-    font-size:12px; font-weight:700;
-    transition:width .7s cubic-bezier(.22,.61,.36,1);
-}
+.res-antw-balk { height:100%; border-radius:7px; display:flex; align-items:center; padding:0 8px; font-size:12px; font-weight:700; transition:width .7s cubic-bezier(.22,.61,.36,1); }
 .balk-goed { background:rgba(76,175,130,.5); color:#a3f0c8; }
 .balk-fout { background:rgba(224,85,85,.4); color:#f0a3a3; }
 .res-antw-pct { font-size:12px; font-weight:700; color:rgba(255,255,255,.35); min-width:32px; text-align:right; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-/* --- TUSSENSTAND scherm --- */
-#qTussenstand {
-    display:none; flex-direction:column;
-    width:100%; max-width:460px; gap:10px; align-items:center;
-}
-.ts-titel {
-    font-family:'Cinzel',serif; font-size:13px; letter-spacing:2px;
-    color:rgba(255,255,255,.4); text-transform:uppercase; margin-bottom:4px;
-}
-.ts-rij {
-    width:100%; display:flex; align-items:center; gap:12px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
-    border-radius:12px; padding:12px 16px;
-    animation:fadeUp .3s ease both;
-}
+/* TUSSENSTAND */
+#qTussenstand { display:none; flex-direction:column; width:100%; max-width:460px; gap:10px; align-items:center; padding-top:16px; }
+.ts-titel { font-family:'Cinzel',serif; font-size:13px; letter-spacing:2px; color:rgba(255,255,255,.4); text-transform:uppercase; margin-bottom:4px; }
+.ts-rij { width:100%; display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px 16px; animation:fadeUp .3s ease both; }
 .ts-rij.eigen { background:rgba(240,192,64,.08); border-color:rgba(240,192,64,.25); }
 .ts-rang { font-size:16px; font-weight:900; min-width:28px; text-align:center; color:rgba(255,255,255,.3); }
-.ts-rang.r1 { color:#ffd700; }
-.ts-rang.r2 { color:#c0c0c0; }
-.ts-rang.r3 { color:#cd7f32; }
+.ts-rang.r1{color:#ffd700} .ts-rang.r2{color:#c0c0c0} .ts-rang.r3{color:#cd7f32}
 .ts-naam { flex:1; font-weight:700; font-size:15px; }
 .ts-score { font-weight:900; font-size:15px; color:var(--gold); }
-.ts-delta { font-size:11px; color:var(--green); margin-left:4px; }
 
-/* --- EINDPODIUM scherm --- */
-#qEindpodium {
-    display:none; flex-direction:column;
-    width:100%; max-width:500px; gap:0; align-items:center;
-}
-.ep-titel {
-    font-family:'Cinzel',serif; font-size:20px; font-weight:900;
-    color:var(--gold); letter-spacing:3px; text-transform:uppercase;
-    margin-bottom:6px; animation:fadeUp .4s ease both;
-}
-.ep-subtitel {
-    font-size:12px; color:rgba(255,255,255,.3); letter-spacing:1px;
-    margin-bottom:24px; animation:fadeUp .4s .05s ease both;
-}
-
-/* Olympisch podium */
-.ep-podium-wrap {
-    display:flex; align-items:flex-end; justify-content:center;
-    gap:8px; width:100%; padding:0 10px;
-}
-.ep-blok {
-    display:flex; flex-direction:column; align-items:center;
-    flex:1; animation:riseUp .6s cubic-bezier(.22,.61,.36,1) both;
-}
-.ep-blok:nth-child(1) { animation-delay:.35s; } /* #2 links */
-.ep-blok:nth-child(2) { animation-delay:.1s;  } /* #1 midden */
-.ep-blok:nth-child(3) { animation-delay:.55s; } /* #3 rechts */
-
+/* EINDPODIUM */
+#qEindpodium { display:none; flex-direction:column; width:100%; max-width:500px; gap:0; align-items:center; padding-top:10px; }
+.ep-titel { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:var(--gold); letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; animation:fadeUp .4s ease both; }
+.ep-subtitel { font-size:12px; color:rgba(255,255,255,.3); letter-spacing:1px; margin-bottom:20px; animation:fadeUp .4s .05s ease both; }
+.ep-podium-wrap { display:flex; align-items:flex-end; justify-content:center; gap:8px; width:100%; padding:0 10px; }
+.ep-blok { display:flex; flex-direction:column; align-items:center; flex:1; animation:riseUp .6s cubic-bezier(.22,.61,.36,1) both; }
+.ep-blok:nth-child(1){animation-delay:.35s} .ep-blok:nth-child(2){animation-delay:.1s} .ep-blok:nth-child(3){animation-delay:.55s}
 @keyframes riseUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
-
-.ep-avatar {
-    width:56px; height:56px; border-radius:12px;
-    object-fit:contain; background:rgba(255,255,255,.07);
-    margin-bottom:6px; border:2px solid rgba(255,255,255,.1);
-}
-.ep-avatar-placeholder {
-    width:56px; height:56px; border-radius:12px;
-    background:rgba(255,255,255,.07); display:flex; align-items:center;
-    justify-content:center; font-size:24px; margin-bottom:6px;
-    border:2px solid rgba(255,255,255,.1);
-}
+.ep-avatar { width:56px; height:56px; border-radius:12px; object-fit:contain; background:rgba(255,255,255,.07); margin-bottom:6px; border:2px solid rgba(255,255,255,.1); }
+.ep-avatar-placeholder { width:56px; height:56px; border-radius:12px; background:rgba(255,255,255,.07); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:6px; border:2px solid rgba(255,255,255,.1); }
 .ep-naam { font-size:13px; font-weight:700; text-align:center; margin-bottom:4px; }
-.ep-score-badge {
-    font-size:12px; font-weight:900; color:var(--gold);
-    margin-bottom:6px;
-}
-.ep-blok-sokkel {
-    width:100%; border-radius:8px 8px 0 0;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Cinzel',serif; font-size:28px; font-weight:900;
-    padding-top:12px;
-}
-/* Hoogtes */
+.ep-score-badge { font-size:12px; font-weight:900; color:var(--gold); margin-bottom:6px; }
+.ep-blok-sokkel { width:100%; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:28px; font-weight:900; padding-top:12px; }
 .ep-blok.pos-1 .ep-blok-sokkel { height:110px; background:linear-gradient(160deg,#ffd700,#b8860b); color:#5c3d00; }
-.ep-blok.pos-2 .ep-blok-sokkel { height:80px;  background:linear-gradient(160deg,#e0e0e0,#9e9e9e); color:#333; }
-.ep-blok.pos-3 .ep-blok-sokkel { height:56px;  background:linear-gradient(160deg,#cd7f32,#8b4513); color:#3d1f00; }
-
-/* Rest van spelers */
-.ep-rest {
-    width:100%; margin-top:16px;
-    display:flex; flex-direction:column; gap:6px;
-}
-.ep-rest-rij {
-    display:flex; align-items:center; gap:12px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
-    border-radius:10px; padding:10px 14px;
-    animation:fadeUp .3s ease both;
-}
+.ep-blok.pos-2 .ep-blok-sokkel { height:80px; background:linear-gradient(160deg,#e0e0e0,#9e9e9e); color:#333; }
+.ep-blok.pos-3 .ep-blok-sokkel { height:56px; background:linear-gradient(160deg,#cd7f32,#8b4513); color:#3d1f00; }
+.ep-rest { width:100%; margin-top:16px; display:flex; flex-direction:column; gap:6px; }
+.ep-rest-rij { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:10px 14px; animation:fadeUp .3s ease both; }
 .ep-rest-rang { font-size:14px; font-weight:700; color:rgba(255,255,255,.3); min-width:24px; }
 .ep-rest-naam { flex:1; font-weight:700; font-size:14px; }
 .ep-rest-score { font-weight:900; font-size:14px; color:var(--gold); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
 
-<!-- ===== ORIGINELE LOBBY INHOUD ===== -->
-<h2>✔ Welkom in de quiz!</h2>
-<p>Jouw naam en personage:</p>
-<div>
-    <img id="chosenImage" alt="Personage">
-    <p id="chosenName"></p>
-</div>
-<button onclick="openGallery()">Kies / wijzig je personage</button>
+<!-- ═══════════════════ LOBBY ═══════════════════ -->
+<div id="lobbyPage">
+    <div id="lobbyBg"></div>
 
+    <div id="lobbyContent">
+        <div id="lobbyHeader">
+            <div class="lb-logo">Efteling <span>Quiz</span></div>
+        </div>
+
+        <div id="welkomKaart">
+            <div id="avatarRing">
+                <img id="chosenImage" alt="Personage">
+                <div id="avatarPlaceholder">👤</div>
+            </div>
+            <div id="welkomNaam"></div>
+            <div id="welkomPersonage">Nog geen personage gekozen</div>
+            <button id="kiesPersonageBtn" type="button">
+                <span>🎭</span> Kies personage
+            </button>
+        </div>
+
+        <div id="statusPill">
+            <div class="s-dot"></div>
+            <span>Wacht op de host...</span>
+        </div>
+    </div>
+
+    <button id="helpBtn" type="button">🙋 Hulp</button>
+</div>
+
+<!-- ═══════════════════ GALLERY ═══════════════════ -->
 <div id="galleryOverlay">
     <div id="galleryHeader">
-        <button id="closeGallery">✖</button>
+        <div class="g-titel">Kies jouw personage</div>
+        <button id="closeGallery" type="button">✕</button>
     </div>
     <div id="galleryGrid"></div>
 </div>
 
-<button id="helpBtn">Vraag om hulp</button>
+<!-- ═══════════════════ HELP ═══════════════════ -->
 <div id="helpOverlay">
-    <p>Hulp is onderweg...</p>
-    <button onclick="closeHelp()">Annuleer</button>
+    <div id="helpOverlayInner">
+        <div style="font-size:48px">🙋</div>
+        <p>Hulp is onderweg!</p>
+        <button type="button" onclick="closeHelp()">Annuleer</button>
+    </div>
 </div>
 
-<!-- ===== QUIZ OVERLAY (over alles heen) ===== -->
+<!-- ═══════════════════ QUIZ OVERLAY ═══════════════════ -->
 <div id="quizOverlay">
 
     <!-- WACHT -->
@@ -325,13 +396,13 @@
     </div>
 
     <!-- RESULTATEN -->
-<div id="qResultaten">
-    <div class="res-icon" id="resIcon">🎯</div>
-    <div class="res-label">Jouw resultaat</div>
-    <div class="res-winst" id="resWinst">+0</div>
-    <div class="res-totaal" id="resTotaal">Totaal: 0 punten</div>
-    <div class="res-antw-lijst" id="resAntwLijst"></div>
-</div>
+    <div id="qResultaten">
+        <div class="res-icon" id="resIcon">🎯</div>
+        <div class="res-label">Jouw resultaat</div>
+        <div class="res-winst" id="resWinst">+0</div>
+        <div class="res-totaal" id="resTotaal">Totaal: 0 punten</div>
+        <div class="res-antw-lijst" id="resAntwLijst"></div>
+    </div>
 
     <!-- TUSSENSTAND -->
     <div id="qTussenstand">
@@ -347,151 +418,178 @@
         <div class="ep-rest" id="epRest"></div>
     </div>
 
-</div><!-- /quizOverlay -->
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
 
-/* ============================================================
-   SESSIE
-   ============================================================ */
+/* ── SESSIE ── */
 const name     = localStorage.getItem("playerName");
 const gameId   = localStorage.getItem("gameId");
 let playerId   = localStorage.getItem("playerId");
-if (!playerId) { playerId = "pid_" + Math.random().toString(36).slice(2); localStorage.setItem("playerId", playerId); }
+if (!playerId) { playerId="pid_"+Math.random().toString(36).slice(2); localStorage.setItem("playerId",playerId); }
 
 if (!name || !gameId) {
-    document.body.innerHTML = `<div style="text-align:center;margin-top:100px"><h2>❌ Sessie verlopen</h2><p>Scan je QR-code opnieuw!</p></div>`;
+    document.body.innerHTML=`<div style="text-align:center;margin-top:100px;color:white;font-family:sans-serif"><h2>❌ Sessie verlopen</h2><p>Scan je QR-code opnieuw!</p></div>`;
 }
 
 document.getElementById("qWachtNaam").textContent = name || "Speler";
+document.getElementById("welkomNaam").textContent  = name || "Speler";
 
-/* ============================================================
-   CHARACTERS (volledig originele lijst)
-   ============================================================ */
+/* ── STERREN ── */
+(function(){
+    const bg = document.getElementById("lobbyBg");
+    for(let i=0;i<70;i++){
+        const el=document.createElement("div"); el.className="lb-star";
+        const sz=Math.random()*2.2+0.4;
+        el.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--dl:${Math.random()*5}s;--lo:${0.1+Math.random()*0.25};--hi:${0.5+Math.random()*0.5};`;
+        bg.appendChild(el);
+    }
+})();
+
+/* ── CHARACTERS ── */
 const characters = [
-    { name:"Jokie",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9" },
-    { name:"Jet",         img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4" },
-    { name:"Assepoester", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08" },
-    { name:"Roodkapje",   img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644" },
-    { name:"Klein Duimpje", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC" },
-    { name:"Langnek",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B" },
-    { name:"Reus",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2" },
-    { name:"Heks",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398" },
-    { name:"Fakir",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E" },
-    { name:"Ezel",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2" },
-    { name:"Draak",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D" },
-    { name:"Sprookjesboom", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328" },
-    { name:"Geitje Benjamin", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-zeven-geitjes-profiel.png?h=610&w=700&la=nl&hash=6613F5C3124D8785544D949571CC0CE7" },
-    { name:"Wolf",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-wolf-profiel.png?h=610&w=700&la=nl&hash=AEDB0449881BD1A2F20C4FCF7FE3E911" },
-    { name:"Kabauter Ko",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ko-profiel.png?h=610&w=700&la=nl&hash=24B9DEA2B0A6EC6C4D02599DCC73B668" },
-    { name:"Kabauter Kie", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kie-profiel.png?h=610&w=700&la=nl&hash=DCAB72456FE3B4FB7EBACC80D93C7F25" },
-    { name:"Kabauter Kei", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kei-profiel.png?h=610&w=700&la=nl&hash=DE15AD66000C5BED3B066514E8FCD1BB" },
-    { name:"Kabauter Keu", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-keu-profiel.png?h=610&w=700&la=nl&hash=8456F9C2858528F61FB742A25464A2A1" },
-    { name:"Kabauter Ke",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ke-profiel.png?h=610&w=700&la=nl&hash=4C12A6F3C299F58644966A7343A62FEE" },
-    { name:"Kabauter Ka",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ka-profiel.png?h=610&w=700&la=nl&hash=52D9C378305DCAC05D1D91A89EE063DA" },
-    { name:"Kabauter Ku",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ku-profiel.png?h=610&w=700&la=nl&hash=73E42920753E92161AF38A15B8B75B71" },
-    { name:"Pardoes",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9" },
-    { name:"Pardijn",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C" },
-    { name:"Koning Pardulfus", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardulfus-profiel.png?h=610&w=700&la=nl&hash=A7DD888D1072C92415BA7C4ED4CA2B35" },
-    { name:"Polle",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-polle-profiel.png?h=610&w=700&la=nl&hash=84F17C16E9769B7C39F6EDCE68689498" },
-    { name:"Grootmagister Almar", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x6100-almar-profiel.png?h=610&w=700&la=nl&hash=728E0176BA4AB700145C67A7F4056280" },
-    { name:"Aliciana",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-aliciana-profiel.png?h=610&w=700&la=nl&hash=2E3CACF7E536CCDDC9E6D85E7946E42D" },
-    { name:"Pantagor",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pantagor-profiel.png?h=610&w=700&la=nl&hash=38B351FDD14B2EB400E07DC83ADCF22C" },
-    { name:"Rattar",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-rattar-profiel.png?h=610&w=700&la=nl&hash=5DF5CC3C7EDCB42CF906C605AC8E51F5" },
-    { name:"O.J. Punctuel", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-profiel-punctuel.png?h=610&w=700&la=nl&hash=D044F1C39109C86EF5734933C819E88E" },
-    { name:"Ruiter Thomas",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-thomas-profiel.png?h=610&w=700&la=nl&hash=62598971003A7BF48570E5CC251509D0" },
-    { name:"Ruiter Joost",   img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-joost-profiel.png?h=610&w=700&la=nl&hash=A71ACD69E8C317C5F5DB1BFD903BE703" },
-    { name:"Ruiter Maurits", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-maurits-profiel.png?h=610&w=700&la=nl&hash=2F68DD5B263DF8FDB7C606C542497101" },
-    { name:"Ruiter Emma",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-emma-profiel.png?h=610&w=700&la=nl&hash=3B00DDFC724794FFDF6AFE37B05D3EB2" },
-    { name:"Ruiter Lisa",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-lisa-profiel.png?h=610&w=700&la=nl&hash=D3C15A46A3336B907FB372F6A8661921" },
-    { name:"Samira",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samira-profiel.png?h=610&w=700&la=nl&hash=4F3135F07F99D88234D2F6F406CC1E1A" },
-    { name:"Samuël",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samuel-profiel.png?h=610&w=700&la=nl&hash=D3DBFA2199BBCF5A09C84185CE7B6008" },
-    { name:"Graaf Olaf Grafhart", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-graaf-olaf-grafhart-profiel.png?h=610&w=700&la=nl&hash=C487A5B11E3AA74CB8385A55020B00BC" }
+    {name:"Jokie",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9"},
+    {name:"Jet",         img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4"},
+    {name:"Assepoester", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08"},
+    {name:"Roodkapje",   img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644"},
+    {name:"Klein Duimpje",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC"},
+    {name:"Langnek",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B"},
+    {name:"Reus",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2"},
+    {name:"Heks",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398"},
+    {name:"Fakir",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E"},
+    {name:"Ezel",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2"},
+    {name:"Draak",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D"},
+    {name:"Sprookjesboom",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328"},
+    {name:"Geitje Benjamin",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-zeven-geitjes-profiel.png?h=610&w=700&la=nl&hash=6613F5C3124D8785544D949571CC0CE7"},
+    {name:"Wolf",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-wolf-profiel.png?h=610&w=700&la=nl&hash=AEDB0449881BD1A2F20C4FCF7FE3E911"},
+    {name:"Kabauter Ko", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ko-profiel.png?h=610&w=700&la=nl&hash=24B9DEA2B0A6EC6C4D02599DCC73B668"},
+    {name:"Kabauter Kie",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kie-profiel.png?h=610&w=700&la=nl&hash=DCAB72456FE3B4FB7EBACC80D93C7F25"},
+    {name:"Kabauter Kei",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kei-profiel.png?h=610&w=700&la=nl&hash=DE15AD66000C5BED3B066514E8FCD1BB"},
+    {name:"Kabauter Keu",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-keu-profiel.png?h=610&w=700&la=nl&hash=8456F9C2858528F61FB742A25464A2A1"},
+    {name:"Kabauter Ke", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ke-profiel.png?h=610&w=700&la=nl&hash=4C12A6F3C299F58644966A7343A62FEE"},
+    {name:"Kabauter Ka", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ka-profiel.png?h=610&w=700&la=nl&hash=52D9C378305DCAC05D1D91A89EE063DA"},
+    {name:"Kabauter Ku", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ku-profiel.png?h=610&w=700&la=nl&hash=73E42920753E92161AF38A15B8B75B71"},
+    {name:"Pardoes",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9"},
+    {name:"Pardijn",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C"},
+    {name:"Koning Pardulfus",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardulfus-profiel.png?h=610&w=700&la=nl&hash=A7DD888D1072C92415BA7C4ED4CA2B35"},
+    {name:"Polle",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-polle-profiel.png?h=610&w=700&la=nl&hash=84F17C16E9769B7C39F6EDCE68689498"},
+    {name:"Grootmagister Almar",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x6100-almar-profiel.png?h=610&w=700&la=nl&hash=728E0176BA4AB700145C67A7F4056280"},
+    {name:"Aliciana",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-aliciana-profiel.png?h=610&w=700&la=nl&hash=2E3CACF7E536CCDDC9E6D85E7946E42D"},
+    {name:"Pantagor",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pantagor-profiel.png?h=610&w=700&la=nl&hash=38B351FDD14B2EB400E07DC83ADCF22C"},
+    {name:"Rattar",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-rattar-profiel.png?h=610&w=700&la=nl&hash=5DF5CC3C7EDCB42CF906C605AC8E51F5"},
+    {name:"O.J. Punctuel",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-profiel-punctuel.png?h=610&w=700&la=nl&hash=D044F1C39109C86EF5734933C819E88E"},
+    {name:"Ruiter Thomas",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-thomas-profiel.png?h=610&w=700&la=nl&hash=62598971003A7BF48570E5CC251509D0"},
+    {name:"Ruiter Joost", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-joost-profiel.png?h=610&w=700&la=nl&hash=A71ACD69E8C317C5F5DB1BFD903BE703"},
+    {name:"Ruiter Maurits",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-maurits-profiel.png?h=610&w=700&la=nl&hash=2F68DD5B263DF8FDB7C606C542497101"},
+    {name:"Ruiter Emma",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-emma-profiel.png?h=610&w=700&la=nl&hash=3B00DDFC724794FFDF6AFE37B05D3EB2"},
+    {name:"Ruiter Lisa",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-lisa-profiel.png?h=610&w=700&la=nl&hash=D3C15A46A3336B907FB372F6A8661921"},
+    {name:"Samira",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samira-profiel.png?h=610&w=700&la=nl&hash=4F3135F07F99D88234D2F6F406CC1E1A"},
+    {name:"Samuël",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samuel-profiel.png?h=610&w=700&la=nl&hash=D3DBFA2199BBCF5A09C84185CE7B6008"},
+    {name:"Graaf Olaf Grafhart",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-graaf-olaf-grafhart-profiel.png?h=610&w=700&la=nl&hash=C487A5B11E3AA74CB8385A55020B00BC"}
 ];
-
 const characterMap = {};
-characters.forEach(c => { characterMap[c.name] = c.img; });
+characters.forEach(c=>{ characterMap[c.name]=c.img; });
 
-/* ============================================================
-   GALLERY & HELP (origineel)
-   ============================================================ */
-function setCharacter(char) {
-    document.getElementById("chosenImage").src = char.img;
-    document.getElementById("chosenName").innerText = char.name;
+/* ── LOBBY: AVATAR TONEN ── */
+function setCharacter(c) {
+    const img = document.getElementById("chosenImage");
+    const ph  = document.getElementById("avatarPlaceholder");
+    img.src = c.img;
+    img.style.display = "block";
+    ph.style.display  = "none";
+    document.getElementById("welkomPersonage").textContent = c.name;
+    document.getElementById("kiesPersonageBtn").innerHTML = `<span>🎭</span> Wijzig personage`;
 }
-function openGallery() { document.getElementById("galleryOverlay").style.display = "block"; loadGallery(); }
-function closeGallery() { document.getElementById("galleryOverlay").style.display = "none"; }
+
+/* ── GALLERY ── */
+function openGallery() {
+    document.getElementById("galleryOverlay").classList.add("open");
+    loadGallery();
+}
+function closeGallery() {
+    document.getElementById("galleryOverlay").classList.remove("open");
+}
 
 function loadGallery() {
     fetch("/scores-full").then(r=>r.json()).then(data => {
         const grid = document.getElementById("galleryGrid");
         grid.innerHTML = "";
         const taken = (data.players||[]).map(p=>p.character);
-        const mine  = document.getElementById("chosenName").innerText;
+        const mine  = document.getElementById("welkomPersonage").textContent;
         characters.forEach(c => {
             const card = document.createElement("div");
             card.className = "character-card";
+            if (c.name === mine) card.classList.add("selected");
             card.innerHTML = `<img src="${c.img}" alt="${c.name}"><p>${c.name}</p>`;
-            if (taken.includes(c.name) && c.name !== mine) card.classList.add("disabled");
-            else card.onclick = () => chooseCharacter(c);
+            if (taken.includes(c.name) && c.name !== mine) {
+                card.classList.add("disabled");
+            } else {
+                card.addEventListener("click", () => chooseCharacter(c));
+            }
             grid.appendChild(card);
         });
     });
 }
+
 function chooseCharacter(c) {
     fetch("/join", { method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({gameId, name, character:c.name, playerId}) })
+        body: JSON.stringify({gameId,name,character:c.name,playerId}) })
     .then(r=>r.json()).then(data => {
         if (!data.success) { alert(data.error); return; }
         localStorage.setItem("chosenCharacter", JSON.stringify(c));
-        setCharacter(c); closeGallery();
+        setCharacter(c);
+        closeGallery();
     });
 }
 
-document.getElementById("helpBtn").onclick = () => {
-    document.getElementById("helpOverlay").style.display = "block";
-    socket.emit("helpRequest", { name: name || "Niet bekend" });
-};
-function closeHelp() { document.getElementById("helpOverlay").style.display = "none"; }
+/* ── HELP ── */
+document.getElementById("helpBtn").addEventListener("click", () => {
+    document.getElementById("helpOverlay").classList.add("open");
+    socket.emit("helpRequest", { name: name||"Niet bekend" });
+});
+function closeHelp() {
+    document.getElementById("helpOverlay").classList.remove("open");
+}
+
+document.getElementById("kiesPersonageBtn").addEventListener("click", openGallery);
 document.getElementById("closeGallery").addEventListener("click", closeGallery);
 
-/* ============================================================
-   QUIZ STATE
-   ============================================================ */
+/* ── QUIZ OVERLAY ── */
 let timerInterval = null;
 let heeftGeantwoord = false;
 let vorigeScore = 0;
 const overlay = document.getElementById("quizOverlay");
 
 function quizScherm(id) {
-    // id = null → overlay verbergen (lobby)
-    if (!id) { overlay.classList.remove("active"); return; }
+    if (!id) {
+        overlay.classList.remove("active");
+        document.getElementById("lobbyPage").style.display = "flex";
+        return;
+    }
     overlay.classList.add("active");
-    ["qWacht","qVraag","qResultaten","qTussenstand","qEindpodium"].forEach(s => {
-        document.getElementById(s).style.display = "none";
+    document.getElementById("lobbyPage").style.display = "none";
+    ["qWacht","qVraag","qResultaten","qTussenstand","qEindpodium"].forEach(s=>{
+        document.getElementById(s).style.display="none";
     });
-    document.getElementById(id).style.display = "flex";
+    document.getElementById(id).style.display="flex";
+    overlay.scrollTop=0;
 }
 
-/* ---- WACHT ---- */
 function toonWacht() { quizScherm("qWacht"); clearInterval(timerInterval); }
 
-/* ---- VRAAG ---- */
+/* ── VRAAG ── */
 function toonVraag(p) {
     heeftGeantwoord = false;
     quizScherm("qVraag");
-
-    document.getElementById("qNrBadge").textContent = "Vraag " + (p.huidigeVraag+1) + " / " + p.totaalVragen;
+    document.getElementById("qNrBadge").textContent = "Vraag "+(p.huidigeVraag+1)+" / "+p.totaalVragen;
     document.getElementById("qTekst").textContent = p.vraag;
-
     const grid = document.getElementById("qGrid");
     grid.innerHTML = "";
     document.getElementById("qKlaar").style.display = "none";
 
     if (p.type === "open") {
-        // Open vraag: tekstveld + verzendknop
         grid.style.display = "block";
         grid.innerHTML = `
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
@@ -500,249 +598,171 @@ function toonVraag(p) {
                     style="width:100%;padding:16px 18px;font-size:17px;font-family:inherit;
                            border-radius:12px;border:2px solid rgba(255,255,255,0.2);
                            background:rgba(255,255,255,0.08);color:white;outline:none;
-                           -webkit-appearance:none;appearance:none;"
-                />
+                           -webkit-appearance:none;appearance:none;">
                 <button id="openAntwoordBtn" type="button"
                     style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;
                            border:1.5px solid rgba(240,192,64,0.4);border-radius:12px;
                            background:rgba(240,192,64,0.18);color:#f0c040;cursor:pointer;
-                           -webkit-appearance:none;appearance:none;
-                           transition:background .15s,transform .1s;">
+                           -webkit-appearance:none;appearance:none;">
                     Verstuur antwoord →
                 </button>
-            </div>
-        `;
-
+            </div>`;
         const inp = document.getElementById("openAntwoordInput");
-        const sendBtn = document.getElementById("openAntwoordBtn");
-
-        inp.addEventListener("focus", () => { inp.style.borderColor = "rgba(240,192,64,0.6)"; });
-        inp.addEventListener("blur",  () => { inp.style.borderColor = "rgba(255,255,255,0.2)"; });
-        inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); stuurOpenAntwoord(); } });
-        sendBtn.addEventListener("click", () => stuurOpenAntwoord());
+        const btn = document.getElementById("openAntwoordBtn");
+        inp.addEventListener("focus", ()=>{ inp.style.borderColor="rgba(240,192,64,0.6)"; });
+        inp.addEventListener("blur",  ()=>{ inp.style.borderColor="rgba(255,255,255,0.2)"; });
+        inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();} });
+        btn.addEventListener("click", ()=>stuurOpenAntwoord());
     } else {
-        // Meerkeuze: gekleurde knoppen
         grid.style.display = "grid";
-        (p.antwoorden || []).forEach((a, i) => {
-            const btn = document.createElement("button");
-            btn.className = "q-btn"; btn.dataset.i = i;
-            btn.textContent = a.tekst;
-            btn.onclick = () => stuurAntwoord(i);
+        (p.antwoorden||[]).forEach((a,i)=>{
+            const btn=document.createElement("button");
+            btn.className="q-btn"; btn.dataset.i=i; btn.textContent=a.tekst;
+            btn.addEventListener("click",()=>stuurAntwoord(i));
             grid.appendChild(btn);
         });
     }
-
-    startTimer(p.tijdlimiet || 20, p.vraagStartTijd || Date.now());
+    startTimer(p.tijdlimiet||20, p.vraagStartTijd||Date.now());
 }
 
 function startTimer(limiet, startMs) {
     clearInterval(timerInterval);
-    const ring = document.getElementById("tRing");
-    const num  = document.getElementById("tNum");
-    const omtrek = 2 * Math.PI * 20;
-
-    function tick() {
-        const verstreken = (Date.now() - startMs) / 1000;
-        const over = Math.max(0, limiet - verstreken);
-        const frac = over / limiet;
-        num.textContent = Math.ceil(over);
-        ring.style.strokeDashoffset = omtrek * (1 - frac);
-        ring.style.stroke = over <= 5 ? "#e05555" : over <= 10 ? "#f0a030" : "var(--gold)";
-        if (over <= 0) clearInterval(timerInterval);
+    const ring=document.getElementById("tRing"), num=document.getElementById("tNum");
+    const omtrek=2*Math.PI*20;
+    function tick(){
+        const over=Math.max(0,limiet-(Date.now()-startMs)/1000);
+        num.textContent=Math.ceil(over);
+        ring.style.strokeDashoffset=omtrek*(1-over/limiet);
+        ring.style.stroke=over<=5?"#e05555":over<=10?"#f0a030":"var(--gold)";
+        if(over<=0) clearInterval(timerInterval);
     }
-    tick();
-    timerInterval = setInterval(tick, 250);
+    tick(); timerInterval=setInterval(tick,250);
 }
 
 function stuurAntwoord(index) {
     if (heeftGeantwoord) return;
-    heeftGeantwoord = true;
-    clearInterval(timerInterval);
-    socket.emit("antwoord", { name, antwoordIndex: index });
-
-    document.querySelectorAll(".q-btn").forEach(b => {
-        b.classList.add(parseInt(b.dataset.i) === index ? "gekozen" : "niet-gekozen");
-        b.style.pointerEvents = "none";
+    heeftGeantwoord=true; clearInterval(timerInterval);
+    socket.emit("antwoord",{name,antwoordIndex:index});
+    document.querySelectorAll(".q-btn").forEach(b=>{
+        b.classList.add(parseInt(b.dataset.i)===index?"gekozen":"niet-gekozen");
+        b.style.pointerEvents="none";
     });
-    document.getElementById("qGrid").style.pointerEvents = "none";
-    document.getElementById("qKlaar").style.display = "flex";
+    document.getElementById("qGrid").style.pointerEvents="none";
+    document.getElementById("qKlaar").style.display="flex";
 }
 
 function stuurOpenAntwoord() {
     if (heeftGeantwoord) return;
-    const inp = document.getElementById("openAntwoordInput");
+    const inp=document.getElementById("openAntwoordInput");
     if (!inp) return;
-    const tekst = (inp.value || "").trim();
+    const tekst=(inp.value||"").trim();
     if (!tekst) {
-        inp.style.borderColor = "rgba(224,85,85,0.8)";
-        inp.placeholder = "Vul eerst een antwoord in!";
-        inp.focus();
-        return;
+        inp.style.borderColor="rgba(224,85,85,0.8)";
+        inp.placeholder="Vul eerst een antwoord in!";
+        inp.focus(); return;
     }
-    heeftGeantwoord = true;
-    clearInterval(timerInterval);
-    socket.emit("openAntwoord", { name, antwoordTekst: tekst });
-
-    // Disable alles
-    inp.disabled = true;
-    inp.style.opacity = "0.5";
-    const btn = document.getElementById("openAntwoordBtn");
-    if (btn) {
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        btn.textContent = "✓ Antwoord verzonden";
-    }
-    document.getElementById("qKlaar").style.display = "flex";
+    heeftGeantwoord=true; clearInterval(timerInterval);
+    socket.emit("openAntwoord",{name,antwoordTekst:tekst});
+    inp.disabled=true; inp.style.opacity="0.5";
+    const btn=document.getElementById("openAntwoordBtn");
+    if(btn){btn.disabled=true;btn.style.opacity="0.5";btn.textContent="✓ Antwoord verzonden";}
+    document.getElementById("qKlaar").style.display="flex";
 }
 
-/* ---- RESULTATEN ---- */
+/* ── RESULTATEN ── */
 function toonResultaten(p) {
     clearInterval(timerInterval);
     quizScherm("qResultaten");
-
-    const scores = p.scores || {};
-    const huidig = scores[name] || 0;
-    const winst  = huidig - vorigeScore;
-
-    document.getElementById("resIcon").textContent = winst > 0 ? "🎉" : "😅";
-    document.getElementById("resWinst").textContent = (winst > 0 ? "+" : "") + winst.toLocaleString("nl-NL") + " punten";
-    document.getElementById("resTotaal").textContent = "Totaal: " + huidig.toLocaleString("nl-NL") + " punten";
-
-    // Antwoord balkjes
-    const lijst = document.getElementById("resAntwLijst");
-    lijst.innerHTML = "";
-    const res = p.resultaten;
+    const scores=p.scores||{}, huidig=scores[name]||0, winst=huidig-vorigeScore;
+    document.getElementById("resIcon").textContent=winst>0?"🎉":"😅";
+    document.getElementById("resWinst").textContent=(winst>0?"+":"")+winst.toLocaleString("nl-NL")+" punten";
+    document.getElementById("resTotaal").textContent="Totaal: "+huidig.toLocaleString("nl-NL")+" punten";
+    const lijst=document.getElementById("resAntwLijst"); lijst.innerHTML="";
+    const res=p.resultaten;
     if (res) {
-        const items = res.type === "open" ? (res.groepen || []) : (res.antwoorden || []);
-        items.forEach(a => {
-            const rij = document.createElement("div");
-            rij.className = "res-antw-rij";
-            rij.innerHTML = `
-                <div class="res-antw-tekst">${a.tekst}</div>
-                <div class="res-antw-balk-wrap">
-                    <div class="res-antw-balk ${a.correct ? 'balk-goed':'balk-fout'}"
-                         style="width:${a.procent}%">
-                        ${a.procent > 20 ? a.aantal + 'x' : ''}
-                    </div>
-                </div>
-                <div class="res-antw-pct">${a.procent}%</div>
-            `;
+        const items=res.type==="open"?(res.groepen||[]):(res.antwoorden||[]);
+        items.forEach(a=>{
+            const rij=document.createElement("div"); rij.className="res-antw-rij";
+            rij.innerHTML=`<div class="res-antw-tekst">${a.tekst}</div><div class="res-antw-balk-wrap"><div class="res-antw-balk ${a.correct?'balk-goed':'balk-fout'}" style="width:${a.procent}%">${a.procent>20?a.aantal+'x':''}</div></div><div class="res-antw-pct">${a.procent}%</div>`;
             lijst.appendChild(rij);
         });
     }
-
-    vorigeScore = huidig;
+    vorigeScore=huidig;
 }
 
-/* ---- TUSSENSTAND (podium tussendoor, alle spelers) ---- */
+/* ── TUSSENSTAND ── */
 function toonTussenstand(p) {
     quizScherm("qTussenstand");
-    const lijst = document.getElementById("tsLijst");
-    lijst.innerHTML = "";
-    (p.podium || []).forEach((speler, i) => {
-        const rij = document.createElement("div");
-        rij.className = "ts-rij" + (speler.name === name ? " eigen" : "");
-        rij.style.animationDelay = (i * 0.07) + "s";
-        const symbool = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : (i+1);
-        const rankCls = i===0?"r1":i===1?"r2":i===2?"r3":"";
-        rij.innerHTML = `
-            <div class="ts-rang ${rankCls}">${symbool}</div>
-            <div class="ts-naam">${speler.name}${speler.name===name?" (jij)":""}</div>
-            <div class="ts-score">${speler.score.toLocaleString("nl-NL")}</div>
-        `;
+    const lijst=document.getElementById("tsLijst"); lijst.innerHTML="";
+    (p.podium||[]).forEach((speler,i)=>{
+        const rij=document.createElement("div");
+        rij.className="ts-rij"+(speler.name===name?" eigen":"");
+        rij.style.animationDelay=(i*0.07)+"s";
+        const sym=i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);
+        const rc=i===0?"r1":i===1?"r2":i===2?"r3":"";
+        rij.innerHTML=`<div class="ts-rang ${rc}">${sym}</div><div class="ts-naam">${speler.name}${speler.name===name?" (jij)":""}</div><div class="ts-score">${speler.score.toLocaleString("nl-NL")}</div>`;
         lijst.appendChild(rij);
     });
 }
 
-/* ---- EINDPODIUM (olympisch, top 3 groot + rest eronder) ---- */
+/* ── EINDPODIUM ── */
 function toonEindpodium(p) {
     quizScherm("qEindpodium");
-    const gesorteerd = p.podium || [];
-
-    // Olympische volgorde: index 1 = #2 links, index 0 = #1 midden, index 2 = #3 rechts
-    const podiumVolgorde = [gesorteerd[1], gesorteerd[0], gesorteerd[2]].filter(Boolean);
-    const posCls = ["pos-2","pos-1","pos-3"];
-
-    const podiumEl = document.getElementById("epPodium");
-    podiumEl.innerHTML = "";
-
-    podiumVolgorde.forEach((speler, vi) => {
-        const echteRank = gesorteerd.indexOf(speler); // 0-based
-        const imgUrl = speler.character ? characterMap[speler.character] : null;
-        const blok = document.createElement("div");
-        blok.className = "ep-blok " + posCls[vi];
-
-        blok.innerHTML = `
-            ${imgUrl
-                ? `<img class="ep-avatar" src="${imgUrl}" alt="${speler.character}">`
-                : `<div class="ep-avatar-placeholder">👤</div>`}
-            <div class="ep-naam">${speler.name}${speler.name===name?" ★":""}</div>
-            <div class="ep-score-badge">${speler.score.toLocaleString("nl-NL")} pts</div>
-            <div class="ep-blok-sokkel">${echteRank===0?"1":echteRank===1?"2":"3"}</div>
-        `;
+    const ges=p.podium||[];
+    const volgorde=[ges[1],ges[0],ges[2]].filter(Boolean);
+    const posCls=["pos-2","pos-1","pos-3"];
+    const podiumEl=document.getElementById("epPodium"); podiumEl.innerHTML="";
+    volgorde.forEach((speler,vi)=>{
+        const rank=ges.indexOf(speler);
+        const imgUrl=speler.character?characterMap[speler.character]:null;
+        const blok=document.createElement("div"); blok.className="ep-blok "+posCls[vi];
+        blok.innerHTML=`${imgUrl?`<img class="ep-avatar" src="${imgUrl}" alt="">`:`<div class="ep-avatar-placeholder">👤</div>`}<div class="ep-naam">${speler.name}${speler.name===name?" ★":""}</div><div class="ep-score-badge">${speler.score.toLocaleString("nl-NL")} pts</div><div class="ep-blok-sokkel">${rank===0?"1":rank===1?"2":"3"}</div>`;
         podiumEl.appendChild(blok);
     });
-
-    // Rest (4e, 5e, 6e)
-    const restEl = document.getElementById("epRest");
-    restEl.innerHTML = "";
-    gesorteerd.slice(3).forEach((speler, i) => {
-        const rij = document.createElement("div");
-        rij.className = "ep-rest-rij";
-        rij.style.animationDelay = (i * 0.08) + "s";
-        rij.innerHTML = `
-            <div class="ep-rest-rang">${i+4}</div>
-            <div class="ep-rest-naam">${speler.name}${speler.name===name?" (jij)":""}</div>
-            <div class="ep-rest-score">${speler.score.toLocaleString("nl-NL")} pts</div>
-        `;
+    const restEl=document.getElementById("epRest"); restEl.innerHTML="";
+    ges.slice(3).forEach((speler,i)=>{
+        const rij=document.createElement("div"); rij.className="ep-rest-rij";
+        rij.style.animationDelay=(i*0.08)+"s";
+        rij.innerHTML=`<div class="ep-rest-rang">${i+4}</div><div class="ep-rest-naam">${speler.name}${speler.name===name?" (jij)":""}</div><div class="ep-rest-score">${speler.score.toLocaleString("nl-NL")} pts</div>`;
         restEl.appendChild(rij);
     });
 }
 
-/* ============================================================
-   SOCKET EVENTS
-   ============================================================ */
-socket.on("faseUpdate", p => {
-    const f = p.fase;
-    if (f === "lobby")           quizScherm(null);
-    else if (f === "vraag")      toonVraag(p);
-    else if (f === "keuring")    toonWacht();   // spelers wachten terwijl host keurt
-    else if (f === "resultaten") toonResultaten(p);
-    else if (f === "podium")     toonTussenstand(p);
-    else if (f === "eindpodium") toonEindpodium(p);
+/* ── SOCKET EVENTS ── */
+socket.on("faseUpdate", p=>{
+    const f=p.fase;
+    if      (f==="lobby")       quizScherm(null);
+    else if (f==="vraag")       toonVraag(p);
+    else if (f==="keuring")     toonWacht();
+    else if (f==="resultaten")  toonResultaten(p);
+    else if (f==="podium")      toonTussenstand(p);
+    else if (f==="eindpodium")  toonEindpodium(p);
 });
 
-socket.on("gameUpdate", payload => {
-    if (payload.type === "playersUpdate") loadGallery();
+socket.on("gameUpdate", payload=>{
+    if (payload.type==="playersUpdate") loadGallery();
 });
 
-/* ============================================================
-   RECONNECT: herstel huidige staat
-   ============================================================ */
-fetch("/api/game-state").then(r=>r.json()).then(state => {
-    if (!state.fase || state.fase === "lobby") return;
-    vorigeScore = (state.scores && state.scores[name]) || 0;
-    if      (state.fase === "vraag")      toonVraag(state);
-    else if (state.fase === "resultaten") toonResultaten(state);
-    else if (state.fase === "podium")     toonTussenstand(state);
-    else if (state.fase === "eindpodium") toonEindpodium(state);
+/* ── RECONNECT ── */
+fetch("/api/game-state").then(r=>r.json()).then(state=>{
+    if (!state.fase||state.fase==="lobby") return;
+    vorigeScore=(state.scores&&state.scores[name])||0;
+    if      (state.fase==="vraag")      toonVraag(state);
+    else if (state.fase==="resultaten") toonResultaten(state);
+    else if (state.fase==="podium")     toonTussenstand(state);
+    else if (state.fase==="eindpodium") toonEindpodium(state);
 }).catch(()=>{});
 
-/* ============================================================
-   START (originele join-logica ongewijzigd)
-   ============================================================ */
-window.addEventListener("load", () => {
-    const saved = localStorage.getItem("chosenCharacter");
+/* ── START ── */
+window.addEventListener("load", ()=>{
+    const saved=localStorage.getItem("chosenCharacter");
     if (saved) { try { setCharacter(JSON.parse(saved)); } catch(e){} }
-
     if (name && gameId) {
-        const savedChar = saved ? (() => { try { return JSON.parse(saved); } catch(e){ return null; } })() : null;
-        fetch("/join", { method:"POST", headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({gameId, name, character: savedChar ? savedChar.name : null, playerId})
-        })
-        .then(r=>r.json())
-        .then(data => { if (data.error) console.warn("Join fout:", data.error); })
-        .catch(err => console.warn("Join mislukt:", err));
+        const sc=saved?(() =>{ try{return JSON.parse(saved);}catch(e){return null;} })():null;
+        fetch("/join",{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({gameId,name,character:sc?sc.name:null,playerId})})
+        .then(r=>r.json()).then(d=>{ if(d.error)console.warn("Join fout:",d.error); })
+        .catch(e=>console.warn("Join mislukt:",e));
     }
 });
 </script>
