@@ -1,219 +1,879 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-<title>Leaderboard</title>
-<link rel="stylesheet" href="/style.css">
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efteling Quiz — Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-
-body{
-font-family:Arial;
-text-align:center;
-padding:20px;
+:root {
+    --gold:    #f0c040;
+    --gold2:   #c8932a;
+    --dark:    #07090f;
+    --dark2:   #0d1220;
+    --cream:   #fdf4e0;
+    --green:   #4caf82;
+    --red:     #e05555;
+    --blue:    #5b9cf6;
+    --silver:  #c0c0c0;
+    --bronze:  #cd7f32;
 }
 
-.section{
-margin-bottom:30px;
-padding-bottom:20px;
-border-bottom:2px solid rgba(255,255,255,0.3);
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+    width:100%; height:100%;
+    background: var(--dark);
+    color: white;
+    font-family: 'Crimson Text', Georgia, serif;
+    overflow: hidden;
 }
 
-#qrContainer{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:20px;
-margin-top:20px;
+/* ── STERRENHEMEL ── */
+#stars {
+    position:fixed; inset:0; z-index:0;
+    background: radial-gradient(ellipse 120% 80% at 50% 0%, #1a1f35 0%, #07090f 60%);
+    overflow: hidden;
+}
+.star {
+    position:absolute; border-radius:50%;
+    background:white; animation:twinkle var(--d,3s) ease-in-out infinite;
+    animation-delay: var(--dl,0s);
+}
+@keyframes twinkle { 0%,100%{opacity:var(--lo,.2);transform:scale(1)} 50%{opacity:var(--hi,.9);transform:scale(1.3)} }
+
+/* Goud gloed boven */
+#stars::after {
+    content:'';
+    position:absolute; inset:0;
+    background:
+        radial-gradient(ellipse 70% 30% at 50% 0%, rgba(240,192,64,.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 20% at 20% 100%, rgba(91,156,246,.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 20% at 80% 100%, rgba(76,175,130,.05) 0%, transparent 60%);
 }
 
-.qrCard{
-background:rgba(255,255,255,0.15);
-padding:15px;
-border-radius:12px;
-width:220px;
+/* ── HOOFD LAYOUT ── */
+#app {
+    position: relative; z-index:10;
+    width:100%; height:100vh;
+    display:flex; flex-direction:column;
 }
 
-.qrCard img{
-width:180px;
-height:180px;
+/* ── HEADER ── */
+#header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 40px 16px;
+    border-bottom: 1px solid rgba(240,192,64,.15);
+    flex-shrink:0;
+}
+.logo-text {
+    font-family:'Cinzel',serif; font-size:24px; font-weight:900;
+    color:var(--gold); letter-spacing:4px; text-transform:uppercase;
+}
+.logo-text span { color:rgba(255,255,255,.7); font-weight:400; }
+
+.fase-badge {
+    font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+    letter-spacing:3px; text-transform:uppercase;
+    padding:6px 18px; border-radius:50px;
+    border:1px solid rgba(240,192,64,.3);
+    background:rgba(240,192,64,.08); color:var(--gold);
+    transition: all .4s ease;
+}
+.fase-badge.vraag    { background:rgba(91,156,246,.12); border-color:rgba(91,156,246,.35); color:var(--blue); }
+.fase-badge.resultaten { background:rgba(240,192,64,.12); border-color:rgba(240,192,64,.35); color:var(--gold); }
+.fase-badge.podium   { background:rgba(76,175,130,.12); border-color:rgba(76,175,130,.35); color:var(--green); }
+.fase-badge.eindpodium { background:rgba(255,215,0,.18); border-color:rgba(255,215,0,.5); color:#ffd700; }
+
+/* ── SCHERMEN ── */
+.scherm { display:none; flex:1; overflow:hidden; }
+.scherm.actief { display:flex; }
+
+/* ════════════════════════════════
+   LOBBY SCHERM
+════════════════════════════════ */
+#schermLobby {
+    flex-direction:row;
+    gap:0;
 }
 
-.qrName{
-margin-top:10px;
-font-weight:bold;
-font-size:18px;
+.lobby-left {
+    flex:0 0 380px;
+    display:flex; flex-direction:column;
+    padding:28px 32px;
+    border-right:1px solid rgba(255,255,255,.06);
+    gap:20px;
+    overflow-y:auto;
+}
+.lobby-right {
+    flex:1;
+    display:flex; flex-direction:column;
+    padding:28px 36px;
+    gap:20px;
+    overflow-y:auto;
 }
 
-#playersList{
-display:flex;
-flex-direction:column;
-gap:10px;
-margin-top:20px;
+.sectie-titel {
+    font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+    letter-spacing:3px; color:rgba(255,255,255,.3); text-transform:uppercase;
+    display:flex; align-items:center; gap:10px;
+}
+.sectie-titel::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.06); }
+
+/* URL join */
+.join-url-box {
+    background: rgba(240,192,64,.07);
+    border:1px solid rgba(240,192,64,.2);
+    border-radius:16px; padding:20px 22px;
+    text-align:center;
+}
+.join-url-label { font-size:12px; color:rgba(255,255,255,.4); letter-spacing:1px; margin-bottom:8px; }
+.join-url { font-family:'Cinzel',serif; font-size:22px; color:var(--gold); font-weight:700; letter-spacing:1px; }
+
+/* QR grid */
+.qr-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+.qr-kaart {
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
+    border-radius:14px; padding:14px 12px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    transition:border-color .3s, background .3s;
+}
+.qr-kaart.gejoind {
+    background:rgba(76,175,130,.07); border-color:rgba(76,175,130,.25);
+}
+.qr-kaart img.qr-img { width:100%; max-width:110px; border-radius:8px; }
+.qr-naam { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:rgba(255,255,255,.7); }
+.qr-status {
+    font-size:10px; font-weight:700; letter-spacing:1px; padding:2px 8px;
+    border-radius:50px; background:rgba(255,255,255,.06); color:rgba(255,255,255,.3);
+}
+.qr-status.gejoind { background:rgba(76,175,130,.15); color:var(--green); }
+
+/* Spelers lijst rechts */
+.spelers-grid {
+    display:grid; grid-template-columns:1fr 1fr 1fr;
+    gap:14px;
+}
+.speler-kaart {
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
+    border-radius:16px; padding:16px 14px;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    transition:all .4s ease;
+    animation:fadeUp .5s ease both;
+}
+.speler-kaart.gejoind {
+    background:rgba(240,192,64,.06); border-color:rgba(240,192,64,.2);
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.speler-avatar {
+    width:80px; height:80px; border-radius:14px;
+    object-fit:contain; background:rgba(255,255,255,.06);
+    border:2px solid rgba(255,255,255,.08);
+}
+.speler-avatar-placeholder {
+    width:80px; height:80px; border-radius:14px;
+    background:rgba(255,255,255,.06); border:2px dashed rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:center;
+    font-size:32px; color:rgba(255,255,255,.15);
+}
+.speler-naam { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:rgba(255,255,255,.8); }
+.speler-personage { font-size:12px; color:rgba(255,255,255,.35); text-align:center; line-height:1.3; }
+.speler-badge {
+    font-size:9px; font-weight:700; letter-spacing:1px; padding:3px 10px;
+    border-radius:50px;
+}
+.speler-badge.wacht { background:rgba(255,255,255,.05); color:rgba(255,255,255,.25); border:1px solid rgba(255,255,255,.08); }
+.speler-badge.gejoind { background:rgba(76,175,130,.15); color:var(--green); border:1px solid rgba(76,175,130,.25); }
+
+/* ════════════════════════════════
+   VRAAG SCHERM
+════════════════════════════════ */
+#schermVraag {
+    flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:30px 48px;
+    gap:28px;
 }
 
-.playerRow{
-display:flex;
-align-items:center;
-gap:12px;
-background:rgba(255,255,255,0.15);
-padding:10px;
-border-radius:10px;
-justify-content:center;
+.vraag-meta {
+    display:flex; align-items:center; gap:16px; width:100%; max-width:900px;
+}
+.vraag-nr {
+    font-family:'Cinzel',serif; font-size:13px; letter-spacing:2px;
+    color:rgba(255,255,255,.35); text-transform:uppercase;
+}
+.vraag-progress-bar {
+    flex:1; height:3px; background:rgba(255,255,255,.08); border-radius:2px; overflow:hidden;
+}
+.vraag-progress-fill {
+    height:100%; background:var(--gold); border-radius:2px;
+    transition:width .5s ease;
+}
+.vraag-timer-wrap {
+    position:relative; width:56px; height:56px; flex-shrink:0;
+}
+.vraag-timer-wrap svg { transform:rotate(-90deg); }
+.vt-bg { fill:none; stroke:rgba(255,255,255,.08); stroke-width:3; }
+.vt-fill { fill:none; stroke:var(--gold); stroke-width:3; stroke-linecap:round; stroke-dasharray:138; stroke-dashoffset:0; transition:stroke-dashoffset 1s linear, stroke .3s; }
+.vt-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:16px; font-weight:900; color:var(--gold); }
+
+.vraag-tekst-groot {
+    font-family:'Cinzel',serif; font-size:clamp(22px,3vw,36px); font-weight:700;
+    text-align:center; line-height:1.4; max-width:860px;
+    color:white;
 }
 
-.playerRow img{
-border-radius:8px;
-object-fit:contain;
+.antwoord-grid-groot {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:14px; width:100%; max-width:900px;
+}
+.antwoord-blok {
+    display:flex; align-items:center; gap:14px;
+    padding:18px 22px; border-radius:16px;
+    font-size:18px; font-weight:600;
+    border:2px solid transparent;
+    transition:transform .15s;
+}
+.antwoord-blok[data-i="0"] { background:rgba(224,85,85,.2); border-color:rgba(224,85,85,.4); }
+.antwoord-blok[data-i="1"] { background:rgba(74,144,217,.2); border-color:rgba(74,144,217,.4); }
+.antwoord-blok[data-i="2"] { background:rgba(76,175,130,.2); border-color:rgba(76,175,130,.4); }
+.antwoord-blok[data-i="3"] { background:rgba(224,149,42,.2); border-color:rgba(224,149,42,.4); }
+.antwoord-letter {
+    width:36px; height:36px; border-radius:8px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cinzel',serif; font-size:14px; font-weight:900;
+}
+.antwoord-blok[data-i="0"] .antwoord-letter { background:rgba(224,85,85,.5); }
+.antwoord-blok[data-i="1"] .antwoord-letter { background:rgba(74,144,217,.5); }
+.antwoord-blok[data-i="2"] .antwoord-letter { background:rgba(76,175,130,.5); }
+.antwoord-blok[data-i="3"] .antwoord-letter { background:rgba(224,149,42,.5); }
+
+.antwoord-teller {
+    font-size:13px; color:rgba(255,255,255,.35);
+    font-family:'Cinzel',serif; letter-spacing:1px;
 }
 
-.playerName{
-font-size:18px;
-font-weight:bold;
+/* ════════════════════════════════
+   RESULTATEN SCHERM
+════════════════════════════════ */
+#schermResultaten {
+    flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:30px 48px; gap:22px;
 }
 
+.res-vraag-tekst {
+    font-family:'Cinzel',serif; font-size:clamp(16px,2vw,24px);
+    text-align:center; color:rgba(255,255,255,.6); max-width:700px; line-height:1.4;
+}
+
+.res-balken { width:100%; max-width:800px; display:flex; flex-direction:column; gap:12px; }
+.res-balk-rij { display:flex; align-items:center; gap:14px; }
+.res-balk-label {
+    font-size:15px; font-weight:600; min-width:180px; max-width:220px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    color:rgba(255,255,255,.75);
+}
+.res-balk-outer {
+    flex:1; height:44px; background:rgba(255,255,255,.06);
+    border-radius:10px; overflow:hidden; position:relative;
+}
+.res-balk-inner {
+    height:100%; border-radius:10px;
+    display:flex; align-items:center; padding:0 14px;
+    font-size:15px; font-weight:700;
+    transition:width .8s cubic-bezier(.22,.61,.36,1);
+    min-width:0; position:relative;
+}
+.res-balk-inner.correct { background:rgba(76,175,130,.45); color:#a3f0c8; }
+.res-balk-inner.fout    { background:rgba(224,85,85,.35); color:#f0a3a3; }
+.res-balk-pct { font-size:13px; font-weight:700; color:rgba(255,255,255,.35); min-width:44px; text-align:right; font-family:'Cinzel',serif; }
+
+/* correct antwoord highlight */
+.correct-label { font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px; color:var(--green); text-transform:uppercase; }
+
+/* ════════════════════════════════
+   TUSSENSTAND SCHERM
+════════════════════════════════ */
+#schermTussenstand {
+    flex-direction:column;
+    align-items:center;
+    padding:28px 48px; gap:16px;
+    overflow-y:auto;
+}
+
+.ts-header {
+    font-family:'Cinzel',serif; font-size:18px; font-weight:900;
+    color:var(--gold); letter-spacing:3px; text-transform:uppercase;
+}
+
+.ts-lijst { width:100%; max-width:700px; display:flex; flex-direction:column; gap:10px; }
+.ts-rij-groot {
+    display:flex; align-items:center; gap:16px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
+    border-radius:14px; padding:14px 20px;
+    animation:slideRight .4s ease both;
+}
+.ts-rij-groot.top1 { background:rgba(255,215,0,.08); border-color:rgba(255,215,0,.25); }
+.ts-rij-groot.top2 { background:rgba(192,192,192,.06); border-color:rgba(192,192,192,.2); }
+.ts-rij-groot.top3 { background:rgba(205,127,50,.06); border-color:rgba(205,127,50,.18); }
+
+@keyframes slideRight { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+
+.ts-rang-groot {
+    font-family:'Cinzel',serif; font-size:22px; font-weight:900;
+    min-width:40px; text-align:center; color:rgba(255,255,255,.25);
+}
+.ts-rang-groot.r1 { color:#ffd700; }
+.ts-rang-groot.r2 { color:#c0c0c0; }
+.ts-rang-groot.r3 { color:#cd7f32; }
+.ts-avatar {
+    width:48px; height:48px; border-radius:10px;
+    object-fit:contain; background:rgba(255,255,255,.06);
+    flex-shrink:0;
+}
+.ts-info { flex:1; min-width:0; }
+.ts-naam-groot { font-family:'Cinzel',serif; font-size:16px; font-weight:700; }
+.ts-personage { font-size:13px; color:rgba(255,255,255,.35); margin-top:2px; }
+.ts-score-groot { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:var(--gold); }
+
+/* ════════════════════════════════
+   EINDPODIUM SCHERM
+════════════════════════════════ */
+#schermEindpodium {
+    flex-direction:column;
+    align-items:center; justify-content:flex-end;
+    padding:0 48px 0;
+    gap:0; overflow:hidden;
+}
+
+.ep-logo {
+    font-family:'Cinzel',serif; font-size:clamp(20px,3vw,32px); font-weight:900;
+    color:var(--gold); letter-spacing:5px; text-transform:uppercase;
+    padding:24px 0 8px; text-align:center;
+    animation:fadeUp .6s ease both;
+    flex-shrink:0;
+}
+.ep-sub {
+    font-size:14px; color:rgba(255,255,255,.3); letter-spacing:2px;
+    padding-bottom:20px; text-align:center; animation:fadeUp .6s .1s ease both;
+    flex-shrink:0;
+}
+
+/* Podium */
+.ep-podium-scène {
+    display:flex; align-items:flex-end; justify-content:center;
+    gap:0; width:100%; max-width:780px;
+    flex-shrink:0;
+}
+
+.ep-podium-speler {
+    display:flex; flex-direction:column; align-items:center;
+    flex:1; animation:riseUp .7s cubic-bezier(.22,.61,.36,1) both;
+}
+.ep-podium-speler:nth-child(1) { animation-delay:.4s; } /* #2 links */
+.ep-podium-speler:nth-child(2) { animation-delay:.1s; } /* #1 midden */
+.ep-podium-speler:nth-child(3) { animation-delay:.6s; } /* #3 rechts */
+
+@keyframes riseUp { from{opacity:0;transform:translateY(60px)} to{opacity:1;transform:translateY(0)} }
+
+.ep-avatar-groot {
+    width:clamp(60px,8vw,90px); height:clamp(60px,8vw,90px);
+    border-radius:16px; object-fit:contain;
+    background:rgba(255,255,255,.07);
+    margin-bottom:8px;
+}
+.ep-avatar-groot-placeholder {
+    width:clamp(60px,8vw,90px); height:clamp(60px,8vw,90px);
+    border-radius:16px; background:rgba(255,255,255,.07);
+    display:flex; align-items:center; justify-content:center;
+    font-size:36px; margin-bottom:8px;
+}
+.ep-crown { font-size:28px; line-height:1; margin-bottom:4px; animation:bounce 1s .8s ease both; }
+@keyframes bounce { 0%{transform:translateY(-20px);opacity:0} 60%{transform:translateY(4px)} 80%{transform:translateY(-4px)} 100%{transform:translateY(0);opacity:1} }
+
+.ep-p-naam { font-family:'Cinzel',serif; font-size:clamp(11px,1.2vw,15px); font-weight:700; text-align:center; margin-bottom:4px; }
+.ep-p-score { font-size:clamp(10px,1vw,13px); color:var(--gold); font-weight:700; margin-bottom:8px; }
+
+.ep-sokkel {
+    width:100%; border-radius:8px 8px 0 0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cinzel',serif; font-weight:900;
+}
+.ep-sokkel.s1 { height:clamp(80px,12vh,130px); background:linear-gradient(160deg,#ffd700,#9a6500); font-size:clamp(28px,4vw,48px); color:rgba(0,0,0,.5); }
+.ep-sokkel.s2 { height:clamp(58px,9vh,95px);  background:linear-gradient(160deg,#e8e8e8,#7a7a7a); font-size:clamp(22px,3vw,38px); color:rgba(0,0,0,.4); }
+.ep-sokkel.s3 { height:clamp(42px,6vh,70px);  background:linear-gradient(160deg,#cd7f32,#6b3800); font-size:clamp(18px,2.5vw,32px); color:rgba(0,0,0,.4); }
+
+/* Rest */
+.ep-rest-lijst {
+    width:100%; max-width:780px; display:flex; gap:10px;
+    padding:16px 0 20px; flex-shrink:0;
+}
+.ep-rest-item {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
+    border-radius:12px; padding:10px 8px;
+    animation:fadeUp .4s ease both;
+}
+.ep-rest-rang { font-size:11px; color:rgba(255,255,255,.3); font-family:'Cinzel',serif; }
+.ep-rest-naam { font-size:12px; font-weight:700; text-align:center; }
+.ep-rest-score { font-size:11px; color:var(--gold); font-weight:700; }
+
+/* ── CONFETTI ── */
+.confetti-piece {
+    position:fixed; width:8px; height:14px; opacity:0;
+    animation: confettiFall var(--dur,3s) var(--del,0s) ease-in forwards;
+    top:-20px; border-radius:2px;
+    z-index:999;
+}
+@keyframes confettiFall {
+    0%   { opacity:1; transform:translateY(0) rotate(0deg) translateX(0); }
+    100% { opacity:0; transform:translateY(100vh) rotate(720deg) translateX(var(--dx,40px)); }
+}
 </style>
 </head>
-
 <body>
 
-<div class="section">
-<h2>Hoe joinen?</h2>
-<p>
-Ga naar:<br>
-<b>tinyurl.com/EftelingQuiz</b><br>
-of scan jouw QR-code
-</p>
-</div>
+<!-- Sterren -->
+<div id="stars"></div>
 
-<div class="section">
-<h2>QR-codes</h2>
-<div id="qrContainer"></div>
-</div>
+<div id="app">
+    <header id="header">
+        <div class="logo-text">Efteling <span>Quiz</span></div>
+        <div class="fase-badge" id="faseBadge">LOBBY</div>
+    </header>
 
-<div class="section">
-<h2>Gejoinde spelers</h2>
-<div id="playersList"></div>
+    <!-- ═══ LOBBY ═══ -->
+    <div class="scherm actief" id="schermLobby">
+        <div class="lobby-left">
+            <div class="sectie-titel">Joinen</div>
+            <div class="join-url-box">
+                <div class="join-url-label">Ga naar</div>
+                <div class="join-url">tinyurl.com/EftelingQuiz</div>
+                <div class="join-url-label" style="margin-top:10px">en scan daar jou QR-Code</div>
+            </div>
+            <div class="sectie-titel">QR-codes</div>
+            <div class="qr-grid" id="qrGrid"></div>
+        </div>
+        <div class="lobby-right">
+            <div class="sectie-titel">Spelers</div>
+            <div class="spelers-grid" id="spelersGrid"></div>
+        </div>
+    </div>
+
+    <!-- ═══ VRAAG ═══ -->
+    <div class="scherm" id="schermVraag">
+        <div class="vraag-meta">
+            <span class="vraag-nr" id="vraagNrLabel">Vraag 1 / 1</span>
+            <div class="vraag-progress-bar"><div class="vraag-progress-fill" id="vraagProgressFill"></div></div>
+            <div class="vraag-timer-wrap">
+                <svg width="56" height="56" viewBox="0 0 48 48">
+                    <circle class="vt-bg" cx="24" cy="24" r="22"/>
+                    <circle class="vt-fill" id="vtRing" cx="24" cy="24" r="22"/>
+                </svg>
+                <div class="vt-num" id="vtNum">20</div>
+            </div>
+        </div>
+        <div class="vraag-tekst-groot" id="vraagTekstGroot"></div>
+        <div class="antwoord-grid-groot" id="antwoordGridGroot"></div>
+        <div class="antwoord-teller" id="antwoordTellerLabel"></div>
+    </div>
+
+    <!-- ═══ RESULTATEN ═══ -->
+    <div class="scherm" id="schermResultaten">
+        <div class="res-vraag-tekst" id="resVraagTekst"></div>
+        <div class="correct-label" id="resCorrectLabel"></div>
+        <div class="res-balken" id="resBalken"></div>
+    </div>
+
+    <!-- ═══ TUSSENSTAND ═══ -->
+    <div class="scherm" id="schermTussenstand">
+        <div class="ts-header">📊 Tussenstand</div>
+        <div class="ts-lijst" id="tsLijst"></div>
+    </div>
+
+    <!-- ═══ EINDPODIUM ═══ -->
+    <div class="scherm" id="schermEindpodium">
+        <div class="ep-logo">🏆 Eindstand</div>
+        <div class="ep-sub">Gefeliciteerd aan alle deelnemers!</div>
+        <div class="ep-podium-scène" id="epPodiumScène"></div>
+        <div class="ep-rest-lijst" id="epRestLijst"></div>
+    </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-
 <script>
 const socket = io();
 
+/* ── DATA ── */
 const allPlayers = [
-  { name:"Jestin", joinId:1001 },
-  { name:"Luca", joinId:1002 },
-  { name:"Jules", joinId:1003 },
-  { name:"Levi", joinId:1004 },
-  { name:"Bink", joinId:1005 },
-  { name:"Symen", joinId:1006 }
+    {name:"Jestin",joinId:1001},{name:"Luca",joinId:1002},{name:"Jules",joinId:1003},
+    {name:"Levi",joinId:1004},{name:"Bink",joinId:1005},{name:"Symen",joinId:1006}
 ];
 
 const characterMap = {
-  "Jokie":"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
-
-  "Jet":"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4",
-
-  "Assepoester":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08",
-
-  "Roodkapje":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644",
-
-  "Klein Duimpje":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC",
-
-  "Langnek":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B",
-
-  "Reus":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2",
-
-  "Heks":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398",
-
-  "Fakir":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E",
-
-  "Ezel":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2",
-
-  "Draak":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D",
-
-  "Sprookjesboom":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328",
-
-  "Geitje Benjamin":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-zeven-geitjes-profiel.png?h=610&w=700&la=nl&hash=6613F5C3124D8785544D949571CC0CE7",
-
-  "Wolf":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-wolf-profiel.png?h=610&w=700&la=nl&hash=AEDB0449881BD1A2F20C4FCF7FE3E911",
-
-  "Kabauter Ko":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ko-profiel.png?h=610&w=700&la=nl&hash=24B9DEA2B0A6EC6C4D02599DCC73B668",
-
-  "Kabauter Kie":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kie-profiel.png?h=610&w=700&la=nl&hash=DCAB72456FE3B4FB7EBACC80D93C7F25",
-
-  "Kabauter Kei":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kei-profiel.png?h=610&w=700&la=nl&hash=DE15AD66000C5BED3B066514E8FCD1BB",
-
-  "Kabauter Keu":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-keu-profiel.png?h=610&w=700&la=nl&hash=8456F9C2858528F61FB742A25464A2A1",
-
-  "Kabauter Ke":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ke-profiel.png?h=610&w=700&la=nl&hash=4C12A6F3C299F58644966A7343A62FEE",
-
-  "Kabauter Ka":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ka-profiel.png?h=610&w=700&la=nl&hash=52D9C378305DCAC05D1D91A89EE063DA",
-
-  "Kabauter Ku":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ku-profiel.png?h=610&w=700&la=nl&hash=73E42920753E92161AF38A15B8B75B71",
-
-  "Pardoes":"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9"
+    "Jokie":"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9",
+    "Jet":"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4",
+    "Assepoester":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08",
+    "Roodkapje":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644",
+    "Klein Duimpje":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC",
+    "Langnek":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B",
+    "Reus":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2",
+    "Heks":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398",
+    "Fakir":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E",
+    "Ezel":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2",
+    "Draak":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D",
+    "Sprookjesboom":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328",
+    "Geitje Benjamin":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-zeven-geitjes-profiel.png?h=610&w=700&la=nl&hash=6613F5C3124D8785544D949571CC0CE7",
+    "Wolf":"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-wolf-profiel.png?h=610&w=700&la=nl&hash=AEDB0449881BD1A2F20C4FCF7FE3E911",
+    "Pardoes":"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9",
+    "Pardijn":"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C",
+    "Ruiter Thomas":"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-thomas-profiel.png?h=610&w=700&la=nl&hash=62598971003A7BF48570E5CC251509D0",
+    "Ruiter Emma":"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-emma-profiel.png?h=610&w=700&la=nl&hash=3B00DDFC724794FFDF6AFE37B05D3EB2",
+    "Samira":"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samira-profiel.png?h=610&w=700&la=nl&hash=4F3135F07F99D88234D2F6F406CC1E1A",
+    "Samuël":"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samuel-profiel.png?h=610&w=700&la=nl&hash=D3DBFA2199BBCF5A09C84185CE7B6008"
 };
 
-function renderQR(joinedPlayers){
-  const qrContainer = document.getElementById("qrContainer");
-  qrContainer.innerHTML = "";
+/* ── STERREN GENEREREN ── */
+(function(){
+    const s = document.getElementById("stars");
+    for(let i=0;i<90;i++){
+        const el=document.createElement("div"); el.className="star";
+        const sz=Math.random()*2.5+0.5;
+        el.style.cssText=`
+            width:${sz}px;height:${sz}px;
+            left:${Math.random()*100}%;top:${Math.random()*100}%;
+            --d:${2+Math.random()*4}s;--dl:${Math.random()*5}s;
+            --lo:${0.1+Math.random()*0.3};--hi:${0.6+Math.random()*0.4};
+        `;
+        s.appendChild(el);
+    }
+})();
 
-  allPlayers.forEach(player => {
-    const alreadyJoined = joinedPlayers.find(p => p.name === player.name);
-    if(alreadyJoined) return;
+/* ── STAAT ── */
+let huidigePlayers = [];
+let timerInterval = null;
 
-    const card = document.createElement("div");
-    card.className = "qrCard";
-
-    card.innerHTML = `
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://efteling-kahoot-pro.onrender.com/player/${player.joinId}">
-      <div class="qrName">${player.name}</div>
-    `;
-
-    qrContainer.appendChild(card);
-  });
-}
-
-function renderPlayers(players){
-  const list = document.getElementById("playersList");
-  list.innerHTML = "";
-
-  players.forEach(p => {
-    const row = document.createElement("div");
-    row.className = "playerRow";
-
-    row.innerHTML = `
-      <img src="${characterMap[p.character] || ''}" style="width:50px;height:50px;">
-      <div class="playerName">${p.name}</div>
-    `;
-
-    list.appendChild(row);
-  });
-}
-
-function updateEverything(players){
-  renderPlayers(players);
-  renderQR(players);
-}
-
-function loadLeaderboard(){
-  fetch("/scores-full")
-    .then(res => res.json())
-    .then(data => {
-      updateEverything(data.players || []);
+/* ── SCHERM WISSELEN ── */
+const schermen = ['Lobby','Vraag','Resultaten','Tussenstand','Eindpodium'];
+function toonScherm(naam) {
+    schermen.forEach(s => {
+        document.getElementById('scherm'+s).classList.toggle('actief', s===naam);
     });
 }
 
+/* ── FASE BADGE ── */
+function setBadge(tekst, cls) {
+    const b = document.getElementById("faseBadge");
+    b.textContent = tekst;
+    b.className = "fase-badge " + (cls||"");
+}
+
+/* ═══════════════════════════════
+   LOBBY
+═══════════════════════════════ */
+function renderLobby(players) {
+    huidigePlayers = players || [];
+    renderQR(huidigePlayers);
+    renderSpelers(huidigePlayers);
+}
+
+function renderQR(players) {
+    const joinedNames = players.map(p=>p.name);
+    const grid = document.getElementById("qrGrid");
+    grid.innerHTML = "";
+    allPlayers.forEach(ap => {
+        const gejoind = joinedNames.includes(ap.name);
+        const kaart = document.createElement("div");
+        kaart.className = "qr-kaart" + (gejoind?" gejoind":"");
+        if (!gejoind) {
+            kaart.innerHTML = `
+                <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://efteling-kahoot-pro.onrender.com/player/${ap.joinId}" alt="QR">
+                <div class="qr-naam">${ap.name}</div>
+                <div class="qr-status">Wacht...</div>
+            `;
+        } else {
+            const p = players.find(x=>x.name===ap.name);
+            kaart.innerHTML = `
+                ${p&&p.character&&characterMap[p.character]?`<img class="qr-img" src="${characterMap[p.character]}" alt="${p.character}" style="border-radius:8px;background:#fff1">`:'<div style="height:80px;display:flex;align-items:center;justify-content:center;font-size:32px">✓</div>'}
+                <div class="qr-naam">${ap.name}</div>
+                <div class="qr-status gejoind">✓ JOINED</div>
+            `;
+        }
+        grid.appendChild(kaart);
+    });
+}
+
+function renderSpelers(players) {
+    const joinedMap = {};
+    players.forEach(p=>{joinedMap[p.name]=p;});
+    const grid = document.getElementById("spelersGrid");
+    grid.innerHTML = "";
+    allPlayers.forEach((ap,i) => {
+        const p = joinedMap[ap.name];
+        const gejoind = !!p;
+        const imgUrl = p&&p.character?characterMap[p.character]:null;
+        const kaart = document.createElement("div");
+        kaart.className = "speler-kaart" + (gejoind?" gejoind":"");
+        kaart.style.animationDelay = (i*0.07)+"s";
+        kaart.innerHTML = `
+            ${imgUrl
+                ? `<img class="speler-avatar" src="${imgUrl}" alt="${p.character}">`
+                : `<div class="speler-avatar-placeholder">👤</div>`}
+            <div class="speler-naam">${ap.name}</div>
+            <div class="speler-personage">${p&&p.character?p.character:gejoind?'Personage kiezen...':'Nog niet gejoind'}</div>
+            <span class="speler-badge ${gejoind?'gejoind':'wacht'}">${gejoind?'JOINED':'WACHT'}</span>
+        `;
+        grid.appendChild(kaart);
+    });
+}
+
+/* ═══════════════════════════════
+   VRAAG
+═══════════════════════════════ */
+let vraagTimerInterval = null;
+
+function toonVraag(p) {
+    toonScherm("Vraag");
+    setBadge("VRAAG "+((p.huidigeVraag||0)+1), "vraag");
+
+    document.getElementById("vraagNrLabel").textContent = "Vraag "+((p.huidigeVraag||0)+1)+" / "+(p.totaalVragen||1);
+    document.getElementById("vraagProgressFill").style.width = (((p.huidigeVraag||0)+1)/(p.totaalVragen||1)*100)+"%";
+    document.getElementById("vraagTekstGroot").textContent = p.vraag || "";
+    document.getElementById("antwoordTellerLabel").textContent = "";
+
+    const grid = document.getElementById("antwoordGridGroot");
+    grid.innerHTML = "";
+
+    if (p.type === "open") {
+        grid.style.gridTemplateColumns = "1fr";
+        const blok = document.createElement("div");
+        blok.style.cssText="padding:20px 28px;border-radius:16px;background:rgba(240,192,64,.08);border:2px solid rgba(240,192,64,.25);font-size:20px;color:rgba(255,255,255,.5);text-align:center;font-style:italic;";
+        blok.textContent = "Open vraag — spelers typen hun antwoord";
+        grid.appendChild(blok);
+    } else {
+        grid.style.gridTemplateColumns = "1fr 1fr";
+        const letters = ["A","B","C","D"];
+        (p.antwoorden||[]).forEach((a,i) => {
+            const blok = document.createElement("div");
+            blok.className="antwoord-blok"; blok.dataset.i=i;
+            blok.innerHTML=`<div class="antwoord-letter">${letters[i]}</div><span>${a.tekst}</span>`;
+            grid.appendChild(blok);
+        });
+    }
+
+    startVraagTimer(p.tijdlimiet||20, p.vraagStartTijd||Date.now());
+}
+
+function startVraagTimer(limiet, startMs) {
+    clearInterval(vraagTimerInterval);
+    const ring = document.getElementById("vtRing");
+    const num  = document.getElementById("vtNum");
+    const omtrek = 2*Math.PI*22;
+    function tick(){
+        const over = Math.max(0, limiet - (Date.now()-startMs)/1000);
+        const frac = over/limiet;
+        num.textContent = Math.ceil(over);
+        ring.style.strokeDashoffset = omtrek*(1-frac);
+        ring.style.stroke = over<=5?"#e05555":over<=10?"#f0a030":"var(--gold)";
+        if(over<=0) clearInterval(vraagTimerInterval);
+    }
+    tick();
+    vraagTimerInterval = setInterval(tick,250);
+}
+
+/* ═══════════════════════════════
+   RESULTATEN
+═══════════════════════════════ */
+function toonResultaten(p) {
+    clearInterval(vraagTimerInterval);
+    toonScherm("Resultaten");
+    setBadge("RESULTATEN","resultaten");
+
+    const res = p.resultaten;
+    if (!res) return;
+
+    document.getElementById("resVraagTekst").textContent = res.vraag || "";
+
+    const balken = document.getElementById("resBalken");
+    balken.innerHTML = "";
+    const correctEl = document.getElementById("resCorrectLabel");
+    correctEl.textContent = "";
+
+    if (res.type === "open" && res.groepen) {
+        res.groepen.forEach(g => {
+            const rij = maakBalkRij(g.tekst, g.procent, g.correct, g.aantal);
+            balken.appendChild(rij);
+        });
+    } else if (res.antwoorden) {
+        const correct = res.antwoorden.find(a=>a.correct);
+        if (correct) correctEl.textContent = "✓ Juist antwoord: " + correct.tekst;
+        res.antwoorden.forEach(a => {
+            const rij = maakBalkRij(a.tekst, a.procent, a.correct, a.aantal);
+            balken.appendChild(rij);
+        });
+    }
+}
+
+function maakBalkRij(tekst, procent, correct, aantal) {
+    const rij = document.createElement("div"); rij.className="res-balk-rij";
+    rij.innerHTML=`
+        <div class="res-balk-label">${tekst}</div>
+        <div class="res-balk-outer">
+            <div class="res-balk-inner ${correct?'correct':'fout'}" style="width:0%">
+                ${procent>12?aantal+'x':''}
+            </div>
+        </div>
+        <div class="res-balk-pct">${procent}%</div>
+    `;
+    // Animate width after paint
+    setTimeout(()=>{ rij.querySelector(".res-balk-inner").style.width=procent+"%"; }, 60);
+    return rij;
+}
+
+/* ═══════════════════════════════
+   TUSSENSTAND
+═══════════════════════════════ */
+function toonTussenstand(p) {
+    toonScherm("Tussenstand");
+    setBadge("TUSSENSTAND","podium");
+
+    const lijst = document.getElementById("tsLijst");
+    lijst.innerHTML = "";
+    (p.podium||[]).forEach((speler,i) => {
+        const rij = document.createElement("div");
+        const cls = i===0?"top1":i===1?"top2":i===2?"top3":"";
+        rij.className="ts-rij-groot "+cls;
+        rij.style.animationDelay=(i*0.08)+"s";
+        const sym = i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);
+        const rankCls = i===0?"r1":i===1?"r2":i===2?"r3":"";
+        const img = speler.character&&characterMap[speler.character]
+            ? `<img class="ts-avatar" src="${characterMap[speler.character]}" alt="">`
+            : `<div class="ts-avatar" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,.06);border-radius:10px;">👤</div>`;
+        rij.innerHTML=`
+            <div class="ts-rang-groot ${rankCls}">${sym}</div>
+            ${img}
+            <div class="ts-info">
+                <div class="ts-naam-groot">${speler.name}</div>
+                <div class="ts-personage">${speler.character||''}</div>
+            </div>
+            <div class="ts-score-groot">${speler.score.toLocaleString('nl-NL')}</div>
+        `;
+        lijst.appendChild(rij);
+    });
+}
+
+/* ═══════════════════════════════
+   EINDPODIUM
+═══════════════════════════════ */
+function toonEindpodium(p) {
+    toonScherm("Eindpodium");
+    setBadge("🏆 EINDSTAND","eindpodium");
+
+    const gesorteerd = p.podium||[];
+    // Olympische volgorde: #2 links, #1 midden, #3 rechts
+    const volgorde = [gesorteerd[1], gesorteerd[0], gesorteerd[2]].filter(Boolean);
+    const sokkels = ["s2","s1","s3"];
+    const cijfers = ["2","1","3"];
+
+    const scène = document.getElementById("epPodiumScène");
+    scène.innerHTML = "";
+    volgorde.forEach((speler,vi) => {
+        const echteRank = gesorteerd.indexOf(speler);
+        const img = speler.character&&characterMap[speler.character]
+            ? `<img class="ep-avatar-groot" src="${characterMap[speler.character]}" alt="">`
+            : `<div class="ep-avatar-groot-placeholder">👤</div>`;
+        const crown = echteRank===0?`<div class="ep-crown">👑</div>`:"";
+        const blok = document.createElement("div");
+        blok.className="ep-podium-speler";
+        blok.innerHTML=`
+            ${crown}
+            ${img}
+            <div class="ep-p-naam">${speler.name}</div>
+            <div class="ep-p-score">${speler.score.toLocaleString('nl-NL')} pts</div>
+            <div class="ep-sokkel ${sokkels[vi]}">${cijfers[vi]}</div>
+        `;
+        scène.appendChild(blok);
+    });
+
+    const rest = document.getElementById("epRestLijst");
+    rest.innerHTML = "";
+    gesorteerd.slice(3).forEach((speler,i) => {
+        const item = document.createElement("div"); item.className="ep-rest-item";
+        item.style.animationDelay=(i*0.1)+"s";
+        item.innerHTML=`
+            <div class="ep-rest-rang">${i+4}e</div>
+            <div class="ep-rest-naam">${speler.name}</div>
+            <div class="ep-rest-score">${speler.score.toLocaleString('nl-NL')}</div>
+        `;
+        rest.appendChild(item);
+    });
+
+    // Confetti!
+    for(let i=0;i<60;i++) maakConfetti();
+}
+
+function maakConfetti() {
+    const kleuren=["#ffd700","#f0c040","#4caf82","#5b9cf6","#e05555","#ffffff","#cd7f32"];
+    const el=document.createElement("div"); el.className="confetti-piece";
+    el.style.cssText=`
+        left:${Math.random()*100}%;
+        background:${kleuren[Math.floor(Math.random()*kleuren.length)]};
+        --dur:${2.5+Math.random()*2.5}s;
+        --del:${Math.random()*3}s;
+        --dx:${(Math.random()-0.5)*200}px;
+        transform:rotate(${Math.random()*360}deg);
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 6000);
+}
+
+/* ═══════════════════════════════
+   SOCKET
+═══════════════════════════════ */
 socket.on("gameUpdate", payload => {
-  if(payload.type === "playersUpdate"){
-    updateEverything(payload.data.players || []);
-  }
+    if (payload.type==="playersUpdate") {
+        renderLobby((payload.data&&payload.data.players)||[]);
+        if (!payload.data||!payload.data.quizId) {
+            toonScherm("Lobby"); setBadge("LOBBY","");
+        }
+    }
 });
 
-loadLeaderboard();
-setInterval(loadLeaderboard, 1000);
-</script>
+socket.on("faseUpdate", p => {
+    const f = p.fase;
+    if      (f==="lobby")       { toonScherm("Lobby");       setBadge("LOBBY",""); }
+    else if (f==="vraag")       toonVraag(p);
+    else if (f==="keuring")     setBadge("KEURING ✍️","resultaten");
+    else if (f==="resultaten")  toonResultaten(p);
+    else if (f==="podium")      toonTussenstand(p);
+    else if (f==="eindpodium")  toonEindpodium(p);
+});
 
+socket.on("antwoordUpdate", ({aantalGeantwoord,totaalSpelers}) => {
+    document.getElementById("antwoordTellerLabel").textContent =
+        aantalGeantwoord+" / "+totaalSpelers+" geantwoord";
+});
+
+/* Herstel staat bij reconnect */
+fetch("/api/game-state").then(r=>r.json()).then(state => {
+    if (!state.fase||state.fase==="lobby") { loadLobby(); return; }
+    if      (state.fase==="vraag")      toonVraag(state);
+    else if (state.fase==="resultaten") toonResultaten(state);
+    else if (state.fase==="podium")     toonTussenstand(state);
+    else if (state.fase==="eindpodium") toonEindpodium(state);
+}).catch(()=>{ loadLobby(); });
+
+function loadLobby() {
+    fetch("/scores-full").then(r=>r.json()).then(d=>renderLobby(d.players||[]));
+}
+
+loadLobby();
+setInterval(loadLobby, 3000);
+</script>
 </body>
 </html>
