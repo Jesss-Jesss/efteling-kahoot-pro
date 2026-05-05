@@ -390,6 +390,27 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
         </div>
         <div class="q-tekst" id="qTekst"></div>
         <div class="q-grid" id="qGrid"></div>
+        <input id="qInput" type="text" placeholder="Typ je antwoord..." style="
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-size:16px;
+  display:none;
+">
+
+<button id="qSubmitBtn" style="
+  margin-top:10px;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-weight:900;
+  background:var(--gold);
+  color:black;
+  display:none;
+">
+Verstuur antwoord
+</button>
         <div class="q-klaar" id="qKlaar">✓ &nbsp;Antwoord verzonden — wacht op resultaten</div>
     </div>
 
@@ -907,6 +928,28 @@ function toonVraag(p){
     document.getElementById("qTekst").textContent=p.vraag;
     const grid=document.getElementById("qGrid");
     grid.innerHTML="";
+    const input = document.getElementById("openAntwoordInput");
+const btn = document.getElementById("openAntwoordBtn");
+
+btn.onclick = () => {
+    const value = input.value.trim();
+    if (!value) return;
+
+    heeftGeantwoord = true;
+
+    socket.emit("answer", {
+        gameId,
+        playerId,
+        answer: value
+    });
+
+    document.getElementById("qKlaar").style.display = "flex";
+};
+    input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        btn.click();
+    }
+});
     document.getElementById("qKlaar").style.display="none";
 
     if(p.type==="open"){
