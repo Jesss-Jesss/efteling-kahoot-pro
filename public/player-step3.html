@@ -7,223 +7,84 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-    --gold:  #f0c040;
-    --dark:  #07090f;
-    --dark2: #0d1220;
-    --green: #4caf82;
-    --red:   #e05555;
-    --blue:  #5b9cf6;
+    --gold:   #f0c040;
+    --gold2:  #c8982a;
+    --dark:   #07090f;
+    --dark2:  #0d1220;
+    --dark3:  #111827;
+    --green:  #4caf82;
+    --red:    #e05555;
+    --blue:   #5b9cf6;
+    --coin:   #f5d060;
+    --purple: #9b72cf;
 }
 *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height:100%; margin:0; padding:0; background:var(--dark); color:white; font-family:'Lato',sans-serif; overflow:hidden; }
 
-/* ══════════════════════════════
-   LOBBY PAGINA
-══════════════════════════════ */
+/* ══ LOBBY ══ */
 #lobbyPage {
     position:fixed; inset:0; z-index:100;
-    display:flex; flex-direction:column;
-    align-items:center;
-    background: radial-gradient(ellipse 120% 80% at 50% 0%, #151b30 0%, #07090f 65%);
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-}
-
-/* Sterren */
-#lobbyBg { position:fixed; inset:0; z-index:0; pointer-events:none; }
-.lb-star {
-    position:absolute; border-radius:50%; background:white;
-    animation:lb-twinkle var(--d,3s) ease-in-out infinite;
-    animation-delay:var(--dl,0s);
-}
-@keyframes lb-twinkle { 0%,100%{opacity:var(--lo,.15)} 50%{opacity:var(--hi,.8)} }
-
-/* Goud gloed */
-#lobbyBg::after {
-    content:''; position:absolute; inset:0;
-    background:radial-gradient(ellipse 80% 35% at 50% 0%, rgba(240,192,64,.1) 0%, transparent 70%);
-}
-
-#lobbyContent {
-    position:relative; z-index:1;
     display:flex; flex-direction:column; align-items:center;
-    width:100%; max-width:420px;
-    padding:28px 20px 100px;
-    gap:20px;
-}
-
-/* Header */
-#lobbyHeader { text-align:center; margin-bottom:4px; }
-.lb-logo {
-    font-family:'Cinzel',serif; font-size:20px; font-weight:900;
-    color:var(--gold); letter-spacing:4px; text-transform:uppercase;
-}
-.lb-logo span { color:rgba(255,255,255,.6); font-weight:700; }
-
-/* Welkom kaart */
-#welkomKaart {
-    width:100%;
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(240,192,64,.15);
-    border-radius:24px; padding:28px 20px;
-    display:flex; flex-direction:column; align-items:center; gap:12px;
-    animation:cardIn .5s cubic-bezier(.22,.61,.36,1) both;
-}
-@keyframes cardIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-
-#avatarRing {
-    width:100px; height:100px; border-radius:20px;
-    background:rgba(255,255,255,.06);
-    border:2px solid rgba(240,192,64,.2);
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; position:relative;
-}
-#chosenImage {
-    width:100%; height:100%; object-fit:contain;
-    display:none;
-}
-#avatarPlaceholder {
-    font-size:40px; color:rgba(255,255,255,.2);
-}
-
-#welkomNaam {
-    font-family:'Cinzel',serif; font-size:22px; font-weight:900;
-    color:white; letter-spacing:1px;
-}
-#welkomPersonage {
-    font-size:13px; color:rgba(255,255,255,.35);
-}
-
-#kiesPersonageBtn {
-    display:flex; align-items:center; gap:8px;
-    padding:13px 28px; border-radius:12px;
-    border:1.5px solid rgba(240,192,64,.35);
-    background:rgba(240,192,64,.1); color:var(--gold);
-    font-family:'Lato',sans-serif; font-size:15px; font-weight:700;
-    cursor:pointer; transition:background .15s, transform .1s;
-    -webkit-appearance:none; margin-top:4px;
-}
-#kiesPersonageBtn:active { transform:scale(.96); background:rgba(240,192,64,.2); }
-
-/* Status pill */
-#statusPill {
-    display:flex; align-items:center; gap:8px;
-    background:rgba(76,175,130,.1); border:1px solid rgba(76,175,130,.25);
-    border-radius:50px; padding:8px 18px;
-    font-size:13px; font-weight:700; color:var(--green); letter-spacing:.5px;
-}
-.s-dot {
-    width:7px; height:7px; border-radius:50%;
-    background:var(--green); animation:sdot 2s ease infinite;
-}
-@keyframes sdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
-
-/* Help knop */
-#helpBtn {
-    position:fixed; left:20px; bottom:24px; z-index:200;
-    padding:12px 20px; font-size:14px; font-weight:700;
-    font-family:'Lato',sans-serif;
-    border:1.5px solid rgba(91,156,246,.4); border-radius:12px;
-    background:rgba(91,156,246,.15); color:var(--blue);
-    cursor:pointer; -webkit-appearance:none;
-    transition:background .15s, transform .1s;
-}
-#helpBtn:active { transform:scale(.96); }
-
-/* ══════════════════════════════
-   GALLERY OVERLAY
-══════════════════════════════ */
-#galleryOverlay {
-    display:none; position:fixed; inset:0; z-index:9999;
-    background:var(--dark); flex-direction:column;
-}
-#galleryOverlay.open { display:flex; }
-
-#galleryHeader {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:18px 20px 14px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-    flex-shrink:0;
-    background:rgba(7,9,15,.95);
-    position:sticky; top:0; z-index:10;
-}
-.g-titel {
-    font-family:'Cinzel',serif; font-size:14px; font-weight:700;
-    color:var(--gold); letter-spacing:2px; text-transform:uppercase;
-}
-#closeGallery {
-    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
-    color:rgba(255,255,255,.6); font-size:16px; width:34px; height:34px;
-    border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    -webkit-appearance:none; transition:background .15s;
-}
-#closeGallery:active { background:rgba(255,255,255,.18); }
-
-#galleryGrid {
-    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr));
-    gap:10px; padding:16px;
-}
-
-.character-card {
-    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
-    border-radius:16px; padding:12px 8px;
-    text-align:center; cursor:pointer;
-    transition:border-color .2s, background .2s, transform .15s;
-    display:flex; flex-direction:column; align-items:center; gap:6px;
-}
-.character-card:active { transform:scale(.96); }
-.character-card.selected {
-    background:rgba(240,192,64,.1); border-color:rgba(240,192,64,.4);
-}
-.character-card.disabled {
-    opacity:.3; pointer-events:none; filter:grayscale(100%);
-}
-.character-card img { width:100%; height:90px; object-fit:contain; border-radius:8px; }
-.character-card p { color:rgba(255,255,255,.75); font-weight:700; font-size:11px; margin:0; }
-
-/* ══════════════════════════════
-   HELP OVERLAY
-══════════════════════════════ */
-#helpOverlay {
-    display:none; position:fixed; inset:0; z-index:10000;
-    background:rgba(0,0,0,.8); backdrop-filter:blur(6px);
-    align-items:center; justify-content:center;
-}
-#helpOverlay.open { display:flex; }
-#helpOverlayInner {
-    background:rgba(13,18,32,.95); border:1px solid rgba(91,156,246,.3);
-    border-radius:24px; padding:36px 32px;
-    display:flex; flex-direction:column; align-items:center; gap:14px;
-    text-align:center; max-width:300px;
-}
-#helpOverlayInner p { font-size:20px; font-weight:700; color:var(--blue); }
-#helpOverlayInner button {
-    padding:12px 28px; border-radius:10px;
-    border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
-    color:rgba(255,255,255,.6); font-size:14px; font-weight:700;
-    font-family:'Lato',sans-serif; cursor:pointer; -webkit-appearance:none;
-}
-
-/* ══════════════════════════════
-   QUIZ OVERLAY
-══════════════════════════════ */
-#quizOverlay {
-    display:none; position:fixed; inset:0; z-index:2000;
-    background:var(--dark);
-    font-family:'Lato',sans-serif; color:white;
-    flex-direction:column; align-items:center;
-    justify-content:flex-start;
-    padding:24px 20px 40px;
+    background: radial-gradient(ellipse 120% 80% at 50% 0%, #151b30 0%, #07090f 65%);
     overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
-#quizOverlay.active { display:flex; }
+#lobbyBg { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.lb-star { position:absolute; border-radius:50%; background:white; animation:lb-twinkle var(--d,3s) ease-in-out infinite; animation-delay:var(--dl,0s); }
+@keyframes lb-twinkle { 0%,100%{opacity:var(--lo,.15)} 50%{opacity:var(--hi,.8)} }
+#lobbyBg::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 35% at 50% 0%, rgba(240,192,64,.1) 0%, transparent 70%); }
+#lobbyContent { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; width:100%; max-width:420px; padding:28px 20px 100px; gap:20px; }
+#lobbyHeader { text-align:center; margin-bottom:4px; }
+.lb-logo { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:var(--gold); letter-spacing:4px; text-transform:uppercase; }
+.lb-logo span { color:rgba(255,255,255,.6); font-weight:700; }
+#welkomKaart { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(240,192,64,.15); border-radius:24px; padding:28px 20px; display:flex; flex-direction:column; align-items:center; gap:12px; animation:cardIn .5s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes cardIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+#avatarRing { width:100px; height:100px; border-radius:20px; background:rgba(255,255,255,.06); border:2px solid rgba(240,192,64,.2); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+#chosenImage { width:100%; height:100%; object-fit:contain; display:none; }
+#avatarPlaceholder { font-size:40px; color:rgba(255,255,255,.2); }
+#welkomNaam { font-family:'Cinzel',serif; font-size:22px; font-weight:900; color:white; letter-spacing:1px; }
+#welkomPersonage { font-size:13px; color:rgba(255,255,255,.35); }
+#kiesPersonageBtn { display:flex; align-items:center; gap:8px; padding:13px 28px; border-radius:12px; border:1.5px solid rgba(240,192,64,.35); background:rgba(240,192,64,.1); color:var(--gold); font-family:'Lato',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:background .15s, transform .1s; -webkit-appearance:none; margin-top:4px; }
+#kiesPersonageBtn:active { transform:scale(.96); background:rgba(240,192,64,.2); }
+#statusPill { display:flex; align-items:center; gap:8px; background:rgba(76,175,130,.1); border:1px solid rgba(76,175,130,.25); border-radius:50px; padding:8px 18px; font-size:13px; font-weight:700; color:var(--green); letter-spacing:.5px; }
+.s-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:sdot 2s ease infinite; }
+@keyframes sdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+#helpBtn { position:fixed; left:20px; bottom:24px; z-index:200; padding:12px 20px; font-size:14px; font-weight:700; font-family:'Lato',sans-serif; border:1.5px solid rgba(91,156,246,.4); border-radius:12px; background:rgba(91,156,246,.15); color:var(--blue); cursor:pointer; -webkit-appearance:none; transition:background .15s, transform .1s; }
+#helpBtn:active { transform:scale(.96); }
 
-/* WACHT */
-#qWacht {
-    display:flex; flex-direction:column; align-items:center;
-    gap:16px; text-align:center; padding-top:40px;
-}
+/* ══ GALLERY ══ */
+#galleryOverlay { display:none; position:fixed; inset:0; z-index:9999; background:var(--dark); flex-direction:column; }
+#galleryOverlay.open { display:flex; }
+#galleryHeader { display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; background:rgba(7,9,15,.95); position:sticky; top:0; z-index:10; }
+.g-titel { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold); letter-spacing:2px; text-transform:uppercase; }
+#closeGallery { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.6); font-size:16px; width:34px; height:34px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-appearance:none; transition:background .15s; }
+#closeGallery:active { background:rgba(255,255,255,.18); }
+#galleryBody { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 16px 24px; }
+.gallery-categorie { margin-bottom:20px; }
+.gallery-cat-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.gallery-cat-naam { font-family:'Cinzel',serif; font-size:12px; font-weight:700; color:var(--gold); letter-spacing:2px; text-transform:uppercase; }
+.gallery-cat-lijn { flex:1; height:1px; background:rgba(240,192,64,.15); }
+.gallery-cat-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:10px; }
+.character-card { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:12px 8px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s, transform .15s; display:flex; flex-direction:column; align-items:center; gap:6px; position:relative; }
+.character-card:active { transform:scale(.96); }
+.character-card.selected { background:rgba(240,192,64,.1); border-color:rgba(240,192,64,.4); }
+.character-card.disabled { opacity:.3; pointer-events:none; filter:grayscale(100%); }
+.character-card.locked { opacity:.55; cursor:default; }
+.character-card img { width:100%; height:90px; object-fit:contain; border-radius:8px; }
+.character-card p { color:rgba(255,255,255,.75); font-weight:700; font-size:11px; margin:0; }
+.lock-badge { position:absolute; top:6px; right:6px; font-size:13px; }
+.gratis-badge { position:absolute; top:6px; left:6px; background:rgba(76,175,130,.9); color:white; font-size:9px; font-weight:900; letter-spacing:.5px; padding:2px 5px; border-radius:4px; }
+
+/* ══ HELP ══ */
+#helpOverlay { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.8); backdrop-filter:blur(6px); align-items:center; justify-content:center; }
+#helpOverlay.open { display:flex; }
+#helpOverlayInner { background:rgba(13,18,32,.95); border:1px solid rgba(91,156,246,.3); border-radius:24px; padding:36px 32px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; max-width:300px; }
+#helpOverlayInner p { font-size:20px; font-weight:700; color:var(--blue); }
+#helpOverlayInner button { padding:12px 28px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:rgba(255,255,255,.6); font-size:14px; font-weight:700; font-family:'Lato',sans-serif; cursor:pointer; -webkit-appearance:none; }
+
+/* ══ QUIZ OVERLAY ══ */
+#quizOverlay { display:none; position:fixed; inset:0; z-index:2000; background:var(--dark); font-family:'Lato',sans-serif; color:white; flex-direction:column; align-items:center; justify-content:flex-start; padding:24px 20px 40px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+#quizOverlay.active { display:flex; }
+#qWacht { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center; padding-top:40px; }
 .q-logo { font-family:'Cinzel',serif; font-size:18px; font-weight:900; color:var(--gold); letter-spacing:3px; text-transform:uppercase; }
 .q-naam { font-size:28px; font-weight:900; }
 .q-sub { font-size:13px; color:rgba(255,255,255,.4); line-height:1.6; }
@@ -231,8 +92,6 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
 .dot { width:8px; height:8px; border-radius:50%; background:var(--gold); animation:dotPop 1.4s ease infinite; }
 .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
 @keyframes dotPop { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
-
-/* VRAAG */
 #qVraag { display:none; flex-direction:column; width:100%; max-width:460px; gap:14px; }
 .q-header { display:flex; align-items:center; justify-content:space-between; }
 .q-nr-badge { font-size:11px; letter-spacing:2px; color:rgba(255,255,255,.35); text-transform:uppercase; font-family:'Cinzel',serif; }
@@ -243,15 +102,7 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
 .t-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; color:var(--gold); }
 .q-tekst { font-size:19px; font-weight:700; line-height:1.45; text-align:center; padding:6px 0; }
 .q-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.q-btn {
-    border:none; border-radius:14px; padding:20px 12px;
-    font-size:15px; font-weight:700; color:white; cursor:pointer;
-    text-align:center; line-height:1.3; min-height:82px;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Lato',sans-serif;
-    transition:transform .12s, opacity .2s, filter .2s, box-shadow .15s;
-    -webkit-appearance:none;
-}
+.q-btn { border:none; border-radius:14px; padding:20px 12px; font-size:15px; font-weight:700; color:white; cursor:pointer; text-align:center; line-height:1.3; min-height:82px; display:flex; align-items:center; justify-content:center; font-family:'Lato',sans-serif; transition:transform .12s, opacity .2s, filter .2s, box-shadow .15s; -webkit-appearance:none; }
 .q-btn:active { transform:scale(.95); }
 .q-btn[data-i="0"] { background:#e05555; }
 .q-btn[data-i="1"] { background:#4a90d9; }
@@ -259,14 +110,7 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
 .q-btn[data-i="3"] { background:#e0952a; }
 .q-btn.gekozen { box-shadow:0 0 0 3px white; transform:scale(.97); }
 .q-btn.niet-gekozen { opacity:.3; filter:saturate(.2); }
-.q-klaar {
-    display:none; align-items:center; justify-content:center; gap:10px;
-    background:rgba(76,175,130,.12); border:1px solid rgba(76,175,130,.3);
-    border-radius:12px; padding:14px;
-    font-weight:700; font-size:14px; color:var(--green);
-}
-
-/* RESULTATEN */
+.q-klaar { display:none; align-items:center; justify-content:center; gap:10px; background:rgba(76,175,130,.12); border:1px solid rgba(76,175,130,.3); border-radius:12px; padding:14px; font-weight:700; font-size:14px; color:var(--green); }
 #qResultaten { display:none; flex-direction:column; width:100%; max-width:460px; gap:12px; align-items:center; padding-top:20px; }
 .res-icon { font-size:52px; line-height:1; animation:popIn .4s cubic-bezier(.22,.61,.36,1) both; }
 @keyframes popIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
@@ -281,8 +125,6 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
 .balk-goed { background:rgba(76,175,130,.5); color:#a3f0c8; }
 .balk-fout { background:rgba(224,85,85,.4); color:#f0a3a3; }
 .res-antw-pct { font-size:12px; font-weight:700; color:rgba(255,255,255,.35); min-width:32px; text-align:right; }
-
-/* TUSSENSTAND */
 #qTussenstand { display:none; flex-direction:column; width:100%; max-width:460px; gap:10px; align-items:center; padding-top:16px; }
 .ts-titel { font-family:'Cinzel',serif; font-size:13px; letter-spacing:2px; color:rgba(255,255,255,.4); text-transform:uppercase; margin-bottom:4px; }
 .ts-rij { width:100%; display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px 16px; animation:fadeUp .3s ease both; }
@@ -292,7 +134,7 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
 .ts-naam { flex:1; font-weight:700; font-size:15px; }
 .ts-score { font-weight:900; font-size:15px; color:var(--gold); }
 
-/* EINDPODIUM */
+/* ══ EINDPODIUM ══ */
 #qEindpodium { display:none; flex-direction:column; width:100%; max-width:500px; gap:0; align-items:center; padding-top:10px; }
 .ep-titel { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:var(--gold); letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; animation:fadeUp .4s ease both; }
 .ep-subtitel { font-size:12px; color:rgba(255,255,255,.3); letter-spacing:1px; margin-bottom:20px; animation:fadeUp .4s .05s ease both; }
@@ -314,20 +156,186 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
 .ep-rest-naam { flex:1; font-weight:700; font-size:14px; }
 .ep-rest-score { font-weight:900; font-size:14px; color:var(--gold); }
 
+/* ══ MUNTJES SECTIE in eindpodium ══ */
+#qEindpodium .coin-sectie {
+    width:100%; margin-top:20px;
+    background:linear-gradient(135deg, rgba(245,208,96,.08) 0%, rgba(240,192,64,.04) 100%);
+    border:1.5px solid rgba(245,208,96,.25); border-radius:20px;
+    padding:20px 18px; display:flex; flex-direction:column; align-items:center; gap:14px;
+    animation:fadeUp .4s .3s ease both;
+}
+.coin-titel { font-family:'Cinzel',serif; font-size:13px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; }
+.coin-verdiend-wrap { display:flex; align-items:center; gap:10px; }
+.coin-icon { font-size:32px; animation:coinBounce .6s .5s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes coinBounce { from{opacity:0;transform:scale(0) rotate(-20deg)} to{opacity:1;transform:scale(1) rotate(0deg)} }
+.coin-aantal { font-size:38px; font-weight:900; color:var(--coin); font-family:'Cinzel',serif; }
+.coin-sub { font-size:12px; color:rgba(255,255,255,.35); }
+.coin-breakdown { width:100%; display:flex; flex-direction:column; gap:6px; }
+.coin-rij { display:flex; justify-content:space-between; align-items:center; font-size:13px; }
+.coin-rij-label { color:rgba(255,255,255,.5); }
+.coin-rij-val { font-weight:900; color:var(--coin); }
+.no-acc-banner { width:100%; background:rgba(155,114,207,.08); border:1.5px solid rgba(155,114,207,.25); border-radius:14px; padding:14px 16px; text-align:center; }
+.no-acc-tekst { font-size:13px; color:rgba(255,255,255,.5); margin-bottom:10px; line-height:1.5; }
+.acc-actie-btns { display:flex; gap:10px; justify-content:center; }
+.btn-acc-maak { padding:11px 20px; border-radius:10px; border:1.5px solid rgba(155,114,207,.5); background:rgba(155,114,207,.2); color:#c4a7f0; font-family:'Lato',sans-serif; font-size:14px; font-weight:700; cursor:pointer; -webkit-appearance:none; transition:background .15s, transform .1s; }
+.btn-acc-naar { padding:11px 20px; border-radius:10px; border:1.5px solid rgba(240,192,64,.4); background:rgba(240,192,64,.12); color:var(--gold); font-family:'Lato',sans-serif; font-size:14px; font-weight:700; cursor:pointer; -webkit-appearance:none; transition:background .15s, transform .1s; }
+.btn-acc-maak:active,.btn-acc-naar:active { transform:scale(.96); }
+
+/* ══ RAD DRAAIEN ══ */
+.rad-sectie { width:100%; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.rad-sub { font-size:13px; color:rgba(255,255,255,.4); text-align:center; }
+.rad-container { position:relative; width:240px; height:240px; }
+#spinCanvas { width:240px; height:240px; border-radius:50%; display:block; }
+.rad-pijl { position:absolute; top:-14px; left:50%; transform:translateX(-50%); font-size:28px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.6)); z-index:2; }
+.rad-naald-line { position:absolute; top:0; left:50%; width:3px; height:30px; background:white; border-radius:3px; transform:translateX(-50%); z-index:3; box-shadow:0 0 8px rgba(255,255,255,.5); }
+.spin-btn { padding:14px 36px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#2a1800; font-family:'Cinzel',serif; font-size:16px; font-weight:900; cursor:pointer; letter-spacing:1px; transition:transform .15s, box-shadow .15s; box-shadow:0 4px 20px rgba(240,192,64,.35); }
+.spin-btn:active { transform:scale(.96); }
+.spin-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.rad-gewonnen { display:none; flex-direction:column; align-items:center; gap:8px; padding:16px; background:rgba(245,208,96,.1); border:1.5px solid rgba(245,208,96,.3); border-radius:14px; width:100%; text-align:center; }
+.rad-gew-icon { font-size:40px; animation:popIn .4s ease both; }
+.rad-gew-titel { font-family:'Cinzel',serif; font-size:16px; color:var(--coin); letter-spacing:1px; }
+.rad-gew-sub { font-size:13px; color:rgba(255,255,255,.4); }
+
+/* ══ ACCOUNT AANMAKEN OVERLAY ══ */
+#accMaakOverlay { display:none; position:fixed; inset:0; z-index:20000; background:rgba(0,0,0,.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:20px; }
+#accMaakOverlay.open { display:flex; }
+.acc-maak-kaart { background:var(--dark2); border:1.5px solid rgba(155,114,207,.3); border-radius:28px; padding:32px 28px; width:100%; max-width:360px; display:flex; flex-direction:column; gap:18px; }
+.acc-maak-header { text-align:center; }
+.acc-maak-titel { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:white; letter-spacing:2px; display:block; margin-bottom:4px; }
+.acc-maak-sub { font-size:13px; color:rgba(255,255,255,.35); }
+.acc-naam-badge { background:rgba(155,114,207,.1); border:1px solid rgba(155,114,207,.2); border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:10px; }
+.acc-naam-badge span:first-child { color:rgba(255,255,255,.4); font-size:13px; }
+.acc-naam-val { font-weight:900; font-size:16px; color:white; }
+.acc-naam-lock { font-size:14px; margin-left:auto; color:rgba(255,255,255,.2); }
+.acc-veld-label { font-size:12px; font-weight:700; letter-spacing:.5px; color:rgba(255,255,255,.4); text-transform:uppercase; margin-bottom:5px; display:block; }
+.acc-input { width:100%; padding:14px 16px; font-size:16px; font-family:'Lato',sans-serif; border-radius:12px; border:1.5px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:white; outline:none; -webkit-appearance:none; transition:border-color .2s; }
+.acc-input:focus { border-color:rgba(155,114,207,.6); }
+.acc-input.fout { border-color:rgba(224,85,85,.7); }
+.acc-fout-tekst { font-size:12px; color:var(--red); margin-top:-12px; display:none; }
+.acc-fout-tekst.zichtbaar { display:block; }
+.acc-maak-btn { width:100%; padding:15px; border-radius:14px; border:none; background:linear-gradient(135deg,#9b72cf,#6b4eaf); color:white; font-family:'Cinzel',serif; font-size:16px; font-weight:900; cursor:pointer; letter-spacing:1px; transition:transform .15s, box-shadow .15s; box-shadow:0 4px 20px rgba(155,114,207,.3); }
+.acc-maak-btn:active { transform:scale(.97); }
+.acc-annuleer { text-align:center; color:rgba(255,255,255,.3); font-size:13px; cursor:pointer; padding:4px; }
+.acc-annuleer:hover { color:rgba(255,255,255,.6); }
+
+/* ══ ACCOUNT SCHERM ══ */
+#accScherm { display:none; position:fixed; inset:0; z-index:15000; background:var(--dark); flex-direction:column; overflow:hidden; }
+#accScherm.open { display:flex; }
+
+/* Sidebar nav */
+.acc-layout { display:flex; height:100%; }
+.acc-sidebar { width:72px; background:rgba(255,255,255,.03); border-right:1px solid rgba(255,255,255,.07); display:flex; flex-direction:column; align-items:center; padding:20px 0 30px; gap:8px; flex-shrink:0; }
+.acc-nav-btn { width:52px; height:52px; border-radius:14px; border:none; background:transparent; color:rgba(255,255,255,.35); font-size:22px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:background .15s, color .15s; -webkit-appearance:none; position:relative; }
+.acc-nav-btn .nav-lbl { font-size:8px; font-weight:700; letter-spacing:.3px; font-family:'Lato',sans-serif; }
+.acc-nav-btn.actief { background:rgba(240,192,64,.12); color:var(--gold); }
+.acc-nav-btn:active { transform:scale(.93); }
+.acc-nav-spacer { flex:1; }
+.acc-nav-terug { color:rgba(255,255,255,.3); font-size:18px; }
+
+/* Main content */
+.acc-main { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:24px 18px 40px; }
+
+/* Account tab */
+.acc-profiel-kaart { background:rgba(255,255,255,.04); border:1.5px solid rgba(155,114,207,.2); border-radius:22px; padding:24px 20px; display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:18px; position:relative; overflow:hidden; }
+.acc-profiel-kaart::before { content:''; position:absolute; top:-40px; left:-40px; width:180px; height:180px; background:radial-gradient(circle, rgba(155,114,207,.15) 0%, transparent 70%); pointer-events:none; }
+.acc-profiel-avatar { width:80px; height:80px; border-radius:18px; background:rgba(255,255,255,.07); border:2px solid rgba(155,114,207,.3); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; z-index:1; }
+.acc-profiel-avatar img { width:100%; height:100%; object-fit:contain; }
+.acc-profiel-naam { font-family:'Cinzel',serif; font-size:20px; font-weight:900; color:white; position:relative; z-index:1; }
+.acc-profiel-badge { background:rgba(155,114,207,.2); border:1px solid rgba(155,114,207,.3); border-radius:30px; padding:5px 14px; font-size:11px; font-weight:700; color:#c4a7f0; letter-spacing:1px; position:relative; z-index:1; }
+
+.acc-stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.acc-stat-kaart { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:4px; }
+.acc-stat-ico { font-size:20px; }
+.acc-stat-val { font-size:22px; font-weight:900; color:var(--coin); font-family:'Cinzel',serif; }
+.acc-stat-lbl { font-size:11px; color:rgba(255,255,255,.35); font-weight:700; }
+
+.acc-sectie-titel { font-family:'Cinzel',serif; font-size:12px; letter-spacing:2px; color:rgba(255,255,255,.35); text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.acc-sectie-titel::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.07); }
+.acc-personage-bezit { display:grid; grid-template-columns:repeat(auto-fill, minmax(80px,1fr)); gap:8px; margin-bottom:20px; }
+.bezit-kaart { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:8px 6px; text-align:center; position:relative; }
+.bezit-kaart img { width:100%; height:65px; object-fit:contain; }
+.bezit-kaart p { font-size:9px; color:rgba(255,255,255,.5); font-weight:700; margin:3px 0 0; }
+.bezit-aantal { position:absolute; top:4px; right:4px; background:rgba(155,114,207,.8); color:white; font-size:9px; font-weight:900; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.bezit-kaart.verkoop-mode { cursor:pointer; border-color:rgba(224,85,85,.3); }
+.bezit-kaart.verkoop-mode:active { transform:scale(.95); }
+
+/* Packs tab */
+.pack-grid { display:flex; flex-direction:column; gap:12px; }
+.pack-kaart { background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.08); border-radius:18px; padding:16px; display:flex; gap:14px; align-items:center; position:relative; overflow:hidden; cursor:pointer; transition:border-color .2s, background .2s; }
+.pack-kaart:active { transform:scale(.98); }
+.pack-kaart::before { content:''; position:absolute; inset:0; opacity:0; transition:opacity .2s; }
+.pack-kaart.jokie::before { background:linear-gradient(135deg,rgba(240,192,64,.1),transparent); }
+.pack-kaart.sprookjesboom::before { background:linear-gradient(135deg,rgba(76,175,130,.1),transparent); }
+.pack-kaart.symbolica::before { background:linear-gradient(135deg,rgba(155,114,207,.1),transparent); }
+.pack-kaart.raveleijn::before { background:linear-gradient(135deg,rgba(91,156,246,.1),transparent); }
+.pack-kaart:hover::before { opacity:1; }
+.pack-ico { font-size:38px; flex-shrink:0; }
+.pack-info { flex:1; }
+.pack-naam { font-family:'Cinzel',serif; font-size:15px; font-weight:900; color:white; margin-bottom:3px; }
+.pack-beschr { font-size:12px; color:rgba(255,255,255,.4); line-height:1.5; margin-bottom:8px; }
+.pack-prijs { display:flex; align-items:center; gap:5px; font-size:14px; font-weight:900; color:var(--coin); }
+.pack-prijs-ico { font-size:14px; }
+.pack-kans-rij { display:flex; gap:6px; flex-wrap:wrap; }
+.kans-pill { font-size:9px; font-weight:700; letter-spacing:.3px; padding:3px 7px; border-radius:20px; border:1px solid; }
+.kans-hoog { background:rgba(76,175,130,.1); border-color:rgba(76,175,130,.3); color:#7de8b4; }
+.kans-midden { background:rgba(240,192,64,.1); border-color:rgba(240,192,64,.3); color:var(--gold); }
+.kans-laag { background:rgba(224,85,85,.1); border-color:rgba(224,85,85,.3); color:#f0a3a3; }
+
+/* Verkopen tab */
+.verkoop-instructie { background:rgba(224,85,85,.07); border:1px solid rgba(224,85,85,.2); border-radius:14px; padding:14px 16px; font-size:13px; color:rgba(255,255,255,.5); line-height:1.6; margin-bottom:16px; }
+.verkoop-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:10px; }
+.verkoop-kaart { background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.08); border-radius:14px; padding:10px 8px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s, transform .15s; position:relative; }
+.verkoop-kaart:active { transform:scale(.95); }
+.verkoop-kaart.sel { border-color:rgba(224,85,85,.5); background:rgba(224,85,85,.08); }
+.verkoop-kaart img { width:100%; height:70px; object-fit:contain; }
+.verkoop-kaart p { font-size:10px; color:rgba(255,255,255,.6); font-weight:700; margin:4px 0 0; }
+.verkoop-cnt { position:absolute; top:5px; right:5px; background:rgba(155,114,207,.8); color:white; font-size:9px; font-weight:900; width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.verkoop-panel { margin-top:16px; background:rgba(255,255,255,.04); border:1.5px solid rgba(224,85,85,.2); border-radius:16px; padding:18px; display:none; flex-direction:column; gap:12px; }
+.verkoop-panel.open { display:flex; }
+.vp-naam { font-weight:900; font-size:16px; }
+.vp-bezit { font-size:13px; color:rgba(255,255,255,.4); }
+.vp-hoeveelheid { display:flex; align-items:center; gap:12px; justify-content:center; }
+.vp-min,.vp-plus { width:36px; height:36px; border-radius:10px; border:1.5px solid rgba(255,255,255,.15); background:rgba(255,255,255,.07); color:white; font-size:20px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-appearance:none; transition:background .15s; }
+.vp-min:active,.vp-plus:active { background:rgba(255,255,255,.18); }
+.vp-num { font-size:26px; font-weight:900; font-family:'Cinzel',serif; color:white; min-width:40px; text-align:center; }
+.vp-opbrengst { text-align:center; font-size:14px; color:rgba(255,255,255,.4); }
+.vp-opbrengst strong { color:var(--coin); }
+.vp-bevestig { width:100%; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,#e05555,#b83030); color:white; font-family:'Cinzel',serif; font-size:15px; font-weight:900; cursor:pointer; transition:transform .15s, box-shadow .15s; box-shadow:0 4px 16px rgba(224,85,85,.3); }
+.vp-bevestig:active { transform:scale(.97); }
+
+/* ══ BEVESTIG POPUP ══ */
+.modal-overlay { display:none; position:fixed; inset:0; z-index:25000; background:rgba(0,0,0,.85); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal-kaart { background:var(--dark2); border:1.5px solid rgba(255,255,255,.1); border-radius:22px; padding:28px 24px; width:100%; max-width:320px; display:flex; flex-direction:column; gap:14px; text-align:center; }
+.modal-ico { font-size:44px; }
+.modal-titel { font-family:'Cinzel',serif; font-size:18px; font-weight:900; color:white; }
+.modal-tekst { font-size:14px; color:rgba(255,255,255,.4); line-height:1.6; }
+.modal-btns { display:flex; gap:10px; }
+.modal-ja { flex:1; padding:14px; border-radius:12px; border:none; font-family:'Lato',sans-serif; font-size:15px; font-weight:900; cursor:pointer; transition:transform .15s; }
+.modal-nee { flex:1; padding:14px; border-radius:12px; border:1.5px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(255,255,255,.6); font-family:'Lato',sans-serif; font-size:15px; font-weight:700; cursor:pointer; -webkit-appearance:none; }
+.modal-ja:active,.modal-nee:active { transform:scale(.96); }
+
+/* Pack open animatie */
+.pack-open-overlay { display:none; position:fixed; inset:0; z-index:30000; background:rgba(0,0,0,.92); align-items:center; justify-content:center; flex-direction:column; gap:20px; }
+.pack-open-overlay.open { display:flex; }
+.pack-open-kaart { background:var(--dark2); border:2px solid; border-radius:28px; padding:36px 28px; width:calc(100% - 40px); max-width:320px; display:flex; flex-direction:column; align-items:center; gap:16px; animation:packReveal .6s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes packReveal { from{opacity:0;transform:scale(.7) rotate(-3deg)} to{opacity:1;transform:scale(1) rotate(0deg)} }
+.pack-open-img { width:140px; height:140px; object-fit:contain; }
+.pack-open-naam { font-family:'Cinzel',serif; font-size:22px; font-weight:900; color:white; text-align:center; }
+.pack-open-kans { font-size:13px; color:rgba(255,255,255,.35); }
+.pack-open-is-nieuw { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#2a1800; font-family:'Cinzel',serif; font-size:12px; font-weight:900; letter-spacing:1.5px; padding:6px 18px; border-radius:20px; }
+.pack-open-sluiten { padding:14px 32px; border-radius:14px; border:1.5px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:white; font-family:'Lato',sans-serif; font-size:15px; font-weight:700; cursor:pointer; -webkit-appearance:none; }
+
 @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════ LOBBY ═══════════════════ -->
+<!-- ═══════════════════════════ LOBBY ═══════════════════════════ -->
 <div id="lobbyPage">
     <div id="lobbyBg"></div>
-
     <div id="lobbyContent">
-        <div id="lobbyHeader">
-            <div class="lb-logo">Efteling <span>Quiz</span></div>
-        </div>
-
+        <div id="lobbyHeader"><div class="lb-logo">Efteling <span>Quiz</span></div></div>
         <div id="welkomKaart">
             <div id="avatarRing">
                 <img id="chosenImage" alt="Personage">
@@ -335,30 +343,23 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
             </div>
             <div id="welkomNaam"></div>
             <div id="welkomPersonage">Nog geen personage gekozen</div>
-            <button id="kiesPersonageBtn" type="button">
-                <span>🎭</span> Kies personage
-            </button>
+            <button id="kiesPersonageBtn" type="button"><span>🎭</span> Kies personage</button>
         </div>
-
-        <div id="statusPill">
-            <div class="s-dot"></div>
-            <span>Wacht op de host...</span>
-        </div>
+        <div id="statusPill"><div class="s-dot"></div><span>Wacht op de host...</span></div>
     </div>
-
     <button id="helpBtn" type="button">🙋 Hulp</button>
 </div>
 
-<!-- ═══════════════════ GALLERY ═══════════════════ -->
+<!-- ═══════════════════════════ GALLERY ═══════════════════════════ -->
 <div id="galleryOverlay">
     <div id="galleryHeader">
         <div class="g-titel">Kies jouw personage</div>
         <button id="closeGallery" type="button">✕</button>
     </div>
-    <div id="galleryGrid"></div>
+    <div id="galleryBody"></div>
 </div>
 
-<!-- ═══════════════════ HELP ═══════════════════ -->
+<!-- ═══════════════════════════ HELP ═══════════════════════════ -->
 <div id="helpOverlay">
     <div id="helpOverlayInner">
         <div style="font-size:48px">🙋</div>
@@ -367,10 +368,8 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
     </div>
 </div>
 
-<!-- ═══════════════════ QUIZ OVERLAY ═══════════════════ -->
+<!-- ═══════════════════════════ QUIZ OVERLAY ═══════════════════════════ -->
 <div id="quizOverlay">
-
-    <!-- WACHT -->
     <div id="qWacht">
         <div class="q-logo">Efteling Quiz</div>
         <div class="q-naam" id="qWachtNaam">—</div>
@@ -378,7 +377,6 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
         <div class="dot-rij"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
     </div>
 
-    <!-- VRAAG -->
     <div id="qVraag">
         <div class="q-header">
             <span class="q-nr-badge" id="qNrBadge">Vraag 1 / 1</span>
@@ -395,7 +393,6 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
         <div class="q-klaar" id="qKlaar">✓ &nbsp;Antwoord verzonden — wacht op resultaten</div>
     </div>
 
-    <!-- RESULTATEN -->
     <div id="qResultaten">
         <div class="res-icon" id="resIcon">🎯</div>
         <div class="res-label">Jouw resultaat</div>
@@ -404,42 +401,222 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
         <div class="res-antw-lijst" id="resAntwLijst"></div>
     </div>
 
-    <!-- TUSSENSTAND -->
     <div id="qTussenstand">
         <div class="ts-titel">📊 Tussenstand</div>
         <div id="tsLijst"></div>
     </div>
 
-    <!-- EINDPODIUM -->
     <div id="qEindpodium">
         <div class="ep-titel">🏆 Eindstand</div>
         <div class="ep-subtitel">Gefeliciteerd aan iedereen!</div>
         <div class="ep-podium-wrap" id="epPodium"></div>
         <div class="ep-rest" id="epRest"></div>
-    </div>
 
+        <!-- MUNTJES SECTIE -->
+        <div class="coin-sectie" id="coinSectie">
+            <div class="coin-titel">🪙 Verdiende muntjes</div>
+            <div class="coin-verdiend-wrap">
+                <div class="coin-icon">🪙</div>
+                <div class="coin-aantal" id="coinAantal">0</div>
+            </div>
+            <div class="coin-sub">gebaseerd op jouw prestatie</div>
+            <div class="coin-breakdown" id="coinBreakdown"></div>
+
+            <!-- RAD SECTIE -->
+            <div class="rad-sectie" id="radSectie">
+                <div style="height:1px;width:100%;background:rgba(255,255,255,.07);"></div>
+                <div class="coin-titel" style="margin-top:4px">🎡 Draai het rad!</div>
+                <div class="rad-sub">Win extra muntjes</div>
+                <div class="rad-container">
+                    <div class="rad-pijl">▼</div>
+                    <canvas id="spinCanvas" width="240" height="240"></canvas>
+                </div>
+                <button class="spin-btn" id="spinBtn" type="button">DRAAIEN!</button>
+                <div class="rad-gewonnen" id="radGewonnen">
+                    <div class="rad-gew-icon">🎉</div>
+                    <div class="rad-gew-titel" id="radGewTitel">+50 muntjes!</div>
+                    <div class="rad-gew-sub" id="radGewSub">Geweldig! Je saldo is bijgewerkt.</div>
+                </div>
+            </div>
+
+            <!-- GEEN ACCOUNT -->
+            <div class="no-acc-banner" id="noAccBanner">
+                <div class="no-acc-tekst">Maak een account aan om je muntjes op te slaan en personages te kopen!</div>
+                <div class="acc-actie-btns">
+                    <button class="btn-acc-maak" type="button" onclick="openAccMaak()">✨ Account aanmaken</button>
+                    <button class="btn-acc-naar" type="button" onclick="openAccScherm()">👤 Mijn account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════ ACCOUNT AANMAKEN ═══════════════════════════ -->
+<div id="accMaakOverlay">
+    <div class="acc-maak-kaart">
+        <div class="acc-maak-header">
+            <span class="acc-maak-titel">Account aanmaken</span>
+            <span class="acc-maak-sub">Sla je muntjes en personages op</span>
+        </div>
+        <div class="acc-naam-badge">
+            <span>Naam</span>
+            <span class="acc-naam-val" id="accMaakNaamVal">—</span>
+            <span class="acc-naam-lock">🔒</span>
+        </div>
+        <div>
+            <label class="acc-veld-label">Wachtwoord</label>
+            <input class="acc-input" id="accWw1" type="password" placeholder="Kies een wachtwoord" autocomplete="new-password">
+        </div>
+        <div>
+            <label class="acc-veld-label">Wachtwoord herhalen</label>
+            <input class="acc-input" id="accWw2" type="password" placeholder="Herhaal je wachtwoord" autocomplete="new-password">
+            <div class="acc-fout-tekst" id="accFoutTekst">Wachtwoorden komen niet overeen!</div>
+        </div>
+        <button class="acc-maak-btn" type="button" onclick="accMaakAanmaken()">Account aanmaken ✨</button>
+        <div class="acc-annuleer" onclick="closeAccMaak()">Annuleer</div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════ ACCOUNT SCHERM ═══════════════════════════ -->
+<div id="accScherm">
+    <div class="acc-layout">
+        <!-- Sidebar -->
+        <div class="acc-sidebar">
+            <button class="acc-nav-btn actief" data-tab="account" onclick="accTab('account')" type="button">
+                <span>👤</span>
+                <span class="nav-lbl">Account</span>
+            </button>
+            <button class="acc-nav-btn" data-tab="packs" onclick="accTab('packs')" type="button">
+                <span>📦</span>
+                <span class="nav-lbl">Packs</span>
+            </button>
+            <button class="acc-nav-btn" data-tab="verkopen" onclick="accTab('verkopen')" type="button">
+                <span>💰</span>
+                <span class="nav-lbl">Verkopen</span>
+            </button>
+            <div class="acc-nav-spacer"></div>
+            <button class="acc-nav-btn acc-nav-terug" onclick="closeAccScherm()" type="button">
+                <span>←</span>
+                <span class="nav-lbl">Terug</span>
+            </button>
+        </div>
+
+        <!-- Hoofd content -->
+        <div class="acc-main" id="accMain">
+            <!-- ACCOUNT TAB -->
+            <div id="tabAccount">
+                <div class="acc-profiel-kaart">
+                    <div class="acc-profiel-avatar" id="accProfielAvatar">
+                        <span style="font-size:36px">👤</span>
+                    </div>
+                    <div class="acc-profiel-naam" id="accProfielNaam">—</div>
+                    <div class="acc-profiel-badge">Efteling Quiz Speler</div>
+                </div>
+
+                <div class="acc-stats-grid">
+                    <div class="acc-stat-kaart">
+                        <div class="acc-stat-ico">🪙</div>
+                        <div class="acc-stat-val" id="accSaldoVal">0</div>
+                        <div class="acc-stat-lbl">Muntjes saldo</div>
+                    </div>
+                    <div class="acc-stat-kaart">
+                        <div class="acc-stat-ico">🎭</div>
+                        <div class="acc-stat-val" id="accPersonagesVal">0</div>
+                        <div class="acc-stat-lbl">Personages</div>
+                    </div>
+                    <div class="acc-stat-kaart">
+                        <div class="acc-stat-ico">🏆</div>
+                        <div class="acc-stat-val" id="accQuizzesVal">0</div>
+                        <div class="acc-stat-lbl">Quizzen gespeeld</div>
+                    </div>
+                    <div class="acc-stat-kaart">
+                        <div class="acc-stat-ico">📦</div>
+                        <div class="acc-stat-val" id="accPacksVal">0</div>
+                        <div class="acc-stat-lbl">Packs geopend</div>
+                    </div>
+                </div>
+
+                <div class="acc-sectie-titel">Mijn personages</div>
+                <div class="acc-personage-bezit" id="accPersonageBezit"></div>
+            </div>
+
+            <!-- PACKS TAB -->
+            <div id="tabPacks" style="display:none">
+                <div style="margin-bottom:14px">
+                    <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:900;color:white;margin-bottom:4px">Personage Packs</div>
+                    <div style="font-size:13px;color:rgba(255,255,255,.35);line-height:1.5">Open packs om personages te ontgrendelen. De eerste van elke categorie is altijd gratis!</div>
+                </div>
+                <div class="pack-grid" id="packGrid"></div>
+            </div>
+
+            <!-- VERKOPEN TAB -->
+            <div id="tabVerkopen" style="display:none">
+                <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:900;color:white;margin-bottom:12px">Personages verkopen</div>
+                <div class="verkoop-instructie">
+                    💡 Heb je dubbele personages? Verkoop ze voor muntjes! Tik op een personage om te verkopen. Je kunt alleen personages verkopen die je meer dan één keer hebt.
+                </div>
+                <div class="verkoop-grid" id="verkoopGrid"></div>
+                <div class="verkoop-panel" id="verkoopPanel">
+                    <div class="vp-naam" id="vpNaam">—</div>
+                    <div class="vp-bezit" id="vpBezit">Je hebt er 0</div>
+                    <div class="vp-hoeveelheid">
+                        <button class="vp-min" type="button" onclick="verkoopMin()">−</button>
+                        <div class="vp-num" id="vpNum">1</div>
+                        <button class="vp-plus" type="button" onclick="verkoopPlus()">+</button>
+                    </div>
+                    <div class="vp-opbrengst" id="vpOpbrengst">Opbrengst: <strong>0 🪙</strong></div>
+                    <button class="vp-bevestig" type="button" onclick="verkoopBevestigen()">Verkopen →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════ BEVESTIG MODALS ═══════════════════════════ -->
+<div class="modal-overlay" id="verkoopModal">
+    <div class="modal-kaart">
+        <div class="modal-ico">💰</div>
+        <div class="modal-titel" id="verkoopModalTitel">Verkopen?</div>
+        <div class="modal-tekst" id="verkoopModalTekst">Weet je het zeker?</div>
+        <div class="modal-btns">
+            <button class="modal-nee" type="button" onclick="closeModal('verkoopModal')">Annuleer</button>
+            <button class="modal-ja" type="button" style="background:linear-gradient(135deg,#e05555,#b83030);color:white" onclick="verkoopUitvoeren()">Verkopen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pack open overlay -->
+<div class="pack-open-overlay" id="packOpenOverlay">
+    <div class="pack-open-kaart" id="packOpenKaart">
+        <img class="pack-open-img" id="packOpenImg" src="" alt="">
+        <div class="pack-open-naam" id="packOpenNaam">—</div>
+        <div class="pack-open-kans" id="packOpenKans">—</div>
+        <div class="pack-open-is-nieuw" id="packOpenIsNieuw" style="display:none">✨ NIEUW PERSONAGE!</div>
+    </div>
+    <button class="pack-open-sluiten" type="button" onclick="sluitPackOpen()">Doorgaan →</button>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const socket = io();
 
-/* ── SESSIE ── */
-const name     = localStorage.getItem("playerName");
-const gameId   = localStorage.getItem("gameId");
-let playerId   = localStorage.getItem("playerId");
+/* ══ SESSIE ══ */
+const playerName = localStorage.getItem("playerName");
+const gameId     = localStorage.getItem("gameId");
+let playerId     = localStorage.getItem("playerId");
 if (!playerId) { playerId="pid_"+Math.random().toString(36).slice(2); localStorage.setItem("playerId",playerId); }
 
-if (!name || !gameId) {
+if (!playerName || !gameId) {
     document.body.innerHTML=`<div style="text-align:center;margin-top:100px;color:white;font-family:sans-serif"><h2>❌ Sessie verlopen</h2><p>Scan je QR-code opnieuw!</p></div>`;
 }
 
-document.getElementById("qWachtNaam").textContent = name || "Speler";
-document.getElementById("welkomNaam").textContent  = name || "Speler";
+document.getElementById("qWachtNaam").textContent = playerName || "Speler";
+document.getElementById("welkomNaam").textContent  = playerName || "Speler";
+document.getElementById("accMaakNaamVal").textContent = playerName || "Speler";
 
-/* ── STERREN ── */
+/* ══ STERREN ══ */
 (function(){
-    const bg = document.getElementById("lobbyBg");
+    const bg=document.getElementById("lobbyBg");
     for(let i=0;i<70;i++){
         const el=document.createElement("div"); el.className="lb-star";
         const sz=Math.random()*2.2+0.4;
@@ -448,62 +625,158 @@ document.getElementById("welkomNaam").textContent  = name || "Speler";
     }
 })();
 
-/* ── CHARACTERS ── */
-const characters = [
-    {name:"Jokie",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png?h=610&w=700&la=nl&hash=AFCC6A2C7EE087EFB6405C06EA6976E9"},
-    {name:"Jet",         img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png?h=610&w=700&la=nl&hash=6C38B23FC7863C21989C5B2F8B960EE4"},
-    {name:"Assepoester", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png?h=610&w=700&la=nl&hash=E80F316CB0556920A36FF6E03019FE08"},
-    {name:"Roodkapje",   img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png?h=610&w=700&la=nl&hash=E6DB5FE9B79F4E7CF1B0679CC495F644"},
-    {name:"Klein Duimpje",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png?h=610&w=700&la=nl&hash=605528BD2E96980C7466246FFC39F7DC"},
-    {name:"Langnek",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png?h=610&w=700&la=nl&hash=2C9696EF6D052C75BBA3C3AFC72BB74B"},
-    {name:"Reus",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png?h=610&w=700&la=nl&hash=F4CAB56BCBC33C27843AB55A0E53DAC2"},
-    {name:"Heks",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png?h=610&w=700&la=nl&hash=64DA81E70F0BAF09720459D3F73E9398"},
-    {name:"Fakir",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png?h=610&w=700&la=nl&hash=707B192A68621B3A0CD2F6179027273E"},
-    {name:"Ezel",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png?h=610&w=700&la=nl&hash=AF48F22F5AC314A1514276E6F7E9BAE2"},
-    {name:"Draak",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png?h=610&w=700&la=nl&hash=CD831613A6F3E00942F643094ECD9E8D"},
-    {name:"Sprookjesboom",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png?h=610&w=700&la=nl&hash=DDC267CCCB0BC5478DC242A4D5ADC328"},
-    {name:"Geitje Benjamin",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-zeven-geitjes-profiel.png?h=610&w=700&la=nl&hash=6613F5C3124D8785544D949571CC0CE7"},
-    {name:"Wolf",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-wolf-profiel.png?h=610&w=700&la=nl&hash=AEDB0449881BD1A2F20C4FCF7FE3E911"},
-    {name:"Kabauter Ko", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ko-profiel.png?h=610&w=700&la=nl&hash=24B9DEA2B0A6EC6C4D02599DCC73B668"},
-    {name:"Kabauter Kie",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kie-profiel.png?h=610&w=700&la=nl&hash=DCAB72456FE3B4FB7EBACC80D93C7F25"},
-    {name:"Kabauter Kei",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-kei-profiel.png?h=610&w=700&la=nl&hash=DE15AD66000C5BED3B066514E8FCD1BB"},
-    {name:"Kabauter Keu",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-keu-profiel.png?h=610&w=700&la=nl&hash=8456F9C2858528F61FB742A25464A2A1"},
-    {name:"Kabauter Ke", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ke-profiel.png?h=610&w=700&la=nl&hash=4C12A6F3C299F58644966A7343A62FEE"},
-    {name:"Kabauter Ka", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ka-profiel.png?h=610&w=700&la=nl&hash=52D9C378305DCAC05D1D91A89EE063DA"},
-    {name:"Kabauter Ku", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ku-profiel.png?h=610&w=700&la=nl&hash=73E42920753E92161AF38A15B8B75B71"},
-    {name:"Pardoes",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png?h=610&w=700&la=nl&hash=C339EA90B2286A73F14302CDE21A47B9"},
-    {name:"Pardijn",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png?h=610&w=700&la=nl&hash=55281D2A35AFDB33029A7776A4A6913C"},
-    {name:"Koning Pardulfus",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardulfus-profiel.png?h=610&w=700&la=nl&hash=A7DD888D1072C92415BA7C4ED4CA2B35"},
-    {name:"Polle",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-polle-profiel.png?h=610&w=700&la=nl&hash=84F17C16E9769B7C39F6EDCE68689498"},
-    {name:"Grootmagister Almar",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x6100-almar-profiel.png?h=610&w=700&la=nl&hash=728E0176BA4AB700145C67A7F4056280"},
-    {name:"Aliciana",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-aliciana-profiel.png?h=610&w=700&la=nl&hash=2E3CACF7E536CCDDC9E6D85E7946E42D"},
-    {name:"Pantagor",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pantagor-profiel.png?h=610&w=700&la=nl&hash=38B351FDD14B2EB400E07DC83ADCF22C"},
-    {name:"Rattar",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-rattar-profiel.png?h=610&w=700&la=nl&hash=5DF5CC3C7EDCB42CF906C605AC8E51F5"},
-    {name:"O.J. Punctuel",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-profiel-punctuel.png?h=610&w=700&la=nl&hash=D044F1C39109C86EF5734933C819E88E"},
-    {name:"Ruiter Thomas",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-thomas-profiel.png?h=610&w=700&la=nl&hash=62598971003A7BF48570E5CC251509D0"},
-    {name:"Ruiter Joost", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-joost-profiel.png?h=610&w=700&la=nl&hash=A71ACD69E8C317C5F5DB1BFD903BE703"},
-    {name:"Ruiter Maurits",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-maurits-profiel.png?h=610&w=700&la=nl&hash=2F68DD5B263DF8FDB7C606C542497101"},
-    {name:"Ruiter Emma",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-emma-profiel.png?h=610&w=700&la=nl&hash=3B00DDFC724794FFDF6AFE37B05D3EB2"},
-    {name:"Ruiter Lisa",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-lisa-profiel.png?h=610&w=700&la=nl&hash=D3C15A46A3336B907FB372F6A8661921"},
-    {name:"Samira",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samira-profiel.png?h=610&w=700&la=nl&hash=4F3135F07F99D88234D2F6F406CC1E1A"},
-    {name:"Samuël",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samuel-profiel.png?h=610&w=700&la=nl&hash=D3DBFA2199BBCF5A09C84185CE7B6008"},
-    {name:"Graaf Olaf Grafhart",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-graaf-olaf-grafhart-profiel.png?h=610&w=700&la=nl&hash=C487A5B11E3AA74CB8385A55020B00BC"}
+/* ══ CHARACTERS ══ */
+const categorieën = [
+    {
+        naam: "Jokie",
+        kleur: "#f0c040",
+        personages: [
+            {name:"Jet",         img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x670-jet-profiel-large.png", gratis:true},
+            {name:"Jokie",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/jokie/profielen/700x610-jokie-profiel-large.png"},
+        ]
+    },
+    {
+        naam: "Sprookjesboom",
+        kleur: "#4caf82",
+        personages: [
+            {name:"Assepoester", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-assepoester-profiel.png", gratis:true},
+            {name:"Roodkapje",   img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-roodkapje-profiel.png"},
+            {name:"Klein Duimpje",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-klein-duimpje-profiel.png"},
+            {name:"Langnek",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-langnek-profiel.png"},
+            {name:"Reus",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-reus-profiel.png"},
+            {name:"Heks",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-heks-profiel.png"},
+            {name:"Fakir",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-fakir-profiel.png"},
+            {name:"Ezel",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-ezel-profiel.png"},
+            {name:"Draak",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-draak-profiel.png"},
+            {name:"Sprookjesboom",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-sprookjesboom-profiel.png"},
+            {name:"Geitje Benjamin",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-zeven-geitjes-profiel.png"},
+            {name:"Wolf",        img:"https://www.efteling.com/nl/-/media/images/kids/karakters/sprookjesboom/profielen/700x610-wolf-profiel.png"},
+        ]
+    },
+    {
+        naam: "Symbolica",
+        kleur: "#9b72cf",
+        personages: [
+            {name:"Pardoes",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardoes-profiel.png", gratis:true},
+            {name:"Pardijn",     img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardijn-profiel.png"},
+            {name:"Koning Pardulfus",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pardulfus-profiel.png"},
+            {name:"Polle",       img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-polle-profiel.png"},
+            {name:"Grootmagister Almar",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x6100-almar-profiel.png"},
+            {name:"Aliciana",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-aliciana-profiel.png"},
+            {name:"Pantagor",    img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-pantagor-profiel.png"},
+            {name:"Rattar",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-rattar-profiel.png"},
+            {name:"O.J. Punctuel",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/pardoes/profielen/700x610-profiel-punctuel.png"},
+        ]
+    },
+    {
+        naam: "Raveleijn",
+        kleur: "#5b9cf6",
+        personages: [
+            {name:"Ruiter Joost", img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-joost-profiel.png", gratis:true},
+            {name:"Ruiter Thomas",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-thomas-profiel.png"},
+            {name:"Ruiter Maurits",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-maurits-profiel.png"},
+            {name:"Ruiter Lisa",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-lisa-profiel.png"},
+            {name:"Samira",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samira-profiel.png"},
+            {name:"Samuël",      img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-samuel-profiel.png"},
+            {name:"Ruiter Emma",  img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-emma-profiel.png"},
+            {name:"Graaf Olaf Grafhart",img:"https://www.efteling.com/nl/-/media/images/kids/karakters/raveleijn/profielen/700x610-graaf-olaf-grafhart-profiel.png"},
+        ]
+    }
 ];
-const characterMap = {};
-characters.forEach(c=>{ characterMap[c.name]=c.img; });
 
-/* ── LOBBY: AVATAR TONEN ── */
-function setCharacter(c) {
-    const img = document.getElementById("chosenImage");
-    const ph  = document.getElementById("avatarPlaceholder");
-    img.src = c.img;
-    img.style.display = "block";
-    ph.style.display  = "none";
-    document.getElementById("welkomPersonage").textContent = c.name;
-    document.getElementById("kiesPersonageBtn").innerHTML = `<span>🎭</span> Wijzig personage`;
+// Alle personages flat map
+const allePersonages = [];
+const characterMap = {};
+categorieën.forEach(cat => {
+    cat.personages.forEach(p => {
+        allePersonages.push({...p, categorie:cat.naam});
+        characterMap[p.name] = p.img;
+    });
+});
+
+/* ══ ACCOUNT STATE ══ */
+let account = null;
+function laadAccount() {
+    const opgeslagen = localStorage.getItem("eftelingAccount");
+    if (opgeslagen) { try { account = JSON.parse(opgeslagen); } catch(e){} }
+    return account;
+}
+function slaAccountOp() {
+    if (account) localStorage.setItem("eftelingAccount", JSON.stringify(account));
+}
+function heeftAccount() { return !!laadAccount(); }
+
+// Initieel account ophalen
+laadAccount();
+
+function gratisBezit() {
+    // De eerste personages (gratis) die standaard ontgrendeld zijn
+    return categorieën.map(cat => cat.personages.find(p=>p.gratis)).filter(Boolean).map(p=>p.name);
 }
 
-/* ── GALLERY ── */
+function maakNieuwAccount(naam, ww) {
+    const gratis = gratisBezit();
+    account = {
+        naam,
+        ww: btoa(ww),
+        muntjes: 0,
+        personages: gratis.map(n => ({naam:n, aantal:1})),
+        quizzenGespeeld: 0,
+        packsGeopend: 0,
+        radGedraaid: false,
+    };
+    slaAccountOp();
+}
+
+function getPersonageAantal(naam) {
+    if (!account) return 0;
+    const p = account.personages.find(x=>x.naam===naam);
+    return p ? p.aantal : 0;
+}
+
+function voegPersonageToe(naam) {
+    if (!account) return;
+    const p = account.personages.find(x=>x.naam===naam);
+    if (p) p.aantal++;
+    else account.personages.push({naam, aantal:1});
+    slaAccountOp();
+    updateAccStats();
+}
+
+function verwijderPersonages(naam, aantal) {
+    if (!account) return;
+    const p = account.personages.find(x=>x.naam===naam);
+    if (!p) return;
+    p.aantal = Math.max(0, p.aantal - aantal);
+    if (p.aantal === 0) account.personages = account.personages.filter(x=>x.naam!==naam);
+    slaAccountOp();
+    updateAccStats();
+}
+
+function updateAccStats() {
+    if (!account) return;
+    document.getElementById("accSaldoVal").textContent = account.muntjes.toLocaleString("nl-NL");
+    document.getElementById("accPersonagesVal").textContent = account.personages.reduce((t,p)=>t+p.aantal,0);
+    document.getElementById("accQuizzesVal").textContent = account.quizzenGespeeld;
+    document.getElementById("accPacksVal").textContent = account.packsGeopend;
+    document.getElementById("accProfielNaam").textContent = account.naam;
+    renderAccPersonages();
+    renderVerkoopGrid();
+}
+
+/* ══ AVATAR LOBBY ══ */
+function setCharacter(c) {
+    const img=document.getElementById("chosenImage");
+    const ph=document.getElementById("avatarPlaceholder");
+    img.src=c.img; img.style.display="block"; ph.style.display="none";
+    document.getElementById("welkomPersonage").textContent=c.name;
+    document.getElementById("kiesPersonageBtn").innerHTML=`<span>🎭</span> Wijzig personage`;
+    // Account avatar
+    const av=document.getElementById("accProfielAvatar");
+    if(av) av.innerHTML=`<img src="${c.img}" alt="">`;
+}
+
+/* ══ GALLERY MET CATEGORIEËN ══ */
 function openGallery() {
     document.getElementById("galleryOverlay").classList.add("open");
     loadGallery();
@@ -512,64 +785,111 @@ function closeGallery() {
     document.getElementById("galleryOverlay").classList.remove("open");
 }
 
+function isOntgrendeld(personageNaam) {
+    if (!account) {
+        // Zonder account: alleen gratis
+        return categorieën.some(cat => cat.personages.find(p=>p.name===personageNaam && p.gratis));
+    }
+    return account.personages.some(p=>p.naam===personageNaam && p.aantal>0);
+}
+
 function loadGallery() {
     fetch("/scores-full").then(r=>r.json()).then(data => {
-        const grid = document.getElementById("galleryGrid");
-        grid.innerHTML = "";
-        const taken = (data.players||[]).map(p=>p.character);
-        const mine  = document.getElementById("welkomPersonage").textContent;
-        characters.forEach(c => {
-            const card = document.createElement("div");
-            card.className = "character-card";
-            if (c.name === mine) card.classList.add("selected");
-            card.innerHTML = `<img src="${c.img}" alt="${c.name}"><p>${c.name}</p>`;
-            if (taken.includes(c.name) && c.name !== mine) {
-                card.classList.add("disabled");
-            } else {
-                card.addEventListener("click", () => chooseCharacter(c));
-            }
-            grid.appendChild(card);
+        const body=document.getElementById("galleryBody");
+        body.innerHTML="";
+        const taken=(data.players||[]).map(p=>p.character);
+        const mine=document.getElementById("welkomPersonage").textContent;
+
+        categorieën.forEach(cat => {
+            const sectie=document.createElement("div");
+            sectie.className="gallery-categorie";
+            const header=document.createElement("div");
+            header.className="gallery-cat-header";
+            header.innerHTML=`<div class="gallery-cat-naam">${cat.naam}</div><div class="gallery-cat-lijn"></div>`;
+            sectie.appendChild(header);
+
+            const grid=document.createElement("div");
+            grid.className="gallery-cat-grid";
+
+            cat.personages.forEach(c => {
+                const card=document.createElement("div");
+                card.className="character-card";
+                const ontgrendeld=isOntgrendeld(c.name);
+                if(c.name===mine) card.classList.add("selected");
+
+                if(c.gratis) {
+                    card.innerHTML+=`<span class="gratis-badge">GRATIS</span>`;
+                }
+                card.innerHTML+=`<img src="${c.img}" alt="${c.name}"><p>${c.name}</p>`;
+
+                if(!ontgrendeld) {
+                    card.classList.add("locked");
+                    card.innerHTML+=`<span class="lock-badge">🔒</span>`;
+                } else if(taken.includes(c.name) && c.name!==mine) {
+                    card.classList.add("disabled");
+                } else {
+                    card.addEventListener("click",()=>chooseCharacter(c));
+                }
+                grid.appendChild(card);
+            });
+            sectie.appendChild(grid);
+            body.appendChild(sectie);
+        });
+    }).catch(()=>{
+        // Fallback zonder server
+        const body=document.getElementById("galleryBody");
+        body.innerHTML="";
+        const mine=document.getElementById("welkomPersonage").textContent;
+        categorieën.forEach(cat => {
+            const sectie=document.createElement("div"); sectie.className="gallery-categorie";
+            sectie.innerHTML=`<div class="gallery-cat-header"><div class="gallery-cat-naam">${cat.naam}</div><div class="gallery-cat-lijn"></div></div>`;
+            const grid=document.createElement("div"); grid.className="gallery-cat-grid";
+            cat.personages.forEach(c => {
+                const card=document.createElement("div"); card.className="character-card";
+                const ontgrendeld=isOntgrendeld(c.name);
+                if(c.name===mine) card.classList.add("selected");
+                if(c.gratis) card.innerHTML+=`<span class="gratis-badge">GRATIS</span>`;
+                card.innerHTML+=`<img src="${c.img}" alt="${c.name}"><p>${c.name}</p>`;
+                if(!ontgrendeld) { card.classList.add("locked"); card.innerHTML+=`<span class="lock-badge">🔒</span>`; }
+                else card.addEventListener("click",()=>chooseCharacter(c));
+                grid.appendChild(card);
+            });
+            sectie.appendChild(grid); body.appendChild(sectie);
         });
     });
 }
 
 function chooseCharacter(c) {
-    fetch("/join", { method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({gameId,name,character:c.name,playerId}) })
-    .then(r=>r.json()).then(data => {
-        if (!data.success) { alert(data.error); return; }
-        localStorage.setItem("chosenCharacter", JSON.stringify(c));
-        setCharacter(c);
-        closeGallery();
+    fetch("/join",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({gameId,name:playerName,character:c.name,playerId})})
+    .then(r=>r.json()).then(data=>{
+        if(!data.success){alert(data.error);return;}
+        localStorage.setItem("chosenCharacter",JSON.stringify(c));
+        setCharacter(c); closeGallery();
+    }).catch(()=>{
+        localStorage.setItem("chosenCharacter",JSON.stringify(c));
+        setCharacter(c); closeGallery();
     });
 }
 
-/* ── HELP ── */
-document.getElementById("helpBtn").addEventListener("click", () => {
+/* ══ HELP ══ */
+document.getElementById("helpBtn").addEventListener("click",()=>{
     document.getElementById("helpOverlay").classList.add("open");
-    socket.emit("helpRequest", { name: name||"Niet bekend" });
+    socket.emit("helpRequest",{name:playerName||"Niet bekend"});
 });
-function closeHelp() {
-    document.getElementById("helpOverlay").classList.remove("open");
-}
+function closeHelp() { document.getElementById("helpOverlay").classList.remove("open"); }
+document.getElementById("kiesPersonageBtn").addEventListener("click",openGallery);
+document.getElementById("closeGallery").addEventListener("click",closeGallery);
 
-document.getElementById("kiesPersonageBtn").addEventListener("click", openGallery);
-document.getElementById("closeGallery").addEventListener("click", closeGallery);
-
-/* ── QUIZ OVERLAY ── */
-let timerInterval = null;
-let heeftGeantwoord = false;
-let vorigeScore = 0;
-const overlay = document.getElementById("quizOverlay");
+/* ══ QUIZ OVERLAY ══ */
+let timerInterval=null, heeftGeantwoord=false, vorigeScore=0;
+const overlay=document.getElementById("quizOverlay");
+let aantalGoed=0, totaalVragen=0;
 
 function quizScherm(id) {
-    if (!id) {
-        overlay.classList.remove("active");
-        document.getElementById("lobbyPage").style.display = "flex";
-        return;
-    }
+    if(!id){overlay.classList.remove("active");document.getElementById("lobbyPage").style.display="flex";return;}
     overlay.classList.add("active");
-    document.getElementById("lobbyPage").style.display = "none";
+    document.getElementById("lobbyPage").style.display="none";
     ["qWacht","qVraag","qResultaten","qTussenstand","qEindpodium"].forEach(s=>{
         document.getElementById(s).style.display="none";
     });
@@ -577,47 +897,37 @@ function quizScherm(id) {
     overlay.scrollTop=0;
 }
 
-function toonWacht() { quizScherm("qWacht"); clearInterval(timerInterval); }
+function toonWacht(){quizScherm("qWacht");clearInterval(timerInterval);}
 
-/* ── VRAAG ── */
-function toonVraag(p) {
-    heeftGeantwoord = false;
+function toonVraag(p){
+    heeftGeantwoord=false;
+    totaalVragen=p.totaalVragen||totaalVragen;
     quizScherm("qVraag");
-    document.getElementById("qNrBadge").textContent = "Vraag "+(p.huidigeVraag+1)+" / "+p.totaalVragen;
-    document.getElementById("qTekst").textContent = p.vraag;
-    const grid = document.getElementById("qGrid");
-    grid.innerHTML = "";
-    document.getElementById("qKlaar").style.display = "none";
+    document.getElementById("qNrBadge").textContent="Vraag "+(p.huidigeVraag+1)+" / "+p.totaalVragen;
+    document.getElementById("qTekst").textContent=p.vraag;
+    const grid=document.getElementById("qGrid");
+    grid.innerHTML="";
+    document.getElementById("qKlaar").style.display="none";
 
-    if (p.type === "open") {
-        grid.style.display = "block";
-        grid.innerHTML = `
-            <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
-                <input id="openAntwoordInput" type="text" placeholder="Typ je antwoord..."
-                    autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-                    style="width:100%;padding:16px 18px;font-size:17px;font-family:inherit;
-                           border-radius:12px;border:2px solid rgba(255,255,255,0.2);
-                           background:rgba(255,255,255,0.08);color:white;outline:none;
-                           -webkit-appearance:none;appearance:none;">
-                <button id="openAntwoordBtn" type="button"
-                    style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;
-                           border:1.5px solid rgba(240,192,64,0.4);border-radius:12px;
-                           background:rgba(240,192,64,0.18);color:#f0c040;cursor:pointer;
-                           -webkit-appearance:none;appearance:none;">
-                    Verstuur antwoord →
-                </button>
-            </div>`;
-        const inp = document.getElementById("openAntwoordInput");
-        const btn = document.getElementById("openAntwoordBtn");
-        setTimeout(() => {
-    inp.focus();
-}, 50);
-        inp.addEventListener("focus", ()=>{ inp.style.borderColor="rgba(240,192,64,0.6)"; });
-        inp.addEventListener("blur",  ()=>{ inp.style.borderColor="rgba(255,255,255,0.2)"; });
-        inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();} });
-        btn.addEventListener("click", ()=>stuurOpenAntwoord());
+    if(p.type==="open"){
+        grid.style.display="block";
+        grid.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+            <input id="openAntwoordInput" type="text" placeholder="Typ je antwoord..."
+                autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+                style="width:100%;padding:16px 18px;font-size:17px;font-family:inherit;border-radius:12px;border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;outline:none;-webkit-appearance:none;appearance:none;">
+            <button id="openAntwoordBtn" type="button"
+                style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;border:1.5px solid rgba(240,192,64,0.4);border-radius:12px;background:rgba(240,192,64,0.18);color:#f0c040;cursor:pointer;-webkit-appearance:none;appearance:none;">
+                Verstuur antwoord →
+            </button></div>`;
+        const inp=document.getElementById("openAntwoordInput");
+        const btn=document.getElementById("openAntwoordBtn");
+        setTimeout(()=>inp.focus(),50);
+        inp.addEventListener("focus",()=>{inp.style.borderColor="rgba(240,192,64,0.6)";});
+        inp.addEventListener("blur",()=>{inp.style.borderColor="rgba(255,255,255,0.2)";});
+        inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();}});
+        btn.addEventListener("click",()=>stuurOpenAntwoord());
     } else {
-        grid.style.display = "grid";
+        grid.style.display="grid";
         (p.antwoorden||[]).forEach((a,i)=>{
             const btn=document.createElement("button");
             btn.className="q-btn"; btn.dataset.i=i; btn.textContent=a.tekst;
@@ -625,27 +935,27 @@ function toonVraag(p) {
             grid.appendChild(btn);
         });
     }
-    startTimer(p.tijdlimiet||20, p.vraagStartTijd||Date.now());
+    startTimer(p.tijdlimiet||20,p.vraagStartTijd||Date.now());
 }
 
-function startTimer(limiet, startMs) {
+function startTimer(limiet,startMs){
     clearInterval(timerInterval);
-    const ring=document.getElementById("tRing"), num=document.getElementById("tNum");
+    const ring=document.getElementById("tRing"),num=document.getElementById("tNum");
     const omtrek=2*Math.PI*20;
     function tick(){
         const over=Math.max(0,limiet-(Date.now()-startMs)/1000);
         num.textContent=Math.ceil(over);
         ring.style.strokeDashoffset=omtrek*(1-over/limiet);
         ring.style.stroke=over<=5?"#e05555":over<=10?"#f0a030":"var(--gold)";
-        if(over<=0) clearInterval(timerInterval);
+        if(over<=0)clearInterval(timerInterval);
     }
-    tick(); timerInterval=setInterval(tick,250);
+    tick();timerInterval=setInterval(tick,250);
 }
 
-function stuurAntwoord(index) {
-    if (heeftGeantwoord) return;
-    heeftGeantwoord=true; clearInterval(timerInterval);
-    socket.emit("antwoord",{name,antwoordIndex:index});
+function stuurAntwoord(index){
+    if(heeftGeantwoord)return;
+    heeftGeantwoord=true;clearInterval(timerInterval);
+    socket.emit("antwoord",{name:playerName,antwoordIndex:index});
     document.querySelectorAll(".q-btn").forEach(b=>{
         b.classList.add(parseInt(b.dataset.i)===index?"gekozen":"niet-gekozen");
         b.style.pointerEvents="none";
@@ -654,38 +964,34 @@ function stuurAntwoord(index) {
     document.getElementById("qKlaar").style.display="flex";
 }
 
-function stuurOpenAntwoord() {
-    if (heeftGeantwoord) return;
+function stuurOpenAntwoord(){
+    if(heeftGeantwoord)return;
     const inp=document.getElementById("openAntwoordInput");
-    if (!inp) return;
+    if(!inp)return;
     const tekst=(inp.value||"").trim();
-    if (!tekst) {
-        inp.style.borderColor="rgba(224,85,85,0.8)";
-        inp.placeholder="Vul eerst een antwoord in!";
-        inp.focus(); return;
-    }
-    heeftGeantwoord=true; clearInterval(timerInterval);
-    socket.emit("openAntwoord",{name,antwoordTekst:tekst});
-    inp.disabled=true; inp.style.opacity="0.5";
+    if(!tekst){inp.style.borderColor="rgba(224,85,85,0.8)";inp.placeholder="Vul eerst een antwoord in!";inp.focus();return;}
+    heeftGeantwoord=true;clearInterval(timerInterval);
+    socket.emit("openAntwoord",{name:playerName,antwoordTekst:tekst});
+    inp.disabled=true;inp.style.opacity="0.5";
     const btn=document.getElementById("openAntwoordBtn");
     if(btn){btn.disabled=true;btn.style.opacity="0.5";btn.textContent="✓ Antwoord verzonden";}
     document.getElementById("qKlaar").style.display="flex";
 }
 
-/* ── RESULTATEN ── */
-function toonResultaten(p) {
+function toonResultaten(p){
     clearInterval(timerInterval);
     quizScherm("qResultaten");
-    const scores=p.scores||{}, huidig=scores[name]||0, winst=huidig-vorigeScore;
+    const scores=p.scores||{},huidig=scores[playerName]||0,winst=huidig-vorigeScore;
+    if(winst>0) aantalGoed++;
     document.getElementById("resIcon").textContent=winst>0?"🎉":"😣";
     document.getElementById("resWinst").textContent=(winst>0?"+":"")+winst.toLocaleString("nl-NL")+" punten";
     document.getElementById("resTotaal").textContent="Totaal: "+huidig.toLocaleString("nl-NL")+" punten";
-    const lijst=document.getElementById("resAntwLijst"); lijst.innerHTML="";
+    const lijst=document.getElementById("resAntwLijst");lijst.innerHTML="";
     const res=p.resultaten;
-    if (res) {
+    if(res){
         const items=res.type==="open"?(res.groepen||[]):(res.antwoorden||[]);
         items.forEach(a=>{
-            const rij=document.createElement("div"); rij.className="res-antw-rij";
+            const rij=document.createElement("div");rij.className="res-antw-rij";
             rij.innerHTML=`<div class="res-antw-tekst">${a.tekst}</div><div class="res-antw-balk-wrap"><div class="res-antw-balk ${a.correct?'balk-goed':'balk-fout'}" style="width:${a.procent}%">${a.procent>20?a.aantal+'x':''}</div></div><div class="res-antw-pct">${a.procent}%</div>`;
             lijst.appendChild(rij);
         });
@@ -693,78 +999,497 @@ function toonResultaten(p) {
     vorigeScore=huidig;
 }
 
-/* ── TUSSENSTAND ── */
-function toonTussenstand(p) {
+function toonTussenstand(p){
     quizScherm("qTussenstand");
-    const lijst=document.getElementById("tsLijst"); lijst.innerHTML="";
+    const lijst=document.getElementById("tsLijst");lijst.innerHTML="";
     (p.podium||[]).forEach((speler,i)=>{
         const rij=document.createElement("div");
-        rij.className="ts-rij"+(speler.name===name?" eigen":"");
+        rij.className="ts-rij"+(speler.name===playerName?" eigen":"");
         rij.style.animationDelay=(i*0.07)+"s";
         const sym=i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);
         const rc=i===0?"r1":i===1?"r2":i===2?"r3":"";
-        rij.innerHTML=`<div class="ts-rang ${rc}">${sym}</div><div class="ts-naam">${speler.name}${speler.name===name?" (jij)":""}</div><div class="ts-score">${speler.score.toLocaleString("nl-NL")}</div>`;
+        rij.innerHTML=`<div class="ts-rang ${rc}">${sym}</div><div class="ts-naam">${speler.name}${speler.name===playerName?" (jij)":""}</div><div class="ts-score">${speler.score.toLocaleString("nl-NL")}</div>`;
         lijst.appendChild(rij);
     });
 }
 
-/* ── EINDPODIUM ── */
-function toonEindpodium(p) {
+/* ══ EINDPODIUM + MUNTJES ══ */
+function toonEindpodium(p){
     quizScherm("qEindpodium");
     const ges=p.podium||[];
     const volgorde=[ges[1],ges[0],ges[2]].filter(Boolean);
     const posCls=["pos-2","pos-1","pos-3"];
-    const podiumEl=document.getElementById("epPodium"); podiumEl.innerHTML="";
+    const podiumEl=document.getElementById("epPodium");podiumEl.innerHTML="";
     volgorde.forEach((speler,vi)=>{
         const rank=ges.indexOf(speler);
         const imgUrl=speler.character?characterMap[speler.character]:null;
-        const blok=document.createElement("div"); blok.className="ep-blok "+posCls[vi];
-        blok.innerHTML=`${imgUrl?`<img class="ep-avatar" src="${imgUrl}" alt="">`:`<div class="ep-avatar-placeholder">👤</div>`}<div class="ep-naam">${speler.name}${speler.name===name?" ★":""}</div><div class="ep-score-badge">${speler.score.toLocaleString("nl-NL")} pts</div><div class="ep-blok-sokkel">${rank===0?"1":rank===1?"2":"3"}</div>`;
+        const blok=document.createElement("div");blok.className="ep-blok "+posCls[vi];
+        blok.innerHTML=`${imgUrl?`<img class="ep-avatar" src="${imgUrl}" alt="">`:`<div class="ep-avatar-placeholder">👤</div>`}<div class="ep-naam">${speler.name}${speler.name===playerName?" ★":""}</div><div class="ep-score-badge">${speler.score.toLocaleString("nl-NL")} pts</div><div class="ep-blok-sokkel">${rank===0?"1":rank===1?"2":"3"}</div>`;
         podiumEl.appendChild(blok);
     });
-    const restEl=document.getElementById("epRest"); restEl.innerHTML="";
+    const restEl=document.getElementById("epRest");restEl.innerHTML="";
     ges.slice(3).forEach((speler,i)=>{
-        const rij=document.createElement("div"); rij.className="ep-rest-rij";
+        const rij=document.createElement("div");rij.className="ep-rest-rij";
         rij.style.animationDelay=(i*0.08)+"s";
-        rij.innerHTML=`<div class="ep-rest-rang">${i+4}</div><div class="ep-rest-naam">${speler.name}${speler.name===name?" (jij)":""}</div><div class="ep-rest-score">${speler.score.toLocaleString("nl-NL")} pts</div>`;
+        rij.innerHTML=`<div class="ep-rest-rang">${i+4}</div><div class="ep-rest-naam">${speler.name}${speler.name===playerName?" (jij)":""}</div><div class="ep-rest-score">${speler.score.toLocaleString("nl-NL")} pts</div>`;
         restEl.appendChild(rij);
+    });
+
+    // Muntjes berekenen
+    const scores=p.scores||{};
+    const mijnScore=scores[playerName]||0;
+    const mijnPlek=ges.findIndex(s=>s.name===playerName)+1||ges.length;
+    bereken_en_toon_muntjes(mijnScore,mijnPlek,totaalVragen||ges.length,aantalGoed);
+
+    // Account: quizzen bijhouden
+    if(account){account.quizzenGespeeld++;slaAccountOp();updateAccStats();}
+}
+
+function bereken_en_toon_muntjes(score,plek,totaal,goed){
+    const basisPerVraag=10;
+    const basisMuntjes=goed*basisPerVraag;
+    const bonusScore=Math.floor(score/500);
+    const plekBonus=plek===1?50:plek===2?30:plek===3?15:0;
+    const totaalMuntjes=basisMuntjes+bonusScore+plekBonus;
+
+    document.getElementById("coinAantal").textContent=totaalMuntjes.toLocaleString("nl-NL");
+    const bd=document.getElementById("coinBreakdown");
+    bd.innerHTML=`
+        <div class="coin-rij"><span class="coin-rij-label">📝 Goede antwoorden (${goed}×${basisPerVraag})</span><span class="coin-rij-val">+${basisMuntjes} 🪙</span></div>
+        <div class="coin-rij"><span class="coin-rij-label">⚡ Score bonus</span><span class="coin-rij-val">+${bonusScore} 🪙</span></div>
+        <div class="coin-rij"><span class="coin-rij-label">🏆 Plek ${plek} bonus</span><span class="coin-rij-val">+${plekBonus} 🪙</span></div>`;
+
+    // Rad instellen
+    initRad();
+    document.getElementById("radGewonnen").style.display="none";
+    const spinBtn=document.getElementById("spinBtn");
+    spinBtn.disabled=false; spinBtn.textContent="DRAAIEN!";
+
+    // Account bonus toevoegen
+    if(account){
+        account.muntjes+=totaalMuntjes;
+        slaAccountOp();updateAccStats();
+        document.getElementById("noAccBanner").style.display="none";
+        document.getElementById("radSectie").style.display="flex";
+        // Reset rad voor nieuwe quiz
+        account.radGedraaid=false;slaAccountOp();
+    } else {
+        document.getElementById("noAccBanner").style.display="block";
+        document.getElementById("radSectie").style.display="flex";
+    }
+}
+
+/* ══ RAD ══ */
+const radSegmenten = [
+    {label:"10 🪙",   muntjes:10,  kleur:"#e05555"},
+    {label:"25 🪙",   muntjes:25,  kleur:"#4a90d9"},
+    {label:"50 🪙",   muntjes:50,  kleur:"#4caf82"},
+    {label:"10 🪙",   muntjes:10,  kleur:"#e0952a"},
+    {label:"100 🪙",  muntjes:100, kleur:"#9b72cf"},
+    {label:"25 🪙",   muntjes:25,  kleur:"#e05555"},
+    {label:"5 🪙",    muntjes:5,   kleur:"#4a90d9"},
+    {label:"75 🪙",   muntjes:75,  kleur:"#f0c040"},
+];
+
+let radHoek=0, radDraait=false;
+
+function initRad(){
+    const canvas=document.getElementById("spinCanvas");
+    if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    tekenRad(ctx,0);
+}
+
+function tekenRad(ctx,rotatie){
+    const n=radSegmenten.length;
+    const hoekPerSeg=(2*Math.PI)/n;
+    const cx=120,cy=120,r=115;
+    ctx.clearRect(0,0,240,240);
+    // Buitenring
+    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
+    ctx.fillStyle="rgba(255,255,255,0.05)";ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,0.15)";ctx.lineWidth=3;ctx.stroke();
+
+    radSegmenten.forEach((seg,i)=>{
+        const start=rotatie+i*hoekPerSeg;
+        const eind=start+hoekPerSeg;
+        // Taartpunt
+        ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r-2,start,eind);ctx.closePath();
+        ctx.fillStyle=seg.kleur;ctx.fill();
+        ctx.strokeStyle="rgba(0,0,0,0.3)";ctx.lineWidth=1.5;ctx.stroke();
+        // Tekst
+        ctx.save();ctx.translate(cx,cy);ctx.rotate(start+hoekPerSeg/2);
+        ctx.textAlign="right";ctx.fillStyle="white";
+        ctx.font="bold 11px 'Lato',sans-serif";ctx.shadowColor="rgba(0,0,0,0.5)";ctx.shadowBlur=3;
+        ctx.fillText(seg.label,r-12,4);
+        ctx.restore();
+    });
+    // Middelpunt
+    ctx.beginPath();ctx.arc(cx,cy,16,0,2*Math.PI);
+    ctx.fillStyle="#07090f";ctx.fill();
+    ctx.strokeStyle="rgba(240,192,64,0.6)";ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle="rgba(240,192,64,0.8)";ctx.font="bold 11px Lato";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText("★",cx,cy);
+}
+
+document.getElementById("spinBtn").addEventListener("click",()=>{
+    if(radDraait)return;
+    if(account&&account.radGedraaid){
+        alert("Je hebt al gedraaid voor deze quiz!");return;
+    }
+    if(!account){
+        alert("Maak eerst een account aan om het rad te draaien!");return;
+    }
+    draaiRad();
+});
+
+function draaiRad(){
+    radDraait=true;
+    document.getElementById("spinBtn").disabled=true;
+    document.getElementById("spinBtn").textContent="Draait...";
+
+    const canvas=document.getElementById("spinCanvas");
+    const ctx=canvas.getContext("2d");
+    const n=radSegmenten.length;
+    const hoekPerSeg=(2*Math.PI)/n;
+    const winIndex=Math.floor(Math.random()*n);
+    const extraRonden=5+Math.floor(Math.random()*3);
+    const doelHoek=extraRonden*2*Math.PI+(2*Math.PI - winIndex*hoekPerSeg - hoekPerSeg/2);
+
+    const duur=4000;
+    const start=performance.now();
+    const beginHoek=radHoek;
+
+    function stap(nu){
+        const t=Math.min((nu-start)/duur,1);
+        const ease=1-Math.pow(1-t,4);
+        radHoek=beginHoek+doelHoek*ease;
+        tekenRad(ctx,radHoek);
+        if(t<1){requestAnimationFrame(stap);}
+        else{
+            radDraait=false;
+            const gewonnen=radSegmenten[winIndex];
+            account.muntjes+=gewonnen.muntjes;
+            account.radGedraaid=true;
+            slaAccountOp();updateAccStats();
+
+            const gw=document.getElementById("radGewonnen");
+            gw.style.display="flex";
+            document.getElementById("radGewTitel").textContent=`+${gewonnen.muntjes} muntjes gewonnen!`;
+            document.getElementById("radGewSub").textContent=`Jouw saldo: ${account.muntjes.toLocaleString("nl-NL")} 🪙`;
+        }
+    }
+    requestAnimationFrame(stap);
+}
+
+/* ══ ACCOUNT AANMAKEN ══ */
+function openAccMaak(){
+    document.getElementById("accMaakOverlay").classList.add("open");
+}
+function closeAccMaak(){
+    document.getElementById("accMaakOverlay").classList.remove("open");
+    document.getElementById("accWw1").value="";
+    document.getElementById("accWw2").value="";
+    document.getElementById("accFoutTekst").classList.remove("zichtbaar");
+}
+function accMaakAanmaken(){
+    const ww1=document.getElementById("accWw1").value;
+    const ww2=document.getElementById("accWw2").value;
+    const fout=document.getElementById("accFoutTekst");
+
+    if(!ww1||ww1.length<4){
+        document.getElementById("accWw1").classList.add("fout");
+        fout.textContent="Wachtwoord moet minimaal 4 tekens zijn.";
+        fout.classList.add("zichtbaar");return;
+    }
+    if(ww1!==ww2){
+        document.getElementById("accWw2").classList.add("fout");
+        fout.textContent="Wachtwoorden komen niet overeen!";
+        fout.classList.add("zichtbaar");return;
+    }
+    document.getElementById("accWw1").classList.remove("fout");
+    document.getElementById("accWw2").classList.remove("fout");
+    fout.classList.remove("zichtbaar");
+
+    maakNieuwAccount(playerName,ww1);
+    closeAccMaak();
+    openAccScherm();
+}
+
+/* ══ ACCOUNT SCHERM ══ */
+function openAccScherm(){
+    laadAccount();
+    if(!account){openAccMaak();return;}
+    document.getElementById("accScherm").classList.add("open");
+    updateAccStats();
+    renderPackGrid();
+    accTab("account");
+}
+function closeAccScherm(){
+    document.getElementById("accScherm").classList.remove("open");
+}
+
+function accTab(tab){
+    document.querySelectorAll(".acc-nav-btn").forEach(b=>b.classList.remove("actief"));
+    document.querySelector(`[data-tab="${tab}"]`).classList.add("actief");
+    document.getElementById("tabAccount").style.display=tab==="account"?"block":"none";
+    document.getElementById("tabPacks").style.display=tab==="packs"?"block":"none";
+    document.getElementById("tabVerkopen").style.display=tab==="verkopen"?"block":"none";
+    if(tab==="verkopen") renderVerkoopGrid();
+    if(tab==="packs") renderPackGrid();
+}
+
+function renderAccPersonages(){
+    if(!account)return;
+    const el=document.getElementById("accPersonageBezit");
+    el.innerHTML="";
+    account.personages.forEach(p=>{
+        const info=allePersonages.find(x=>x.name===p.naam);
+        if(!info)return;
+        const kaart=document.createElement("div");kaart.className="bezit-kaart";
+        kaart.innerHTML=`<img src="${info.img}" alt="${info.name}"><p>${info.name}</p>`;
+        if(p.aantal>1) kaart.innerHTML+=`<div class="bezit-aantal">${p.aantal}</div>`;
+        el.appendChild(kaart);
     });
 }
 
-/* ── SOCKET EVENTS ── */
-socket.on("faseUpdate", p=>{
+/* ══ PACKS ══ */
+const packDefinities = [
+    {
+        id:"jokie", naam:"Jokie Pack", ico:"⭐", categorie:"Jokie",
+        kleur:"#f0c040", prijs:80,
+        segmenten:[
+            {personage:"Jet",        kans:70, kansTekst:"Veel kans",   pill:"hoog"},
+            {personage:"Jokie",      kans:30, kansTekst:"Kleine kans", pill:"laag"},
+        ]
+    },
+    {
+        id:"sprookjesboom", naam:"Sprookjesboom Pack", ico:"🌳", categorie:"Sprookjesboom",
+        kleur:"#4caf82", prijs:100,
+        segmenten:[
+            {personage:"Roodkapje",      kans:35, kansTekst:"Veel kans",     pill:"hoog"},
+            {personage:"Klein Duimpje",  kans:25, kansTekst:"Gemiddeld",     pill:"midden"},
+            {personage:"Heks",           kans:15, kansTekst:"Gemiddeld",     pill:"midden"},
+            {personage:"Langnek",        kans:10, kansTekst:"Kleine kans",   pill:"laag"},
+            {personage:"Reus",           kans:6,  kansTekst:"Kleine kans",   pill:"laag"},
+            {personage:"Fakir",          kans:4,  kansTekst:"Zeldzaam",      pill:"laag"},
+            {personage:"Ezel",           kans:3,  kansTekst:"Zeldzaam",      pill:"laag"},
+            {personage:"Draak",          kans:1,  kansTekst:"Extreem zeldzaam",pill:"laag"},
+            {personage:"Sprookjesboom",  kans:0.7,kansTekst:"Extreem zeldzaam",pill:"laag"},
+            {personage:"Geitje Benjamin",kans:0.2,kansTekst:"Mega zeldzaam", pill:"laag"},
+            {personage:"Wolf",           kans:0.1,kansTekst:"Mega zeldzaam", pill:"laag"},
+        ]
+    },
+    {
+        id:"symbolica", naam:"Symbolica Pack", ico:"✨", categorie:"Symbolica",
+        kleur:"#9b72cf", prijs:120,
+        segmenten:[
+            {personage:"Pardijn",        kans:35, kansTekst:"Veel kans",     pill:"hoog"},
+            {personage:"Koning Pardulfus",kans:25, kansTekst:"Gemiddeld",    pill:"midden"},
+            {personage:"Polle",          kans:18, kansTekst:"Gemiddeld",     pill:"midden"},
+            {personage:"Aliciana",       kans:10, kansTekst:"Kleine kans",   pill:"laag"},
+            {personage:"Pantagor",       kans:6,  kansTekst:"Zeldzaam",      pill:"laag"},
+            {personage:"Rattar",         kans:3,  kansTekst:"Zeldzaam",      pill:"laag"},
+            {personage:"Grootmagister Almar",kans:2,kansTekst:"Extreem zeldzaam",pill:"laag"},
+            {personage:"O.J. Punctuel", kans:1,  kansTekst:"Mega zeldzaam", pill:"laag"},
+        ]
+    },
+    {
+        id:"raveleijn", naam:"Raveleijn Pack", ico:"⚔️", categorie:"Raveleijn",
+        kleur:"#5b9cf6", prijs:110,
+        segmenten:[
+            {personage:"Ruiter Thomas",  kans:30, kansTekst:"Veel kans",     pill:"hoog"},
+            {personage:"Ruiter Maurits", kans:25, kansTekst:"Veel kans",     pill:"hoog"},
+            {personage:"Ruiter Lisa",    kans:20, kansTekst:"Gemiddeld",     pill:"midden"},
+            {personage:"Samira",         kans:12, kansTekst:"Gemiddeld",     pill:"midden"},
+            {personage:"Samuël",         kans:8,  kansTekst:"Kleine kans",   pill:"laag"},
+            {personage:"Graaf Olaf Grafhart",kans:4,kansTekst:"Zeldzaam",   pill:"laag"},
+            {personage:"Ruiter Emma",    kans:1,  kansTekst:"Mega zeldzaam", pill:"laag"},
+        ]
+    }
+];
+
+function renderPackGrid(){
+    const el=document.getElementById("packGrid");el.innerHTML="";
+    packDefinities.forEach(pack=>{
+        const kaart=document.createElement("div");
+        kaart.className=`pack-kaart ${pack.id}`;
+        kaart.style.borderColor=`${pack.kleur}30`;
+        const kansHtml=pack.segmenten.slice(0,4).map(s=>`<div class="kans-pill kans-${s.pill}">${s.personage.split(' ')[0]}: ${s.kans}%</div>`).join("")
+            +(pack.segmenten.length>4?`<div class="kans-pill kans-laag">+${pack.segmenten.length-4} meer</div>`:"");
+        const bezit=account?pack.segmenten.every(s=>getPersonageAantal(s.personage)>0):false;
+        kaart.innerHTML=`
+            <div class="pack-ico">${pack.ico}</div>
+            <div class="pack-info">
+                <div class="pack-naam">${pack.naam}</div>
+                <div class="pack-beschr">${pack.categorie} personages · ${pack.segmenten.length} uniek</div>
+                <div class="pack-kans-rij">${kansHtml}</div>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+                    <div class="pack-prijs"><span class="pack-prijs-ico">🪙</span>${pack.prijs}</div>
+                    ${bezit?'<span style="font-size:11px;color:rgba(76,175,130,.7);font-weight:700">✓ Compleet</span>':''}
+                </div>
+            </div>`;
+        kaart.addEventListener("click",()=>openPackKopen(pack));
+        el.appendChild(kaart);
+    });
+}
+
+let teKopenPack=null;
+function openPackKopen(pack){
+    if(!account){openAccMaak();return;}
+    if(account.muntjes<pack.prijs){
+        alert(`Je hebt niet genoeg muntjes! Je hebt ${account.muntjes} 🪙, dit pack kost ${pack.prijs} 🪙.`);return;
+    }
+    teKopenPack=pack;
+    const modal=document.getElementById("verkoopModal");
+    document.getElementById("verkoopModalTitel").textContent=`${pack.naam} kopen?`;
+    document.getElementById("verkoopModalTekst").textContent=`Dit kost ${pack.prijs} 🪙. Je hebt ${account.muntjes} 🪙.`;
+    document.querySelector("#verkoopModal .modal-ja").onclick=()=>{closeModal("verkoopModal");koopPack(pack);};
+    modal.classList.add("open");
+}
+
+function koopPack(pack){
+    if(!account||account.muntjes<pack.prijs)return;
+    account.muntjes-=pack.prijs;
+    account.packsGeopend++;
+
+    // Gewogen random
+    const rand=Math.random()*100;
+    let cumulatief=0;
+    let gekozen=pack.segmenten[pack.segmenten.length-1];
+    for(const seg of pack.segmenten){
+        cumulatief+=seg.kans;
+        if(rand<=cumulatief){gekozen=seg;break;}
+    }
+
+    const wasNieuw=getPersonageAantal(gekozen.personage)===0;
+    voegPersonageToe(gekozen.personage);
+    slaAccountOp();updateAccStats();renderPackGrid();
+
+    // Toon reveal
+    const info=allePersonages.find(x=>x.name===gekozen.personage);
+    const overlay=document.getElementById("packOpenOverlay");
+    const kaart=document.getElementById("packOpenKaart");
+    kaart.style.borderColor=pack.kleur+"80";
+    document.getElementById("packOpenImg").src=info?info.img:"";
+    document.getElementById("packOpenNaam").textContent=gekozen.personage;
+    document.getElementById("packOpenKans").textContent=`Kans was: ${gekozen.kans}% — ${gekozen.kansTekst}`;
+    document.getElementById("packOpenIsNieuw").style.display=wasNieuw?"block":"none";
+    overlay.classList.add("open");
+}
+
+function sluitPackOpen(){
+    document.getElementById("packOpenOverlay").classList.remove("open");
+}
+
+/* ══ VERKOPEN ══ */
+let verkoopGeselecteerd=null, verkoopAantal=1;
+function renderVerkoopGrid(){
+    const el=document.getElementById("verkoopGrid");el.innerHTML="";
+    if(!account){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:14px">Geen account gevonden.</div>';return;}
+    const dubbelaars=account.personages.filter(p=>p.aantal>1);
+    if(dubbelaars.length===0){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:14px;padding:12px 0">Je hebt geen dubbele personages om te verkopen.</div>';return;}
+    dubbelaars.forEach(p=>{
+        const info=allePersonages.find(x=>x.name===p.naam);
+        if(!info)return;
+        const kaart=document.createElement("div");kaart.className="verkoop-kaart";
+        kaart.innerHTML=`<img src="${info.img}" alt="${p.naam}"><p>${p.naam}</p><div class="verkoop-cnt">${p.aantal}</div>`;
+        kaart.addEventListener("click",()=>selecteerVerkoop(p.naam,p.aantal));
+        el.appendChild(kaart);
+    });
+}
+
+function selecteerVerkoop(naam,aantal){
+    verkoopGeselecteerd=naam;
+    verkoopAantal=1;
+    document.getElementById("vpNaam").textContent=naam;
+    document.getElementById("vpBezit").textContent=`Je hebt er ${aantal} (je moet er minimaal 1 houden)`;
+    document.getElementById("vpNum").textContent=1;
+    updateVerkoopOpbrengst(1);
+    document.getElementById("verkoopPanel").classList.add("open");
+}
+
+function verkoopMin(){
+    if(verkoopAantal<=1)return;
+    verkoopAantal--;
+    document.getElementById("vpNum").textContent=verkoopAantal;
+    updateVerkoopOpbrengst(verkoopAantal);
+}
+
+function verkoopPlus(){
+    if(!verkoopGeselecteerd||!account)return;
+    const p=account.personages.find(x=>x.naam===verkoopGeselecteerd);
+    if(!p||verkoopAantal>=(p.aantal-1))return;
+    verkoopAantal++;
+    document.getElementById("vpNum").textContent=verkoopAantal;
+    updateVerkoopOpbrengst(verkoopAantal);
+}
+
+function updateVerkoopOpbrengst(n){
+    const opbrengst=n*20;
+    document.getElementById("vpOpbrengst").innerHTML=`Opbrengst: <strong>${opbrengst} 🪙</strong>`;
+}
+
+function verkoopBevestigen(){
+    if(!verkoopGeselecteerd)return;
+    const p=account.personages.find(x=>x.naam===verkoopGeselecteerd);
+    if(!p)return;
+    document.getElementById("verkoopModalTitel").textContent="Verkopen?";
+    document.getElementById("verkoopModalTekst").textContent=`${verkoopAantal}× ${verkoopGeselecteerd} verkopen voor ${verkoopAantal*20} 🪙?`;
+    document.querySelector("#verkoopModal .modal-ja").onclick=()=>{closeModal("verkoopModal");verkoopUitvoeren();};
+    document.getElementById("verkoopModal").classList.add("open");
+}
+
+function verkoopUitvoeren(){
+    if(!verkoopGeselecteerd||!account)return;
+    const opbrengst=verkoopAantal*20;
+    account.muntjes+=opbrengst;
+    verwijderPersonages(verkoopGeselecteerd,verkoopAantal);
+    slaAccountOp();updateAccStats();
+    document.getElementById("verkoopPanel").classList.remove("open");
+    verkoopGeselecteerd=null;verkoopAantal=1;
+    renderVerkoopGrid();
+}
+
+/* ══ MODALS ══ */
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+
+/* ══ SOCKET EVENTS ══ */
+socket.on("faseUpdate",p=>{
     const f=p.fase;
-    if      (f==="lobby")       quizScherm(null);
-    else if (f==="vraag")       toonVraag(p);
-    else if (f==="keuring")     toonWacht();
-    else if (f==="resultaten")  toonResultaten(p);
-    else if (f==="podium")      toonTussenstand(p);
-    else if (f==="eindpodium")  toonEindpodium(p);
+    if      (f==="lobby")      quizScherm(null);
+    else if (f==="vraag")      toonVraag(p);
+    else if (f==="keuring")    toonWacht();
+    else if (f==="resultaten") toonResultaten(p);
+    else if (f==="podium")     toonTussenstand(p);
+    else if (f==="eindpodium") toonEindpodium(p);
+});
+socket.on("gameUpdate",payload=>{
+    if(payload.type==="playersUpdate") loadGallery();
 });
 
-socket.on("gameUpdate", payload=>{
-    if (payload.type==="playersUpdate") loadGallery();
-});
-
-/* ── RECONNECT ── */
+/* ══ RECONNECT ══ */
 fetch("/api/game-state").then(r=>r.json()).then(state=>{
-    if (!state.fase||state.fase==="lobby") return;
-    vorigeScore=(state.scores&&state.scores[name])||0;
+    if(!state.fase||state.fase==="lobby")return;
+    vorigeScore=(state.scores&&state.scores[playerName])||0;
     if      (state.fase==="vraag")      toonVraag(state);
     else if (state.fase==="resultaten") toonResultaten(state);
     else if (state.fase==="podium")     toonTussenstand(state);
     else if (state.fase==="eindpodium") toonEindpodium(state);
 }).catch(()=>{});
 
-/* ── START ── */
-window.addEventListener("load", ()=>{
+/* ══ START ══ */
+window.addEventListener("load",()=>{
     const saved=localStorage.getItem("chosenCharacter");
-    if (saved) { try { setCharacter(JSON.parse(saved)); } catch(e){} }
-    if (name && gameId) {
-        const sc=saved?(() =>{ try{return JSON.parse(saved);}catch(e){return null;} })():null;
+    if(saved){try{setCharacter(JSON.parse(saved));}catch(e){}}
+    laadAccount();
+    if(account) updateAccStats();
+
+    if(playerName&&gameId){
+        const sc=saved?(()=>{try{return JSON.parse(saved);}catch(e){return null;}})():null;
         fetch("/join",{method:"POST",headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({gameId,name,character:sc?sc.name:null,playerId})})
-        .then(r=>r.json()).then(d=>{ if(d.error)console.warn("Join fout:",d.error); })
+            body:JSON.stringify({gameId,name:playerName,character:sc?sc.name:null,playerId})})
+        .then(r=>r.json()).then(d=>{if(d.error)console.warn("Join fout:",d.error);})
         .catch(e=>console.warn("Join mislukt:",e));
     }
 });
