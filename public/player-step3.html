@@ -390,27 +390,6 @@ html, body { height:100%; margin:0; padding:0; background:var(--dark); color:whi
         </div>
         <div class="q-tekst" id="qTekst"></div>
         <div class="q-grid" id="qGrid"></div>
-        <input id="qInput" type="text" placeholder="Typ je antwoord..." style="
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  font-size:16px;
-  display:none;
-">
-
-<button id="qSubmitBtn" style="
-  margin-top:10px;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  font-weight:900;
-  background:var(--gold);
-  color:black;
-  display:none;
-">
-Verstuur antwoord
-</button>
         <div class="q-klaar" id="qKlaar">✓ &nbsp;Antwoord verzonden — wacht op resultaten</div>
     </div>
 
@@ -924,32 +903,11 @@ function toonVraag(p){
     heeftGeantwoord=false;
     totaalVragen=p.totaalVragen||totaalVragen;
     quizScherm("qVraag");
+    document.getElementById("qGrid").style.pointerEvents="";
     document.getElementById("qNrBadge").textContent="Vraag "+(p.huidigeVraag+1)+" / "+p.totaalVragen;
     document.getElementById("qTekst").textContent=p.vraag;
     const grid=document.getElementById("qGrid");
     grid.innerHTML="";
-    const input = document.getElementById("openAntwoordInput");
-const btn = document.getElementById("openAntwoordBtn");
-
-btn.onclick = () => {
-    const value = input.value.trim();
-    if (!value) return;
-
-    heeftGeantwoord = true;
-
-    socket.emit("answer", {
-        gameId,
-        playerId,
-        answer: value
-    });
-
-    document.getElementById("qKlaar").style.display = "flex";
-};
-    input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-        btn.click();
-    }
-});
     document.getElementById("qKlaar").style.display="none";
 
     if(p.type==="open"){
@@ -962,13 +920,16 @@ btn.onclick = () => {
                 style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;border:1.5px solid rgba(240,192,64,0.4);border-radius:12px;background:rgba(240,192,64,0.18);color:#f0c040;cursor:pointer;-webkit-appearance:none;appearance:none;">
                 Verstuur antwoord →
             </button></div>`;
-        const inp=document.getElementById("openAntwoordInput");
-        const btn=document.getElementById("openAntwoordBtn");
-        setTimeout(()=>inp.focus(),50);
-        inp.addEventListener("focus",()=>{inp.style.borderColor="rgba(240,192,64,0.6)";});
-        inp.addEventListener("blur",()=>{inp.style.borderColor="rgba(255,255,255,0.2)";});
-        inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();}});
-        btn.addEventListener("click",()=>stuurOpenAntwoord());
+        setTimeout(()=>{
+            const inp=document.getElementById("openAntwoordInput");
+            const btn=document.getElementById("openAntwoordBtn");
+            if(!inp||!btn) return;
+            inp.focus();
+            inp.addEventListener("focus",()=>{inp.style.borderColor="rgba(240,192,64,0.6)";});
+            inp.addEventListener("blur",()=>{inp.style.borderColor="rgba(255,255,255,0.2)";});
+            inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();}});
+            btn.addEventListener("click",()=>stuurOpenAntwoord());
+        }, 50);
     } else {
         grid.style.display="grid";
         (p.antwoorden||[]).forEach((a,i)=>{
@@ -980,7 +941,7 @@ btn.onclick = () => {
     }
     startTimer(p.tijdlimiet||20,p.vraagStartTijd||Date.now());
 }
-
+    
 function startTimer(limiet,startMs){
     clearInterval(timerInterval);
     const ring=document.getElementById("tRing"),num=document.getElementById("tNum");
