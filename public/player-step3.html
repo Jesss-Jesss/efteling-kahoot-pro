@@ -1069,12 +1069,24 @@ function bereken_en_toon_muntjes(score,plek,totaal,goed){
     if(account){
         account.muntjes+=totaalMuntjes;
         slaAccountOp();updateAccStats();
-        document.getElementById("noAccBanner").style.display="none";
+        // Banner tonen met "ga naar account" knop
+        document.getElementById("noAccBanner").style.display="block";
+        document.getElementById("noAccBanner").innerHTML=`
+            <div class="no-acc-tekst" style="color:rgba(255,255,255,.6)">✅ Muntjes zijn opgeslagen op je account!</div>
+            <div class="acc-actie-btns">
+                <button class="btn-acc-naar" type="button" onclick="openAccScherm()">👤 Ga naar account</button>
+            </div>`;
         document.getElementById("radSectie").style.display="flex";
         // Reset rad voor nieuwe quiz
         account.radGedraaid=false;slaAccountOp();
     } else {
         document.getElementById("noAccBanner").style.display="block";
+        document.getElementById("noAccBanner").innerHTML=`
+            <div class="no-acc-tekst">Maak een account aan om je muntjes op te slaan en personages te kopen!</div>
+            <div class="acc-actie-btns">
+                <button class="btn-acc-maak" type="button" onclick="openAccMaak()">✨ Account aanmaken</button>
+                <button class="btn-acc-naar" type="button" onclick="openAccScherm()">👤 Mijn account</button>
+            </div>`;
         document.getElementById("radSectie").style.display="flex";
     }
 }
@@ -1481,12 +1493,20 @@ fetch("/api/game-state").then(r=>r.json()).then(state=>{
 /* ══ START ══ */
 window.addEventListener("load",()=>{
     const saved=localStorage.getItem("chosenCharacter");
-    if(saved){try{setCharacter(JSON.parse(saved));}catch(e){}}
+    if(saved){
+        try{
+            const c=JSON.parse(saved);
+            // Alleen laden als het personage ontgrendeld is
+            if(isOntgrendeld(c.name)) setCharacter(c);
+            else localStorage.removeItem("chosenCharacter");
+        }catch(e){}
+    }
     laadAccount();
     if(account) updateAccStats();
 
     if(playerName&&gameId){
-        const sc=saved?(()=>{try{return JSON.parse(saved);}catch(e){return null;}})():null;
+        const saved2=localStorage.getItem("chosenCharacter");
+        const sc=saved2?(()=>{try{const c=JSON.parse(saved2);return isOntgrendeld(c.name)?c:null;}catch(e){return null;}})():null;
         fetch("/join",{method:"POST",headers:{"Content-Type":"application/json"},
             body:JSON.stringify({gameId,name:playerName,character:sc?sc.name:null,playerId})})
         .then(r=>r.json()).then(d=>{if(d.error)console.warn("Join fout:",d.error);})
