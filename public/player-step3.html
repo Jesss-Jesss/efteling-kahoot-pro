@@ -696,6 +696,7 @@ categorieën.forEach(cat => {
 
 /* ══ ACCOUNT STATE ══ */
 let account = null;
+let pendingQuizMuntjes = 0;   // muntjes verdiend vóór account aanmaken
 function laadAccount() {
     const opgeslagen = localStorage.getItem("eftelingAccount");
     if (opgeslagen) { try { account = JSON.parse(opgeslagen); } catch(e){} }
@@ -714,12 +715,12 @@ function gratisBezit() {
     return categorieën.map(cat => cat.personages.find(p=>p.gratis)).filter(Boolean).map(p=>p.name);
 }
 
-function maakNieuwAccount(naam, ww) {
+function maakNieuwAccountLokaal(naam, ww, extraMuntjes=0) {
     const gratis = gratisBezit();
     account = {
         naam,
         ww: btoa(ww),
-        muntjes: 0,
+        muntjes: Math.max(0, Number(extraMuntjes)||0),
         personages: gratis.map(n => ({naam:n, aantal:1})),
         quizzenGespeeld: 0,
         packsGeopend: 0,
@@ -903,7 +904,6 @@ function toonVraag(p){
     heeftGeantwoord=false;
     totaalVragen=p.totaalVragen||totaalVragen;
     quizScherm("qVraag");
-    document.getElementById("qGrid").style.pointerEvents="";
     document.getElementById("qNrBadge").textContent="Vraag "+(p.huidigeVraag+1)+" / "+p.totaalVragen;
     document.getElementById("qTekst").textContent=p.vraag;
     const grid=document.getElementById("qGrid");
@@ -920,16 +920,13 @@ function toonVraag(p){
                 style="width:100%;padding:16px;font-size:16px;font-weight:700;font-family:inherit;border:1.5px solid rgba(240,192,64,0.4);border-radius:12px;background:rgba(240,192,64,0.18);color:#f0c040;cursor:pointer;-webkit-appearance:none;appearance:none;">
                 Verstuur antwoord →
             </button></div>`;
-        setTimeout(()=>{
-            const inp=document.getElementById("openAntwoordInput");
-            const btn=document.getElementById("openAntwoordBtn");
-            if(!inp||!btn) return;
-            inp.focus();
-            inp.addEventListener("focus",()=>{inp.style.borderColor="rgba(240,192,64,0.6)";});
-            inp.addEventListener("blur",()=>{inp.style.borderColor="rgba(255,255,255,0.2)";});
-            inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();}});
-            btn.addEventListener("click",()=>stuurOpenAntwoord());
-        }, 50);
+        const inp=document.getElementById("openAntwoordInput");
+        const btn=document.getElementById("openAntwoordBtn");
+        setTimeout(()=>inp.focus(),50);
+        inp.addEventListener("focus",()=>{inp.style.borderColor="rgba(240,192,64,0.6)";});
+        inp.addEventListener("blur",()=>{inp.style.borderColor="rgba(255,255,255,0.2)";});
+        inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();stuurOpenAntwoord();}});
+        btn.addEventListener("click",()=>stuurOpenAntwoord());
     } else {
         grid.style.display="grid";
         (p.antwoorden||[]).forEach((a,i)=>{
@@ -941,7 +938,7 @@ function toonVraag(p){
     }
     startTimer(p.tijdlimiet||20,p.vraagStartTijd||Date.now());
 }
-    
+
 function startTimer(limiet,startMs){
     clearInterval(timerInterval);
     const ring=document.getElementById("tRing"),num=document.getElementById("tNum");
@@ -1045,8 +1042,21 @@ function toonEindpodium(p){
     const mijnPlek=ges.findIndex(s=>s.name===playerName)+1||ges.length;
     bereken_en_toon_muntjes(mijnScore,mijnPlek,totaalVragen||ges.length,aantalGoed);
 
-    // Account: quizzen bijhouden
-    if(account){account.quizzenGespeeld++;slaAccountOp();updateAccStats();}
+    // BUG 3 FIX: sla quiz-resultaat op in database
+    if(account){
+        fetch("/api/account/quiz-klaar",{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({naam:account.naam, muntjes:totaalMuntjes})
+        }).then(r=>r.json()).then(data=>{
+            if(data.success&&data.account){
+                account={...account,...data.account};
+                slaAccountOp();updateAccStats();
+            }
+        }).catch(()=>{
+            account.quizzenGespeeld++;account.muntjes+=totaalMuntjes;
+            slaAccountOp();updateAccStats();
+        });
+    }
 }
 
 function bereken_en_toon_muntjes(score,plek,totaal,goed){
@@ -1056,6 +1066,8 @@ function bereken_en_toon_muntjes(score,plek,totaal,goed){
     const plekBonus=plek===1?50:plek===2?30:plek===3?15:0;
     const totaalMuntjes=basisMuntjes+bonusScore+plekBonus;
 
+    // BUG 2 FIX: sla op zodat bij account aanmaken deze muntjes meegenomen worden
+    pendingQuizMuntjes = totaalMuntjes;
     document.getElementById("coinAantal").textContent=totaalMuntjes.toLocaleString("nl-NL");
     const bd=document.getElementById("coinBreakdown");
     bd.innerHTML=`
@@ -1168,9 +1180,22 @@ function draaiRad(){
     const ctx=canvas.getContext("2d");
     const n=radSegmenten.length;
     const hoekPerSeg=(2*Math.PI)/n;
+
+    // Kies het winnende segment vooraf
     const winIndex=Math.floor(Math.random()*n);
+
+    // BUG 1 FIX: Pijl staat boven = hoek -π/2.
+    // We willen dat het MIDDEN van segment winIndex precies onder de pijl stopt.
+    // Segement i loopt van (rotatie + i*hoekPerSeg) tot (rotatie + (i+1)*hoekPerSeg).
+    // Midden van segment i = rotatie + i*hoekPerSeg + hoekPerSeg/2
+    // Dat moet gelijk zijn aan -π/2 + k*2π voor een geheel getal k.
+    // => doelRotatie = -π/2 - winIndex*hoekPerSeg - hoekPerSeg/2
     const extraRonden=5+Math.floor(Math.random()*3);
-    const doelHoek=extraRonden*2*Math.PI+(2*Math.PI - winIndex*hoekPerSeg - hoekPerSeg/2);
+    const doelRotatie = -Math.PI/2 - winIndex*hoekPerSeg - hoekPerSeg/2;
+    const huidigMod = ((radHoek % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+    const doelMod   = ((doelRotatie % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+    const delta     = ((doelMod - huidigMod) + 2*Math.PI) % (2*Math.PI);
+    const totaalDraaien = extraRonden * 2*Math.PI + delta;
 
     const duur=4000;
     const start=performance.now();
@@ -1179,20 +1204,41 @@ function draaiRad(){
     function stap(nu){
         const t=Math.min((nu-start)/duur,1);
         const ease=1-Math.pow(1-t,4);
-        radHoek=beginHoek+doelHoek*ease;
+        radHoek=beginHoek+totaalDraaien*ease;
         tekenRad(ctx,radHoek);
         if(t<1){requestAnimationFrame(stap);}
         else{
             radDraait=false;
-            const gewonnen=radSegmenten[winIndex];
-            account.muntjes+=gewonnen.muntjes;
-            account.radGedraaid=true;
-            slaAccountOp();updateAccStats();
-
-            const gw=document.getElementById("radGewonnen");
-            gw.style.display="flex";
-            document.getElementById("radGewTitel").textContent=`+${gewonnen.muntjes} muntjes gewonnen!`;
-            document.getElementById("radGewSub").textContent=`Jouw saldo: ${account.muntjes.toLocaleString("nl-NL")} 🪙`;
+            // Server-side rad voor betrouwbaarheid, fallback naar client
+            fetch("/api/account/rad-draaien",{
+                method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({naam:account.naam})
+            }).then(r=>r.json()).then(data=>{
+                const muntjesGewonnen = data.success ? data.muntjes : radSegmenten[winIndex].muntjes;
+                const nieuweWinIndex  = data.success ? data.winIndex : winIndex;
+                const gewonnen = radSegmenten[nieuweWinIndex] || radSegmenten[winIndex];
+                if(data.success && data.accountMuntjes!==undefined){
+                    account.muntjes = data.accountMuntjes;
+                } else {
+                    account.muntjes += muntjesGewonnen;
+                }
+                account.radGedraaid=true;
+                slaAccountOp();updateAccStats();
+                const gw=document.getElementById("radGewonnen");
+                gw.style.display="flex";
+                document.getElementById("radGewTitel").textContent=`+${muntjesGewonnen} muntjes gewonnen!`;
+                document.getElementById("radGewSub").textContent=`Jouw saldo: ${account.muntjes.toLocaleString("nl-NL")} 🪙`;
+            }).catch(()=>{
+                // Fallback client-side
+                const gewonnen=radSegmenten[winIndex];
+                account.muntjes+=gewonnen.muntjes;
+                account.radGedraaid=true;
+                slaAccountOp();updateAccStats();
+                const gw=document.getElementById("radGewonnen");
+                gw.style.display="flex";
+                document.getElementById("radGewTitel").textContent=`+${gewonnen.muntjes} muntjes gewonnen!`;
+                document.getElementById("radGewSub").textContent=`Jouw saldo: ${account.muntjes.toLocaleString("nl-NL")} 🪙`;
+            });
         }
     }
     requestAnimationFrame(stap);
@@ -1227,19 +1273,41 @@ function accMaakAanmaken(){
     document.getElementById("accWw2").classList.remove("fout");
     fout.classList.remove("zichtbaar");
 
-    maakNieuwAccount(playerName,ww1);
-    closeAccMaak();
-    openAccScherm();
+    // BUG 2 FIX: stuur pending quiz-muntjes mee zodat ze niet verloren gaan
+    fetch("/api/account/aanmaken",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({naam:playerName,wachtwoord:ww1,muntjes:pendingQuizMuntjes,personages:[]})
+    }).then(r=>r.json()).then(data=>{
+        if(!data.success){ alert(data.error); return; }
+        account = data.account;
+        pendingQuizMuntjes = 0;
+        slaAccountOp();
+        closeAccMaak();
+        openAccScherm();
+    }).catch(()=>{
+        // Fallback: lokaal opslaan als server niet bereikbaar is
+        maakNieuwAccountLokaal(playerName,ww1,pendingQuizMuntjes);
+        pendingQuizMuntjes=0;
+        closeAccMaak();
+        openAccScherm();
+    });
 }
 
 /* ══ ACCOUNT SCHERM ══ */
 function openAccScherm(){
     laadAccount();
     if(!account){openAccMaak();return;}
-    document.getElementById("accScherm").classList.add("open");
-    updateAccStats();
-    renderPackGrid();
-    accTab("account");
+    // BUG 3 FIX: ververs van server bij openen
+    fetch("/api/account/"+encodeURIComponent(account.naam))
+    .then(r=>r.json()).then(data=>{
+        if(data.success&&data.account){
+            account={...account,...data.account};
+            slaAccountOp();
+        }
+    }).catch(()=>{}).finally(()=>{
+        document.getElementById("accScherm").classList.add("open");
+        updateAccStats();renderPackGrid();accTab("account");
+    });
 }
 function closeAccScherm(){
     document.getElementById("accScherm").classList.remove("open");
@@ -1366,32 +1434,51 @@ function openPackKopen(pack){
 
 function koopPack(pack){
     if(!account||account.muntjes<pack.prijs)return;
-    account.muntjes-=pack.prijs;
-    account.packsGeopend++;
-
-    // Gewogen random
-    const rand=Math.random()*100;
-    let cumulatief=0;
-    let gekozen=pack.segmenten[pack.segmenten.length-1];
-    for(const seg of pack.segmenten){
-        cumulatief+=seg.kans;
-        if(rand<=cumulatief){gekozen=seg;break;}
-    }
-
-    const wasNieuw=getPersonageAantal(gekozen.personage)===0;
-    voegPersonageToe(gekozen.personage);
-    slaAccountOp();updateAccStats();renderPackGrid();
-
-    // Toon reveal
-    const info=allePersonages.find(x=>x.name===gekozen.personage);
-    const overlay=document.getElementById("packOpenOverlay");
-    const kaart=document.getElementById("packOpenKaart");
-    kaart.style.borderColor=pack.kleur+"80";
-    document.getElementById("packOpenImg").src=info?info.img:"";
-    document.getElementById("packOpenNaam").textContent=gekozen.personage;
-    document.getElementById("packOpenKans").textContent=`Kans was: ${gekozen.kans}% — ${gekozen.kansTekst}`;
-    document.getElementById("packOpenIsNieuw").style.display=wasNieuw?"block":"none";
-    overlay.classList.add("open");
+    // BUG 3 FIX: server-side pack openen
+    fetch("/api/account/pack-openen",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({naam:account.naam,packId:pack.id})
+    }).then(r=>r.json()).then(data=>{
+        if(!data.success){alert(data.error);return;}
+        const gekozenNaam=data.personage;
+        const wasNieuw=data.wasNieuw;
+        if(data.account){ account={...account,...data.account}; slaAccountOp(); }
+        else {
+            account.muntjes-=pack.prijs; account.packsGeopend++;
+            voegPersonageToe(gekozenNaam);
+        }
+        updateAccStats();renderPackGrid();
+        // Zoek kans info
+        const segInfo=pack.segmenten.find(s=>s.personage===gekozenNaam)||{kans:"?",kansTekst:""};
+        const info=allePersonages.find(x=>x.name===gekozenNaam);
+        const packOverlay=document.getElementById("packOpenOverlay");
+        const kaart=document.getElementById("packOpenKaart");
+        kaart.style.borderColor=pack.kleur+"80";
+        document.getElementById("packOpenImg").src=info?info.img:"";
+        document.getElementById("packOpenNaam").textContent=gekozenNaam;
+        document.getElementById("packOpenKans").textContent=`Kans was: ${segInfo.kans}% — ${segInfo.kansTekst}`;
+        document.getElementById("packOpenIsNieuw").style.display=wasNieuw?"block":"none";
+        packOverlay.classList.add("open");
+    }).catch(()=>{
+        // Fallback client-side
+        if(account.muntjes<pack.prijs)return;
+        account.muntjes-=pack.prijs; account.packsGeopend++;
+        const rand=Math.random()*100; let cumulatief=0;
+        let gekozen=pack.segmenten[pack.segmenten.length-1];
+        for(const seg of pack.segmenten){ cumulatief+=seg.kans; if(rand<=cumulatief){gekozen=seg;break;} }
+        const wasNieuw=getPersonageAantal(gekozen.personage)===0;
+        voegPersonageToe(gekozen.personage);
+        slaAccountOp();updateAccStats();renderPackGrid();
+        const info=allePersonages.find(x=>x.name===gekozen.personage);
+        const packOverlay=document.getElementById("packOpenOverlay");
+        const kaart=document.getElementById("packOpenKaart");
+        kaart.style.borderColor=pack.kleur+"80";
+        document.getElementById("packOpenImg").src=info?info.img:"";
+        document.getElementById("packOpenNaam").textContent=gekozen.personage;
+        document.getElementById("packOpenKans").textContent=`Kans was: ${gekozen.kans}% — ${gekozen.kansTekst}`;
+        document.getElementById("packOpenIsNieuw").style.display=wasNieuw?"block":"none";
+        packOverlay.classList.add("open");
+    });
 }
 
 function sluitPackOpen(){
@@ -1458,13 +1545,30 @@ function verkoopBevestigen(){
 
 function verkoopUitvoeren(){
     if(!verkoopGeselecteerd||!account)return;
-    const opbrengst=verkoopAantal*20;
-    account.muntjes+=opbrengst;
-    verwijderPersonages(verkoopGeselecteerd,verkoopAantal);
-    slaAccountOp();updateAccStats();
-    document.getElementById("verkoopPanel").classList.remove("open");
-    verkoopGeselecteerd=null;verkoopAantal=1;
-    renderVerkoopGrid();
+    // BUG 3 FIX: server-side verkopen
+    fetch("/api/account/verkopen",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({naam:account.naam,personageNaam:verkoopGeselecteerd,aantal:verkoopAantal})
+    }).then(r=>r.json()).then(data=>{
+        if(!data.success){alert(data.error);return;}
+        if(data.account){ account={...account,...data.account}; slaAccountOp(); }
+        else {
+            account.muntjes+=data.opbrengst||verkoopAantal*20;
+            verwijderPersonages(verkoopGeselecteerd,verkoopAantal);
+        }
+        updateAccStats();
+        document.getElementById("verkoopPanel").classList.remove("open");
+        verkoopGeselecteerd=null;verkoopAantal=1;
+        renderVerkoopGrid();
+    }).catch(()=>{
+        const opbrengst=verkoopAantal*20;
+        account.muntjes+=opbrengst;
+        verwijderPersonages(verkoopGeselecteerd,verkoopAantal);
+        slaAccountOp();updateAccStats();
+        document.getElementById("verkoopPanel").classList.remove("open");
+        verkoopGeselecteerd=null;verkoopAantal=1;
+        renderVerkoopGrid();
+    });
 }
 
 /* ══ MODALS ══ */
