@@ -4,6 +4,7 @@ const { Server } = require("socket.io");
 const path     = require("path");
 const session  = require("express-session");
 const mongoose = require("mongoose");
+const bcrypt   = require("bcryptjs");   // nieuw: npm install bcryptjs
 
 const app    = express();
 const server = http.createServer(app);
@@ -32,6 +33,111 @@ const quizSchema = new mongoose.Schema({
 });
 const Quiz = mongoose.model("Quiz", quizSchema);
 
+// ---------------- ACCOUNT SCHEMA ----------------
+const accountSchema = new mongoose.Schema({
+    naam:            { type: String, required: true, unique: true },   // lowercase sleutel
+    weergaveNaam:    { type: String, required: true },                 // originele hoofdletters
+    wachtwoordHash:  { type: String, required: true },
+    muntjes:         { type: Number, default: 0 },
+    personages:      [{ naam: String, aantal: { type: Number, default: 1 } }],
+    quizzenGespeeld: { type: Number, default: 0 },
+    packsGeopend:    { type: Number, default: 0 },
+    radGedraaid:     { type: Boolean, default: false },
+    aangemaaktOp:    { type: Date, default: Date.now },
+    bijgewerktOp:    { type: Date, default: Date.now }
+});
+const Account = mongoose.model("Account", accountSchema);
+
+// Gratis personages die elke nieuwe speler krijgt
+const GRATIS_PERSONAGES = ["Jet", "Assepoester", "Pardoes", "Ruiter Joost"];
+
+// Verkoopprijs per personage
+const VERKOOP_PRIJS = 20;
+
+// Rad segmenten (zelfde volgorde als in speler.html!)
+const RAD_SEGMENTEN = [
+    { label: "10 🪙",  muntjes: 10  },
+    { label: "25 🪙",  muntjes: 25  },
+    { label: "50 🪙",  muntjes: 50  },
+    { label: "10 🪙",  muntjes: 10  },
+    { label: "100 🪙", muntjes: 100 },
+    { label: "25 🪙",  muntjes: 25  },
+    { label: "5 🪙",   muntjes: 5   },
+    { label: "75 🪙",  muntjes: 75  },
+];
+
+// Pack definities (kansen server-side, zelfde als client)
+const PACK_DEFINITIES = {
+    jokie: {
+        prijs: 80,
+        segmenten: [
+            { personage: "Jokie", kans: 30 },
+            { personage: "Jet",   kans: 70 },
+        ]
+    },
+    sprookjesboom: {
+        prijs: 100,
+        segmenten: [
+            { personage: "Roodkapje",      kans: 35  },
+            { personage: "Klein Duimpje",  kans: 25  },
+            { personage: "Heks",           kans: 15  },
+            { personage: "Langnek",        kans: 10  },
+            { personage: "Reus",           kans: 6   },
+            { personage: "Fakir",          kans: 4   },
+            { personage: "Ezel",           kans: 3   },
+            { personage: "Draak",          kans: 1   },
+            { personage: "Sprookjesboom",  kans: 0.7 },
+            { personage: "Geitje Benjamin",kans: 0.2 },
+            { personage: "Wolf",           kans: 0.1 },
+        ]
+    },
+    symbolica: {
+        prijs: 120,
+        segmenten: [
+            { personage: "Pardijn",              kans: 35 },
+            { personage: "Koning Pardulfus",     kans: 25 },
+            { personage: "Polle",                kans: 18 },
+            { personage: "Aliciana",             kans: 10 },
+            { personage: "Pantagor",             kans: 6  },
+            { personage: "Rattar",               kans: 3  },
+            { personage: "Grootmagister Almar",  kans: 2  },
+            { personage: "O.J. Punctuel",        kans: 1  },
+        ]
+    },
+    raveleijn: {
+        prijs: 110,
+        segmenten: [
+            { personage: "Ruiter Thomas",        kans: 30 },
+            { personage: "Ruiter Maurits",       kans: 25 },
+            { personage: "Ruiter Lisa",          kans: 20 },
+            { personage: "Samira",               kans: 12 },
+            { personage: "Samuël",               kans: 8  },
+            { personage: "Graaf Olaf Grafhart",  kans: 4  },
+            { personage: "Ruiter Emma",          kans: 1  },
+        ]
+    }
+};
+
+// Helper: geef account terug zonder wachtwoordhash
+function veiligAccount(doc) {
+    if (!doc) return null;
+    const obj = doc.toObject ? doc.toObject() : { ...doc };
+    delete obj.wachtwoordHash;
+    delete obj.__v;
+    return obj;
+}
+
+// Helper: gewogen random uit pack
+function trekUitPack(segmenten) {
+    const rand = Math.random() * 100;
+    let cumulatief = 0;
+    for (const seg of segmenten) {
+        cumulatief += seg.kans;
+        if (rand <= cumulatief) return seg;
+    }
+    return segmenten[segmenten.length - 1];
+}
+
 // ---------------- VARIABLES ----------------
 let quizStarted = false;
 const DASHBOARD_PASSWORD = "1234";
@@ -44,8 +150,8 @@ let currentGame = {
     id: null, players: [], scores: {},
     quizId: null, quizData: null,
     huidigeVraag: -1, fase: "lobby",
-    antwoorden: {},      // meerkeuze: { name:{antwoordIndex,seconden} }  open: { name:{antwoordTekst,seconden} }
-    openGroepen: {},     // { normaalSleutel: { namen, tekst, beslissing:null|"goed"|"fout" } }
+    antwoorden: {},
+    openGroepen: {},
     vraagStartTijd: null
 };
 let pendingApprovals = {};
@@ -157,7 +263,7 @@ app.use((req, res, next) => { if (req.path.endsWith(".html")) return res.redirec
 app.set("trust proxy", 1);
 app.use(session({ secret:"supersecretkey", resave:false, saveUninitialized:false, cookie:{ secure:process.env.NODE_ENV!=="development", sameSite:"lax", maxAge:1000*60*60*4 } }));
 
-// ---------------- ROUTES ----------------
+// ---------------- BESTAANDE ROUTES ----------------
 app.get("/", (req,res)=>res.redirect("/host-login"));
 app.get("/host-login", (req,res)=>res.sendFile(path.join(__dirname,"public","host-login.html")));
 app.post("/host-login", (req,res)=>{ const p=(req.body.password||"").trim(); if(p===DASHBOARD_PASSWORD){req.session.loggedIn=true;return res.redirect("/quiz-select");} return res.redirect("/host-login?error=1"); });
@@ -191,6 +297,177 @@ app.post("/api/start-quiz", async(req,res)=>{ if(!req.session.loggedIn)return re
 app.post("/join",(req,res)=>{ const{name,gameId,character,playerId}=req.body; if(!quizStarted||gameId!==currentGame.id)return res.status(400).json({error:"Ongeldige Game ID"}); if(!allowedNames.includes(name))return res.status(403).json({error:"Naam niet toegestaan"}); const ep=currentGame.players.find(p=>p.name.toLowerCase()===name.toLowerCase()); if(ep){ if(ep.playerId!==playerId)return res.status(400).json({error:"Naam al in gebruik!"}); if(character){const t=currentGame.players.find(p=>p.character===character&&p.name!==name);if(t)return res.status(400).json({error:"Dit personage is al gekozen!"});ep.character=character;} io.emit("gameUpdate",{type:"playersUpdate",data:currentGame}); return res.json({success:true}); } if(character){const t=currentGame.players.find(p=>p.character===character&&p.name!==name);if(t)return res.status(400).json({error:"Dit personage is al gekozen!"});} currentGame.players.push({name,character:character||null,playerId,joinId:pendingPlayers.find(p=>p.name===name)?.joinId||nextJoinId++}); currentGame.scores[name]=0; io.emit("gameUpdate",{type:"playersUpdate",data:currentGame}); return res.json({success:true}); });
 
 app.post("/reset-game",(req,res)=>{ if(!req.session.loggedIn)return res.status(401).json({error:"Niet ingelogd"}); quizStarted=false; Object.assign(currentGame,{players:[],scores:{},id:null,quizId:null,quizData:null,huidigeVraag:-1,fase:"lobby",antwoorden:{},openGroepen:{},vraagStartTijd:null}); nextJoinId=1001;pendingPlayers=[]; io.emit("gameUpdate",{type:"playersUpdate",data:currentGame}); io.emit("faseUpdate",{fase:"lobby"}); return res.json({success:true}); });
+
+// ---------------- ACCOUNT ROUTES ----------------
+
+// Account aanmaken
+app.post("/api/account/aanmaken", async (req, res) => {
+    try {
+        const { naam, wachtwoord, muntjes = 0, personages = [] } = req.body;
+        if (!naam || !wachtwoord) return res.json({ success: false, error: "Naam en wachtwoord zijn verplicht." });
+        if (wachtwoord.length < 4) return res.json({ success: false, error: "Wachtwoord moet minimaal 4 tekens zijn." });
+
+        const sleutel = naam.trim().toLowerCase();
+        const bestaand = await Account.findOne({ naam: sleutel });
+        if (bestaand) return res.json({ success: false, error: "Er bestaat al een account met deze naam." });
+
+        const hash = await bcrypt.hash(wachtwoord, 10);
+
+        // Gratis personages toevoegen als ze er nog niet in zitten
+        const personageLijst = [...personages];
+        GRATIS_PERSONAGES.forEach(g => {
+            if (!personageLijst.find(p => p.naam === g)) {
+                personageLijst.push({ naam: g, aantal: 1 });
+            }
+        });
+
+        const account = new Account({
+            naam: sleutel,
+            weergaveNaam: naam.trim(),
+            wachtwoordHash: hash,
+            muntjes: Math.max(0, Number(muntjes) || 0),
+            personages: personageLijst,
+        });
+
+        await account.save();
+        res.json({ success: true, account: veiligAccount(account) });
+    } catch (e) {
+        console.error("Aanmaken fout:", e);
+        res.json({ success: false, error: "Serverfout bij aanmaken." });
+    }
+});
+
+// Inloggen
+app.post("/api/account/inloggen", async (req, res) => {
+    try {
+        const { naam, wachtwoord } = req.body;
+        const sleutel = (naam || "").trim().toLowerCase();
+        const account = await Account.findOne({ naam: sleutel });
+        if (!account) return res.json({ success: false, error: "Naam of wachtwoord klopt niet." });
+
+        const ok = await bcrypt.compare(wachtwoord, account.wachtwoordHash);
+        if (!ok) return res.json({ success: false, error: "Naam of wachtwoord klopt niet." });
+
+        res.json({ success: true, account: veiligAccount(account) });
+    } catch (e) {
+        console.error("Inloggen fout:", e);
+        res.json({ success: false, error: "Serverfout bij inloggen." });
+    }
+});
+
+// Account ophalen
+app.get("/api/account/:naam", async (req, res) => {
+    try {
+        const sleutel = (req.params.naam || "").trim().toLowerCase();
+        const account = await Account.findOne({ naam: sleutel });
+        if (!account) return res.json({ success: false, error: "Account niet gevonden." });
+        res.json({ success: true, account: veiligAccount(account) });
+    } catch (e) {
+        res.json({ success: false, error: "Serverfout." });
+    }
+});
+
+// Quiz klaar: muntjes opslaan + rad resetten
+app.post("/api/account/quiz-klaar", async (req, res) => {
+    try {
+        const { naam, muntjes } = req.body;
+        const sleutel = (naam || "").trim().toLowerCase();
+        const toe = Math.max(0, Number(muntjes) || 0);
+
+        const account = await Account.findOneAndUpdate(
+            { naam: sleutel },
+            { $inc: { muntjes: toe, quizzenGespeeld: 1 }, $set: { radGedraaid: false, bijgewerktOp: new Date() } },
+            { new: true }
+        );
+        if (!account) return res.json({ success: false, error: "Account niet gevonden." });
+        res.json({ success: true, account: veiligAccount(account) });
+    } catch (e) {
+        res.json({ success: false, error: "Serverfout." });
+    }
+});
+
+// Rad draaien (server-side random = betrouwbaar)
+app.post("/api/account/rad-draaien", async (req, res) => {
+    try {
+        const sleutel = (req.body.naam || "").trim().toLowerCase();
+        const account = await Account.findOne({ naam: sleutel });
+        if (!account) return res.json({ success: false, error: "Account niet gevonden." });
+        if (account.radGedraaid) return res.json({ success: false, error: "Al gedraaid voor deze quiz." });
+
+        const winIndex = Math.floor(Math.random() * RAD_SEGMENTEN.length);
+        const gewonnen = RAD_SEGMENTEN[winIndex];
+
+        const bijgewerkt = await Account.findOneAndUpdate(
+            { naam: sleutel },
+            { $inc: { muntjes: gewonnen.muntjes }, $set: { radGedraaid: true, bijgewerktOp: new Date() } },
+            { new: true }
+        );
+
+        res.json({ success: true, winIndex, muntjes: gewonnen.muntjes, accountMuntjes: bijgewerkt.muntjes });
+    } catch (e) {
+        console.error("Rad fout:", e);
+        res.json({ success: false, error: "Serverfout." });
+    }
+});
+
+// Pack openen (server-side gewogen random)
+app.post("/api/account/pack-openen", async (req, res) => {
+    try {
+        const { naam, packId } = req.body;
+        const sleutel = (naam || "").trim().toLowerCase();
+        const pack = PACK_DEFINITIES[packId];
+        if (!pack) return res.json({ success: false, error: "Onbekend pack." });
+
+        const account = await Account.findOne({ naam: sleutel });
+        if (!account) return res.json({ success: false, error: "Account niet gevonden." });
+        if (account.muntjes < pack.prijs) return res.json({ success: false, error: "Niet genoeg muntjes." });
+
+        const gekozen = trekUitPack(pack.segmenten);
+        const bestaand = account.personages.find(p => p.naam === gekozen.personage);
+        const wasNieuw = !bestaand;
+
+        if (bestaand) {
+            bestaand.aantal += 1;
+        } else {
+            account.personages.push({ naam: gekozen.personage, aantal: 1 });
+        }
+        account.muntjes -= pack.prijs;
+        account.packsGeopend += 1;
+        account.bijgewerktOp = new Date();
+        await account.save();
+
+        res.json({ success: true, personage: gekozen.personage, wasNieuw, account: veiligAccount(account) });
+    } catch (e) {
+        console.error("Pack fout:", e);
+        res.json({ success: false, error: "Serverfout." });
+    }
+});
+
+// Personage verkopen
+app.post("/api/account/verkopen", async (req, res) => {
+    try {
+        const { naam, personageNaam, aantal } = req.body;
+        const sleutel = (naam || "").trim().toLowerCase();
+        const n = Math.max(1, Number(aantal) || 1);
+
+        const account = await Account.findOne({ naam: sleutel });
+        if (!account) return res.json({ success: false, error: "Account niet gevonden." });
+
+        const p = account.personages.find(x => x.naam === personageNaam);
+        if (!p) return res.json({ success: false, error: "Personage niet gevonden." });
+        if (p.aantal - n < 1) return res.json({ success: false, error: "Je moet er minimaal 1 houden." });
+
+        const opbrengst = n * VERKOOP_PRIJS;
+        p.aantal -= n;
+        account.muntjes += opbrengst;
+        account.bijgewerktOp = new Date();
+        await account.save();
+
+        res.json({ success: true, opbrengst, account: veiligAccount(account) });
+    } catch (e) {
+        res.json({ success: false, error: "Serverfout." });
+    }
+});
 
 // ---------------- SOCKET.IO ----------------
 io.on("connection", (socket) => {
@@ -257,7 +534,6 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Meerkeuze antwoord
     socket.on("antwoord", ({ name, antwoordIndex }) => {
         if (currentGame.fase !== "vraag") return;
         if (!allowedNames.includes(name)) return;
@@ -273,7 +549,6 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Open vraag antwoord
     socket.on("openAntwoord", ({ name, antwoordTekst }) => {
         if (currentGame.fase !== "vraag") return;
         if (!allowedNames.includes(name)) return;
@@ -285,7 +560,6 @@ io.on("connection", (socket) => {
         io.emit("antwoordUpdate", { aantalGeantwoord: Object.keys(currentGame.antwoorden).length, totaalSpelers: currentGame.players.length });
     });
 
-    // Host keurt een groep antwoorden goed of fout
     socket.on("keurAntwoord", ({ sleutel, beslissing }) => {
         if (!currentGame.openGroepen[sleutel]) return;
         currentGame.openGroepen[sleutel].beslissing = beslissing;
